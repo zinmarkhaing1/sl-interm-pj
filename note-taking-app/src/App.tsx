@@ -122,10 +122,13 @@
 // export default App;
 
 import './App.css';
+import { LoginForm } from './auth/LoginForm';
 function App() {
   return (
     <>
-    <div>Home Page</div>
+    <div>
+    <LoginForm/>
+    </div>
     </>
   )
 }
