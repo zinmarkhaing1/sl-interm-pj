@@ -121,8 +121,10 @@
 
 // export default App;
 
+import { Route, Routes } from 'react-router-dom';
 import './App.css';
 import { NoteCategory } from './components/note_layout/NoteCategory';
+import { CreateNotePage } from './pages/CreateNotePage';
 import { HomePage } from './pages/HomePage';
 // import { HeaderBar } from './components/header_bar/HeaderBar';
 // import { SideMenu } from './components/sidemenu_bar/SideMenu';
@@ -135,7 +137,11 @@ function App() {
     {/* <HeaderBar/> */}
     {/* <SideMenu/> */}
     {/* <NoteCategory/> */}
-    <HomePage/>
+    {/* <HomePage/> */}
+    <Routes>
+      <Route path='/' element={<HomePage/>}/>
+    </Routes>
+    <CreateNotePage/>
     </div>
     </>
   )
