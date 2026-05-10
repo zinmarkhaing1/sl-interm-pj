@@ -122,12 +122,20 @@
 // export default App;
 
 import './App.css';
-import { LoginForm } from './auth/LoginForm';
+import { NoteCategory } from './components/note_layout/NoteCategory';
+import { HomePage } from './pages/HomePage';
+// import { HeaderBar } from './components/header_bar/HeaderBar';
+// import { SideMenu } from './components/sidemenu_bar/SideMenu';
+// import { LoginForm } from './auth/LoginForm';
 function App() {
   return (
     <>
     <div>
-    <LoginForm/>
+    {/* <LoginForm/> */}
+    {/* <HeaderBar/> */}
+    {/* <SideMenu/> */}
+    {/* <NoteCategory/> */}
+    <HomePage/>
     </div>
     </>
   )
