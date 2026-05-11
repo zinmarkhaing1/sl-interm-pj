@@ -7,6 +7,8 @@ import LabelIcon from "@mui/icons-material/Label";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import MenuIcon from "@mui/icons-material/Menu";
+import {  useNavigate } from 'react-router-dom';
+// import { CategoriesPage } from '../tag_categories/CategoriesPage';
 
 
 const drawerWidth = 200;
@@ -15,6 +17,8 @@ const [open,setOpen] = React.useState(false);
 const toggleDrawer = (newOpen:boolean) =>()=> {
     setOpen(newOpen);
 };
+const navigate= useNavigate();
+
 
 const DraweList = (
     <Box sx={{width:200, role:"presentation", bgcolor:'#c4e8f5'}}  onClick={toggleDrawer(false)}>
@@ -24,7 +28,7 @@ const DraweList = (
                 <ListItemIcon>
                     <DashboardIcon/>
                 </ListItemIcon>
-                <ListItemText primary="Dashboard"/>
+                <ListItemText onClick={() => navigate('/')} primary="Dashboard"/>
             </ListItemButton>
 
             <Divider sx={{my:1}}/>
@@ -33,7 +37,7 @@ const DraweList = (
                 <ListItemIcon>
                     <LabelIcon/>
                 </ListItemIcon>
-                <ListItemText primary="Tags / Categories"/>
+                <ListItemText onClick={() => navigate("/category")} primary="Tags / Categories"/>
             </ListItemButton>
 
             {/* FlashCard  */}

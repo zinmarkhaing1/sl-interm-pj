@@ -9,6 +9,8 @@ import {
   IconButton,
   Badge,
   Avatar,
+  Stack,
+  Button,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
@@ -16,6 +18,7 @@ import Brightness4Icon from "@mui/icons-material/Brightness4";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -28,6 +31,7 @@ const Search = styled("div")(({ theme }) => ({
 }));
 
 export const HeaderBar = () => {
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   return (
       <AppBar 
@@ -54,7 +58,10 @@ export const HeaderBar = () => {
               <NotificationsIcon />
             </Badge>
           </IconButton>
-
+          <Stack spacing={2} direction='row' sx={{m:2}}>
+            {/* <Button variant="contained" sx={{m:2}}  onClick={() => navigate('/login')}>SignIn</Button> */}
+            <Button variant="outlined" sx={{color:'black',bgcolor:'white' ,m:2 }}  component={Link} to='/signup'>SignUp</Button>
+          </Stack>
           <IconButton sx={{ ml: 1 }}>
             <Avatar alt="User" src="https://i.pravatar.cc/300" />
           </IconButton>
