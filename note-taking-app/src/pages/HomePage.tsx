@@ -6,7 +6,7 @@ import { Box } from "@mui/material"
 
 export const HomePage = () => {
   return (
-    <Box sx={{display:'flex'}}>
+    <Box sx={{display:'flex',bgcolor:'#c4e8f5'}}>
       <SideMenu/>
       <Box sx={{flexGrow:1}}>
         <HeaderBar/>

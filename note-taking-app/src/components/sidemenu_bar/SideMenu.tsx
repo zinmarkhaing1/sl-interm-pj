@@ -13,9 +13,9 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 const drawerWidth = 250;
 export const SideMenu = () => {
   return (
-    <Drawer variant="permanent" sx={{width:drawerWidth, flexShrink:0,"&.MuiDrawer-paper":{width:drawerWidth,boxSizing:"border-box"},}}>
+    <Drawer variant="permanent" sx={{width:drawerWidth, flexShrink:0,"&.MuiDrawer-paper":{width:drawerWidth,boxSizing:"border-box"},bgcolor:'#c4e8f5'}}>
         <Toolbar/>
-        <List>
+        <List >
             {/* dashboard  */}
             <ListItemButton>
                 <ListItemIcon>

@@ -33,7 +33,7 @@ export const NoteCategory = () => {
     setTodos(todos.filter((t) =>t.id !== id));
   };
   return (
-    <Box sx={{p:3}}>
+    <Box sx={{p:3,bgcolor:'#c4e8f5'}}>
         <CalendarTodayIcon fontSize="small" color="primary"/>
         <Typography variant='h5' sx={{fontWeight:'bold'}} >{today}</Typography>
         <Typography sx={{color:'gray', fontWeight:'bold',mb:2}}>
