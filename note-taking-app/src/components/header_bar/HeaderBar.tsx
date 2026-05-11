@@ -36,7 +36,7 @@ export const HeaderBar = () => {
   return (
       <AppBar 
       position="static"
-      sx={{ bgcolor: darkMode ? "#3b5673" : "#2f78c1",mt:3 }}
+      sx={{ bgcolor: darkMode ? "#3b5673" : "#2f78c1"}}
     >
       <Toolbar >
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>
