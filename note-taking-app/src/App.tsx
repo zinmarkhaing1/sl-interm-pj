@@ -127,7 +127,7 @@ import { NoteCategory } from './components/note_layout/NoteCategory';
 import { CreateNotePage } from './pages/CreateNotePage';
 import { HomePage } from './pages/HomePage';
 // import { HeaderBar } from './components/header_bar/HeaderBar';
-// import { SideMenu } from './components/sidemenu_bar/SideMenu';
+import { SideMenu } from './components/sidemenu_bar/SideMenu';
 // import { LoginForm } from './auth/LoginForm';
 function App() {
   return (
@@ -137,11 +137,11 @@ function App() {
     {/* <HeaderBar/> */}
     {/* <SideMenu/> */}
     {/* <NoteCategory/> */}
-    {/* <HomePage/> */}
-    <Routes>
+    <HomePage/>
+    {/* <Routes>
       <Route path='/' element={<HomePage/>}/>
     </Routes>
-    <CreateNotePage/>
+    <CreateNotePage/> */}
     </div>
     </>
   )

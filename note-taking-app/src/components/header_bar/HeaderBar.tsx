@@ -30,7 +30,7 @@ const Search = styled("div")(({ theme }) => ({
 export const HeaderBar = () => {
   const [darkMode, setDarkMode] = useState(false);
   return (
-    <AppBar
+      <AppBar 
       position="static"
       sx={{ bgcolor: darkMode ? "#3b5673" : "#2f78c1",mt:3 }}
     >
@@ -61,5 +61,7 @@ export const HeaderBar = () => {
         
       </Toolbar>
     </AppBar>
+
+    
   );
 };

@@ -1,21 +1,24 @@
-// import React from 'react'
+import React, {useState} from 'react'
 
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar,Divider } from "@mui/material";
+import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar,Divider, Box, IconButton } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import NoteIcon from "@mui/icons-material/Note";
 import LabelIcon from "@mui/icons-material/Label";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import MenuIcon from "@mui/icons-material/Menu";
 
 
-
-
-const drawerWidth = 250;
+const drawerWidth = 200;
 export const SideMenu = () => {
-  return (
-    <Drawer variant="permanent" sx={{width:drawerWidth, flexShrink:0,"&.MuiDrawer-paper":{width:drawerWidth,boxSizing:"border-box"},bgcolor:'#c4e8f5'}}>
-        <Toolbar/>
-        <List >
+const [open,setOpen] = React.useState(false);
+const toggleDrawer = (newOpen:boolean) =>()=> {
+    setOpen(newOpen);
+};
+
+const DraweList = (
+    <Box sx={{width:200, role:"presentation", bgcolor:'#c4e8f5'}}  onClick={toggleDrawer(false)}>
+    <List>
             {/* dashboard  */}
             <ListItemButton>
                 <ListItemIcon>
@@ -60,6 +63,16 @@ export const SideMenu = () => {
 
 
         </List>
+</Box>
+)
+  return (
+    <Box sx={{bgcolor:'#c4e8f5'}}>
+    <IconButton onClick={toggleDrawer(true)} sx={{m:3}}><MenuIcon/></IconButton>
+    <Drawer open={open} onClose={toggleDrawer(false)} variant="temporary" sx={{width:drawerWidth, flexShrink:0,"&.MuiDrawer-paper":{width:drawerWidth,boxSizing:"border-box"},}}>
+        {/* <Toolbar/> */}
+        {DraweList}
+        
     </Drawer>
+    </Box>
   )
 }
