@@ -81,7 +81,6 @@ const navigate = useNavigate();
             </Paper>
             </Box>
             
-           
         </Box>
 
     </ThemeProvider>
