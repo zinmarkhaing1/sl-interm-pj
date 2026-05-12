@@ -2,8 +2,8 @@
 
 import { Box } from "@mui/material"
 import { MainLayout } from "../components/layout/MainLayout"
-import { CategoriesPage } from "../components/tag_categories/CategoriesPage"
-import { NoteCategory } from "../components/note_layout/NoteCategory"
+// import { CategoriesPage } from "../components/tag_categories/CategoriesPage"
+// import { NoteCategory } from "../components/note_layout/NoteCategory"
 
 export const HomePage = () => {
   return (
