@@ -163,6 +163,8 @@ import {
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import { Link as RouterLink } from 'react-router-dom';
+import { Link as MuiLink } from '@mui/material';
 import Email from "@mui/icons-material/Email";
 import Lock from "@mui/icons-material/Lock";
 import { useNavigate } from "react-router-dom";
@@ -249,12 +251,12 @@ export const LoginForm = () => {
 
           <Stack
             spacing={2}
-            direction="row"
             sx={{ mt: 3, justifyContent: "center", alignItems: "center" }}
           >
             <Button
               variant="contained"
-              color="info"
+              color="info" 
+              fullWidth
               sx={{
                 mt: 1,
                 py: 1.2,
@@ -267,6 +269,7 @@ export const LoginForm = () => {
               {" "}
               Submit
             </Button>
+            <MuiLink component={RouterLink} to="/signup" color='inherit' sx={{cursor:'pointer'}}>Don't have an account?Sign Up here.</MuiLink>
             {/* <Button variant="outlined" color='info' sx={{mt:1, py:1.0,borderRadius:2, textTransform:"none",fontWeight:"bold"}}> Sign Out</Button> */}
           </Stack>
         </Paper>

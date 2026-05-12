@@ -13,7 +13,7 @@ const categoties = [
 
 export const CategoriesPage = () => {
   return (
-   <Box sx={{bgcolor:'#c4e8f5'}}>
+   <Box sx={{bgcolor: "#ddecf1", width:'100%',minHeight:'100vh'}}>
     <Typography variant='h4' sx={{fontWeight:'bold',mb:3,display:'flex',justifyContent:'center',alignItems:'center'}}>Categories</Typography>
     <Grid container spacing={3}>
         {categoties.map((item, index) =>(
