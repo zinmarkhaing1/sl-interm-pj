@@ -48,6 +48,7 @@ export const MainLayout = ({children}: MainLayoutprops) => {
             </Box >
         </Box>
 
+
     )
 }   
         
@@ -65,4 +66,6 @@ export const MainLayout = ({children}: MainLayoutprops) => {
 
 //     )
 // }
+
+
 
