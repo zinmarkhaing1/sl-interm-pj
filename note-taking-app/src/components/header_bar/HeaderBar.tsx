@@ -17,7 +17,7 @@ import Brightness7Icon from "@mui/icons-material/Brightness7";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -31,40 +31,82 @@ const Search = styled("div")(({ theme }) => ({
 }));
 
 export const HeaderBar = () => {
-  const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+  // const navigate = useNavigate();
+ const [darkMode, setDarkMode] = useState(false);
+  const [scrolled, setScrolled] = useState(false); 
+
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  const token = localStorage.getItem('token');
+  // const handleLogout = () => {
+  //   localStorage.removeItem('token');
+  //   navigate('/login');
+  // }
   return (
       <AppBar 
+<<<<<<< HEAD
+      position="sticky"
+      sx={{ bgcolor: darkMode ? "#59789a" : "#dee4ea", 
+        boxShadow: scrolled ? 3 : 0,
+        opacity: scrolled ? 0.9 : 1,
+        transition: "0.3s",
+      }}
+=======
       position="static"
-      sx={{ bgcolor: darkMode ? "#3b5673" : "#2f78c1",mt:3 }}
+      sx={{ bgcolor: darkMode ? "#3b5673" : "#2f78c1"}}
+>>>>>>> 6a675bc1a5e70db0b731478d92f79b9655b5907d
     >
       <Toolbar >
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold",color:'black' }}>
           {" "}
           Note Book
         </Typography>
         <Search>
           <SearchIcon sx={{ color: "gray", mr: 1 }} />
-          <InputBase placeholder="Search..." fullWidth />
+          <InputBase placeholder="Search..." fullWidth sx={{color:'black'}} />
           </Search>
           <Box sx={{ flexGrow: 1 }} />
 
-          <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
+          <IconButton sx={{color:'gray'}} onClick={() => setDarkMode(!darkMode)}>
             {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
 
-          <IconButton color="inherit">
+          <IconButton sx={{color:'gray'}}>
             <Badge badgeContent={3} color="error">
               <NotificationsIcon />
             </Badge>
           </IconButton>
-          <Stack spacing={2} direction='row' sx={{m:2}}>
-            {/* <Button variant="contained" sx={{m:2}}  onClick={() => navigate('/login')}>SignIn</Button> */}
-            <Button variant="outlined" sx={{color:'black',bgcolor:'white' ,m:2 }}  component={Link} to='/signup'>SignUp</Button>
+          {token?(
+            <Stack direction='row' spacing={2} sx={{m:2}}>
+              <IconButton>
+                < Avatar alt="User" src="https://i.pravatar.cc/300" component={Link} to='/profile' />
+              </IconButton>
+              {/* <Button variant="contained" color="info" onClick={handleLogout}>Logout</Button> */}
+            </Stack>
+          ):(
+            <Stack spacing={2} direction='row' sx={{m:2}}>
+              <Button variant="contained" component={Link} to='/login'>Login</Button>
+              <Button variant="contained" component={Link} to='/signup'>Sign Up</Button>
+            </Stack>
+          )}
+            
+          {/* <Stack spacing={2} direction='row' sx={{m:2}}>
+            <Button variant="contained" sx={{ m:2 }}  component={Link} to='/signup'>Sign Up</Button>
           </Stack>
           <IconButton sx={{ ml: 1 }}>
             <Avatar alt="User" src="https://i.pravatar.cc/300" />
-          </IconButton>
+          </IconButton> */}
         
       </Toolbar>
     </AppBar>

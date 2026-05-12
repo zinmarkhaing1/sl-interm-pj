@@ -12,9 +12,19 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import WorkIcon from '@mui/icons-material/Work';
+import TaskIcon from "@mui/icons-material/Task";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import SchoolIcon from '@mui/icons-material/School';
+
+
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
+import { MainLayout } from "../components/layout/MainLayout";
 
 export const CreateNotePage = () => {
   const [note, setNote] = useState({
@@ -31,26 +41,27 @@ export const CreateNotePage = () => {
     } else if (note.priority === "TodoList") {
       navigate("/todo");
     } else {
-      navigate("/notes");
+      navigate("/category");
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNote({ ...note, [e.target.name]: e.target.value });
   };
   return (
-    <Box
+    
+       <Box
       sx={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "150vh",
-        bgcolor: "#c4e8f5",
-        overflow: "hidden",
+        minHeight: "100vh",
+        width:'100%',
+        bgcolor: "#ddecf1",
       }}
     >
       <Paper
         elevation={4}
-        sx={{ width: 500, height: 700, p: 4, borderRadius: 4, m: 3 }}
+        sx={{ width: 500, height: 550, p: 4, borderRadius: 4, m: 3,bgcolor: "#ddecf1" }}
       >
         <Stack
           direction="row"
@@ -58,11 +69,12 @@ export const CreateNotePage = () => {
         >
           <IconButton
             sx={{
-              bgcolor: "white",
+              bgcolor: "#ddecf1",
               boxShadow: 1,
               mr: 2,
               alignItems: "center",
               py: 1,
+              color:'black',
             }}
             onClick={() => navigate("/")}
           >
@@ -72,23 +84,26 @@ export const CreateNotePage = () => {
             variant="h4"
             sx={{
               fontWeight: "bold",
-              mb: 3,
+              mb: 1,
+              mt:2,
               textAlign: "center",
-              color: "#3a89d7",
+              color: "#293a4b",
             }}
           >
             Create Note
           </Typography>
           <IconButton
             sx={{
-              bgcolor: "white",
+              bgcolor: "#ddecf1",
               boxShadow: 1,
               ml: 2,
+              py:1,
               alignItems: "center",
-              py: 1,
+              color:'black'
             }}
           >
-            <NotificationsNoneIcon />
+            {/* <NotificationsNoneIcon /> */}
+            <NoteAddIcon/>
           </IconButton>
         </Stack>
         <Stack spacing={3}>
@@ -98,7 +113,7 @@ export const CreateNotePage = () => {
             fullWidth
             placeholder="Note Title..."
             sx={{
-              mb: 2,
+              mb: 1,
               "&.MuiOtilinedInput-root": {
                 bgcolor: "white",
                 borderRadius: "18px",
@@ -106,25 +121,26 @@ export const CreateNotePage = () => {
             }}
             value={note.title}
             onChange={handleChange}
+            
           />
           <TextField
             label="Content"
             name="content"
             multiline
-            rows={5}
+            rows={4}
             placeholder="Write your notes..."
             fullWidth
             value={note.content}
             onChange={handleChange}
             sx={{
-              mb: 2,
+              mb: 1,
               "&.MuiOutlinedInput-root": {
                 bgcolor: "white",
                 borderRadius: "24px",
               },
             }}
           />
-          <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+          {/* <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
             <Button
               startIcon={<LocalOfferOutlinedIcon />}
               sx={{
@@ -146,10 +162,11 @@ export const CreateNotePage = () => {
                 textTransform: "none",
                 px: 2,
               }}
+              onClick={()=>navigate('/category')}
             >
               Category
             </Button>
-          </Stack>
+          </Stack> */}
           <TextField
             select
             label="Category"
@@ -158,18 +175,18 @@ export const CreateNotePage = () => {
             value={note.category}
             onChange={handleChange}
             sx={{
-              mb: 2,
+              mb: 1,
               "&.MuiOtilinedInput-root": {
-                bgcolor: "white",
+                bgcolor: "gray",
                 borderRadius: "20px",
               },
             }}
           >
-            <MenuItem value="Note">My Note</MenuItem>
-            <MenuItem value="Company">My Company</MenuItem>
-            <MenuItem value="Study">Study</MenuItem>
-            <MenuItem value="Family&Friends">Family & Friends</MenuItem>
-            <MenuItem value="Fitness&Health">Fitness&Health</MenuItem>
+            <MenuItem value="Note" ><TaskIcon sx={{color:'gray',m:1}}/>My Note</MenuItem>
+            <MenuItem value="Company" ><WorkIcon sx={{color:'gray',m:1}}/>My Company</MenuItem>
+            <MenuItem value="Study" ><SchoolIcon sx={{color:'gray',m:1}}/>Study</MenuItem>
+            <MenuItem value="Family&Friends"><FavoriteIcon sx={{color:'gray',m:1}}/>Family & Friends</MenuItem>
+            <MenuItem value="Fitness&Health" ><FitnessCenterIcon sx={{color:'gray',m:1}}/>Fitness&Health</MenuItem>
           </TextField>
           <TextField
             select
@@ -181,13 +198,14 @@ export const CreateNotePage = () => {
             sx={{
               mb: 2,
               "&.MuiOtilinedInput-root": {
-                bgcolor: "white",
+                bgcolor: "gray",
                 borderRadius: "20px",
               },
             }}
           >
-            <MenuItem value="TodoList">TodoList</MenuItem>
-            <MenuItem value="Important">Important</MenuItem>
+            <MenuItem value="Low">Low</MenuItem>
+            <MenuItem value="Medium">Medium</MenuItem>
+            <MenuItem value="High">High</MenuItem>
           </TextField>
           <Stack direction="row" spacing={2}>
             <Button
@@ -198,7 +216,8 @@ export const CreateNotePage = () => {
                 py: 1.8,
                 textTransform: "none",
                 fontSize: "16px",
-                bgcolor: "#4f6df5",
+                bgcolor: "#a1acd9",
+                fontWeight:'bold'
               }}
               onClick={handleSubmit}
             >
@@ -214,6 +233,7 @@ export const CreateNotePage = () => {
                 fontSize: "16px",
                 bgcolor: "white",
                 color: "gray",
+                fontWeight:'bold'
               }}
             >
               Clear
@@ -222,5 +242,7 @@ export const CreateNotePage = () => {
         </Stack>
       </Paper>
     </Box>
+   
+   
   );
 };
