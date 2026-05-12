@@ -1,6 +1,6 @@
-import React, {useState} from 'react'
+import  React,{useState,useEffect} from 'react'
 
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar,Divider, Box, IconButton } from "@mui/material";
+import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar,Divider, Box, IconButton, AppBar } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import NoteIcon from "@mui/icons-material/Note";
 import LabelIcon from "@mui/icons-material/Label";
@@ -11,17 +11,37 @@ import {  useNavigate } from 'react-router-dom';
 // import { CategoriesPage } from '../tag_categories/CategoriesPage';
 
 
-const drawerWidth = 200;
+const drawerWidth = 150;
+// interface SideMenuProps {
+//     setView: (view:'create' | 'list' |'categories') => void;
+// }
 export const SideMenu = () => {
 const [open,setOpen] = React.useState(false);
 const toggleDrawer = (newOpen:boolean) =>()=> {
     setOpen(newOpen);
 };
 const navigate= useNavigate();
+const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login')
+}; 
+const [scrolled,setScrolled] = useState(false);
+useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
 
 const DraweList = (
-    <Box sx={{width:200, role:"presentation", bgcolor:'#c4e8f5'}}  onClick={toggleDrawer(false)}>
+    <Box sx={{width:150, role:"presentation", bgcolor:scrolled?'#d0e0ef':"rgba(208,224,239,0.4)",backdropFilter:'blur(10px)',transition:'0.3s',minHeight:'100vh',}}  onClick={toggleDrawer(false)}>
     <List>
             {/* dashboard  */}
             <ListItemButton>
@@ -40,6 +60,19 @@ const DraweList = (
                 <ListItemText onClick={() => navigate("/category")} primary="Tags / Categories"/>
             </ListItemButton>
 
+            <ListItemButton >
+                <ListItemIcon>
+                    <LabelIcon/>
+                </ListItemIcon>
+                <ListItemText onClick={() => navigate("/create")}  primary="Create Note"/>
+            </ListItemButton>
+            <ListItemButton >
+                <ListItemIcon>
+                    <LabelIcon/>
+                </ListItemIcon>
+                <ListItemText onClick={() => navigate("/note")} primary="Note Category"/>
+            </ListItemButton>
+
             {/* FlashCard  */}
             <ListItemButton>
                 <ListItemIcon>
@@ -53,7 +86,7 @@ const DraweList = (
                 <ListItemIcon>
                     <DeleteIcon/>
                 </ListItemIcon>
-                <ListItemText primary="Trash"/>
+                <ListItemText onClick={() => navigate('/trash')} primary="Trash"/>
             </ListItemButton>
 
             {/* logout  */}
@@ -61,7 +94,7 @@ const DraweList = (
                 <ListItemIcon>
                     <ExitToAppIcon/>
                 </ListItemIcon>
-                <ListItemText primary="Logout"/>
+                <ListItemText onClick={handleLogout} primary="Logout"/>
             </ListItemButton>
 
 
@@ -70,13 +103,17 @@ const DraweList = (
 </Box>
 )
   return (
-    <Box sx={{bgcolor:'#c4e8f5'}}>
+    
+    <Box sx={{bgcolor:'#dee4ea'}}>
     <IconButton onClick={toggleDrawer(true)} sx={{m:3}}><MenuIcon/></IconButton>
-    <Drawer open={open} onClose={toggleDrawer(false)} variant="temporary" sx={{width:drawerWidth, flexShrink:0,"&.MuiDrawer-paper":{width:drawerWidth,boxSizing:"border-box"},}}>
+    <Drawer open={open} onClose={toggleDrawer(false)} variant="temporary" sx={{width:drawerWidth, flexShrink:0,"&.MuiDrawer-paper":{width:drawerWidth,boxSizing:"border-box"},position:'fixed'}}>
         {/* <Toolbar/> */}
         {DraweList}
         
     </Drawer>
     </Box>
+    
+
+    
   )
 }
