@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 // import React, { useState } from 'react';
@@ -47,5 +48,17 @@ export const MainLayout = ({children}: MainLayoutprops) => {
             </Box >
         </Box>
         
+=======
+import { Box } from "@mui/material"
+import { HeaderBar } from "../header_bar/HeaderBar"
+import { SideMenu } from "../sidemenu_bar/SideMenu"
+
+export const MainLayout = () => {
+    return(
+        <Box sx={{display:'flex'}}>
+            <HeaderBar/>
+            <SideMenu/>
+        </Box>
+>>>>>>> 6a675bc1a5e70db0b731478d92f79b9655b5907d
     )
 }

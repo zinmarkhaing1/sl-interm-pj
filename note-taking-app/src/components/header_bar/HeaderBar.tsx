@@ -55,12 +55,17 @@ export const HeaderBar = () => {
   // }
   return (
       <AppBar 
+<<<<<<< HEAD
       position="sticky"
       sx={{ bgcolor: darkMode ? "#59789a" : "#dee4ea", 
         boxShadow: scrolled ? 3 : 0,
         opacity: scrolled ? 0.9 : 1,
         transition: "0.3s",
       }}
+=======
+      position="static"
+      sx={{ bgcolor: darkMode ? "#3b5673" : "#2f78c1"}}
+>>>>>>> 6a675bc1a5e70db0b731478d92f79b9655b5907d
     >
       <Toolbar >
         <Typography variant="h6" sx={{ fontWeight: "bold",color:'black' }}>
