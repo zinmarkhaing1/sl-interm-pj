@@ -1,0 +1,5 @@
+export const ActionType ={
+    FETCH_NOTES : 'EETCH_NOTES',
+    SELECT_NOTE : "SELECT_NOTE",
+    REMOVE_SELECT_NOTE: "REMOVE_SELECT_NOTE"
+}

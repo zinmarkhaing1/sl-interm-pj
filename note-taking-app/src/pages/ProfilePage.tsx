@@ -1,6 +1,7 @@
-import React from 'react'
+
 import { Avatar, Box, Button, Card, CardContent, Divider, Stack, TextField, Typography } from '@mui/material'
 export const ProfilePage = () => {
+    
   return (
     <Box sx={{minHeight:'100vh',bgcolor:'#f4f6f8',display:'flex',justifyContent: 'center',alignItems:'center',p:3,}}>
         <Card sx={{width:450,borderRadius:4, boxShadow:4}}>

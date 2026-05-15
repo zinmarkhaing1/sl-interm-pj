@@ -10,9 +10,10 @@ export const HomePage = () => {
     <Box sx={{bgcolor:'#c4e8f5',width:'100%',minHeight:'100vh'}}>
     
         <MainLayout>
-          <Box  sx={{bgcolor:'#ddecf1', minHeight:'100vh', width:'100%'}}>
+          {/* <Box  sx={{bgcolor:'#ddecf1', minHeight:'100vh', width:'100%'}}> */}
             {/* <NoteCategory/> */}
-          </Box>
+          {/* </Box> */}
+          <Box>hello</Box>
           </MainLayout>
       
       </Box>

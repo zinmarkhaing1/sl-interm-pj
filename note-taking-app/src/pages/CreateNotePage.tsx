@@ -18,13 +18,9 @@ import TaskIcon from "@mui/icons-material/Task";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import SchoolIcon from '@mui/icons-material/School';
+import { useCreateNoteMutation } from "../services/noteApi";
 
 
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
-import { MainLayout } from "../components/layout/MainLayout";
 
 export const CreateNotePage = () => {
   const [note, setNote] = useState({
@@ -33,20 +29,32 @@ export const CreateNotePage = () => {
     category: "",
     priority: "",
   });
+
+  const [createNote,{isLoading}] = useCreateNoteMutation();
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    if (note.priority === "Important") {
-      navigate("/important");
-    } else if (note.priority === "TodoList") {
-      navigate("/todo");
-    } else {
-      navigate("/category");
+  const handleSubmit = async () => {
+    try {
+      await createNote(note).unwrap();
+    //   if (note.priority === "Important") {
+    //   navigate("/important");
+    // } else if (note.priority === "TodoList") {
+    //   navigate("/todo");
+    // } else {
+    //   navigate("/category");
+    // }
+    navigate("/category");
+    } catch(err:any) {
+      console.log(err);
+      
     }
+    
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNote({ ...note, [e.target.name]: e.target.value });
   };
+
+  
   return (
     
        <Box
@@ -102,7 +110,7 @@ export const CreateNotePage = () => {
               color:'black'
             }}
           >
-            {/* <NotificationsNoneIcon /> */}
+            
             <NoteAddIcon/>
           </IconButton>
         </Stack>
@@ -140,33 +148,7 @@ export const CreateNotePage = () => {
               },
             }}
           />
-          {/* <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-            <Button
-              startIcon={<LocalOfferOutlinedIcon />}
-              sx={{
-                bgcolor: "white",
-                color: "black",
-                borderRadius: "20px",
-                textTransform: "none",
-                px: 2,
-              }}
-            >
-              Add Tag
-            </Button>
-            <Button
-              startIcon={<FolderOpenOutlinedIcon />}
-              sx={{
-                bgcolor: "white",
-                color: "black",
-                borderRadius: "20px",
-                textTransform: "none",
-                px: 2,
-              }}
-              onClick={()=>navigate('/category')}
-            >
-              Category
-            </Button>
-          </Stack> */}
+          
           <TextField
             select
             label="Category"
@@ -182,11 +164,11 @@ export const CreateNotePage = () => {
               },
             }}
           >
-            <MenuItem value="Note" ><TaskIcon sx={{color:'gray',m:1}}/>My Note</MenuItem>
-            <MenuItem value="Company" ><WorkIcon sx={{color:'gray',m:1}}/>My Company</MenuItem>
+            <MenuItem value="My Note" ><TaskIcon sx={{color:'gray',m:1}}/>My Note</MenuItem>
+            <MenuItem value="Company Note" ><WorkIcon sx={{color:'gray',m:1}}/>Company Note</MenuItem>
             <MenuItem value="Study" ><SchoolIcon sx={{color:'gray',m:1}}/>Study</MenuItem>
-            <MenuItem value="Family&Friends"><FavoriteIcon sx={{color:'gray',m:1}}/>Family & Friends</MenuItem>
-            <MenuItem value="Fitness&Health" ><FitnessCenterIcon sx={{color:'gray',m:1}}/>Fitness&Health</MenuItem>
+            <MenuItem value="Family & Friends"><FavoriteIcon sx={{color:'gray',m:1}}/>Family & Friends</MenuItem>
+            <MenuItem value="Fitness & Health" ><FitnessCenterIcon sx={{color:'gray',m:1}}/>Fitness & Health</MenuItem>
           </TextField>
           <TextField
             select
@@ -220,6 +202,7 @@ export const CreateNotePage = () => {
                 fontWeight:'bold'
               }}
               onClick={handleSubmit}
+              disabled={isLoading}
             >
               Save Note
             </Button>
