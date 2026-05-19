@@ -10,6 +10,7 @@ lerna-debug.log*
 
 note-taking-app/.env
 note-taking-app-backend/.env
+.env
 node_modules
 dist
 dist-ssr

@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 note-taking-app/.env
+.env
 note-taking-app-backend/.env
 node_modules
 dist
