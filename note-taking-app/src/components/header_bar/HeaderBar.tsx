@@ -1,41 +1,63 @@
-// import React from 'react'
+
 import {
   AppBar,
-  InputBase,
-  styled,
   Toolbar,
   Typography,
   Box,
   IconButton,
-  Badge,
   Avatar,
   Stack,
   Button,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: "#f1f1f1",
-  marginLeft: 20,
-  width: "300px",
-  display: "flex",
-  alignItems: "center",
-  padding: "0 10px",
-}));
+
+interface UserProfile {
+  firstName?: string;
+  photo?: string;
+}
+
+const sideRailWidth = 72;
+
+
 
 export const HeaderBar = () => {
   // const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
+    const loadUser = () => {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        setUser(null);
+        return;
+      }
+
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        setUser(null);
+        localStorage.removeItem("user");
+      }
+    };
+
+    const handleProfileUpdated = (event: Event) => {
+      const updatedUser = (event as CustomEvent<UserProfile>).detail;
+      if (updatedUser) {
+        setUser(updatedUser);
+        return;
+      }
+
+      loadUser();
+    };
+
     const handleScroll = () => {
       if (window.scrollY > 10) {
         setScrolled(true);
@@ -44,37 +66,53 @@ export const HeaderBar = () => {
       }
     };
 
+    loadUser();
+    window.addEventListener("profileUpdated", handleProfileUpdated);
+    window.addEventListener("storage", loadUser);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdated);
+      window.removeEventListener("storage", loadUser);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
   const token = localStorage.getItem("token");
-  // const handleLogout = () => {
-  //   localStorage.removeItem('token');
-  //   navigate('/login');
-  // }
+  
   return (
     <AppBar
-      position="sticky"
+      position="fixed"
       sx={{
         bgcolor: darkMode ? "#59789a" : "#dee4ea",
-        boxShadow: scrolled ? 3 : 0,
-        opacity: scrolled ? 0.9 : 1,
+        boxShadow: scrolled ? 3:"none",
+        left: { xs: 0, sm: sideRailWidth },
+        right: 0,
+        width: { xs: "100%", sm: `calc(100% - ${sideRailWidth}px)` },
         transition: "0.3s",
       }}
     >
-      <Toolbar>
-        <Typography variant="h6" sx={{ fontWeight: "bold", color: "black" }}>
+      <Toolbar
+        sx={{
+          maxHeight:25,
+          py: 0,
+          gap: { xs: 1, sm: 2 },
+          flexWrap: { xs: "wrap", sm: "nowrap" },
+          // py: { xs: 1, sm: 0 },
+          pl: { xs: 7, sm: 2 },
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "bold",
+            color: "black",
+            fontSize: { xs: "1.25rem", sm: "1.5rem" },
+            whiteSpace: "nowrap",
+          }}
+        >
           {" "}
           Note Book
         </Typography>
-        <Search>
-          <SearchIcon sx={{ color: "gray", mr: 1 }} />
-          <InputBase
-            placeholder="Search..."
-            fullWidth
-            sx={{ color: "black" }}
-          />
-        </Search>
+        
         <Box sx={{ flexGrow: 1 }} />
 
         <IconButton
@@ -84,40 +122,29 @@ export const HeaderBar = () => {
           {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
         </IconButton>
 
-        <IconButton sx={{ color: "gray" }}>
-          <Badge badgeContent={3} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
+        
         {token ? (
-          <Stack direction="row" spacing={2} sx={{ m: 2 }}>
-            <IconButton>
+          <Stack direction="row" spacing={1} sx={{ my: { xs: 0, sm: 2 } }}>
+            <IconButton component={Link} to="/profile">
               <Avatar
-                alt="User"
-                src="https://i.pravatar.cc/300"
-                component={Link}
-                to="/profile"
+                alt={user?.firstName || "User"}
+                src={user?.photo || "https://i.pravatar.cc/300"}
+                key={user?.photo || "default-avatar"}
               />
             </IconButton>
-            {/* <Button variant="contained" color="info" onClick={handleLogout}>Logout</Button> */}
           </Stack>
         ) : (
-          <Stack spacing={2} direction="row" sx={{ m: 2 }}>
-            <Button variant="contained" component={Link} to="/login">
+          <Stack spacing={1} direction="row" sx={{ my: { xs: 0, sm: 2 } }}>
+            <Button size="small" variant="contained" component={Link} to="/login">
               Login
             </Button>
-            <Button variant="contained" component={Link} to="/signup">
+            <Button size="small" variant="contained" component={Link} to="/signup">
               Sign Up
             </Button>
           </Stack>
         )}
 
-        {/* <Stack spacing={2} direction='row' sx={{m:2}}>
-            <Button variant="contained" sx={{ m:2 }}  component={Link} to='/signup'>Sign Up</Button>
-          </Stack>
-          <IconButton sx={{ ml: 1 }}>
-            <Avatar alt="User" src="https://i.pravatar.cc/300" />
-          </IconButton> */}
+        
       </Toolbar>
     </AppBar>
   );

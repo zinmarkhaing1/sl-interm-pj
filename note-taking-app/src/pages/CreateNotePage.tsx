@@ -11,65 +11,129 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
-import WorkIcon from '@mui/icons-material/Work';
+// import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import NoteAddIcon from "@mui/icons-material/NoteAdd";
+import WorkIcon from "@mui/icons-material/Work";
 import TaskIcon from "@mui/icons-material/Task";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
-import SchoolIcon from '@mui/icons-material/School';
+import SchoolIcon from "@mui/icons-material/School";
 import { useCreateNoteMutation } from "../services/noteApi";
+// import { LocalizationProvider } from "@mui/x-date-pickers";
+// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+// import type { Dayjs } from "dayjs";
+
+import DateTimePicker from "react-datetime-picker";
+import "react-datetime-picker/dist/DateTimePicker.css";
+import "react-calendar/dist/Calendar.css";
 
 
+type DateTimeValue = Date | null;
 
 export const CreateNotePage = () => {
   const [note, setNote] = useState({
     title: "",
-    content: "",
+    description: "",
     category: "",
     priority: "",
+    assignee: "",
+    task:"",
+    startDate: "",
+    endDate: "",
   });
 
-  const [createNote,{isLoading}] = useCreateNoteMutation();
+  const [startDate, setStartDate] = useState<DateTimeValue>(new Date());
+  const [endDate, setEndDate] = useState<DateTimeValue>(new Date());
+
+  const [createNote, { isLoading }] = useCreateNoteMutation();
   const navigate = useNavigate();
+  const [taskError, setTaskError] = useState(false);
+
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return "";
+    const pad = (num: number) => String(num).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  };
 
   const handleSubmit = async () => {
-    try {
-      await createNote(note).unwrap();
-    //   if (note.priority === "Important") {
-    //   navigate("/important");
-    // } else if (note.priority === "TodoList") {
-    //   navigate("/todo");
-    // } else {
-    //   navigate("/category");
-    // }
-    navigate("/category");
-    } catch(err:any) {
-      console.log(err);
-      
+    if (!note.task){
+      setTaskError(true);
+      alert("Please select a Task Action!");
+      return;
     }
-    
+    try {
+      const newNote = {
+        // ...note,
+        // content: note.description,
+        // task : note.task,
+        // startDate: startDate ? startDate.format("YYYY-MM-DD") : "",
+        // endDate: endDate ? endDate.format("YYYY-MM-DD") : "",
+        title: note.title,
+        category: note.category,
+        priority: note.priority,
+        assignee: note.assignee,
+        content: note.description, 
+        task: note.task, 
+        startDate: formatDate(startDate), 
+        endDate:formatDate(endDate),
+      };
+      console.log("Submitting Payload Data:", newNote);
+      await createNote(newNote).unwrap();
+
+      navigate("/note-form");
+    } catch (err: any) {
+      console.log(err);
+    }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNote({ ...note, [e.target.name]: e.target.value });
   };
 
-  
+  const handleClear = () => {
+    setNote({
+      title: "",
+      description: "",
+      category: "",
+      priority: "",
+      assignee: "",
+      task:"",
+      startDate: "",
+      endDate: "",
+    });
+    setStartDate(new Date());
+    setEndDate(new Date());
+    setTaskError(false);
+  };
+
+  const handleTaskChange = (e: React.ChangeEvent<{ value: unknown }>) => {
+  setNote({ ...note, task: e.target.value as string });
+  setTaskError(false);
+};
+
   return (
-    
-       <Box
+    <Box
       sx={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "100vh",
-        width:'100%',
-        bgcolor: "#ddecf1",
+        minHeight: { xs: "auto", md: "calc(100vh - 112px)" },
+        width: "100%",
+        bgcolor: "#dee4ea",
       }}
     >
       <Paper
-        elevation={4}
-        sx={{ width: 500, height: 550, p: 4, borderRadius: 4, m: 3,bgcolor: "#ddecf1" }}
+        elevation={3}
+        sx={{
+          width: "100%",
+          maxWidth: 550,
+          minHeight: { xs: "auto", sm: 500 },
+          p: { xs: 2, sm: 4 },
+          borderRadius: 4,
+          m: { xs: 0, sm: 3 },
+          bgcolor: "white",
+        }}
       >
         <Stack
           direction="row"
@@ -77,119 +141,224 @@ export const CreateNotePage = () => {
         >
           <IconButton
             sx={{
-              bgcolor: "#ddecf1",
-              boxShadow: 1,
-              mr: 2,
+              color: "green",
+              ml: 2,
               alignItems: "center",
-              py: 1,
-              color:'black',
+              fontWeight: "bold",
             }}
-            onClick={() => navigate("/")}
           >
-            <ArrowBackIcon />
+            <NoteAddIcon />
           </IconButton>
           <Typography
-            variant="h4"
+            variant="h6"
             sx={{
               fontWeight: "bold",
               mb: 1,
-              mt:2,
+              mt: 2,
               textAlign: "center",
               color: "#293a4b",
+              fontSize: { xs: "1.75rem", sm: "2.125rem" },
             }}
           >
-            Create Note
+            Create Note Form
           </Typography>
-          <IconButton
-            sx={{
-              bgcolor: "#ddecf1",
-              boxShadow: 1,
-              ml: 2,
-              py:1,
-              alignItems: "center",
-              color:'black'
-            }}
-          >
-            
-            <NoteAddIcon/>
-          </IconButton>
         </Stack>
         <Stack spacing={3}>
-          <TextField
-            label="Title"
-            name="title"
-            fullWidth
-            placeholder="Note Title..."
-            sx={{
-              mb: 1,
-              "&.MuiOtilinedInput-root": {
-                bgcolor: "white",
-                borderRadius: "18px",
-              },
-            }}
-            value={note.title}
-            onChange={handleChange}
-            
-          />
-          <TextField
-            label="Content"
-            name="content"
-            multiline
-            rows={4}
-            placeholder="Write your notes..."
-            fullWidth
-            value={note.content}
-            onChange={handleChange}
-            sx={{
-              mb: 1,
-              "&.MuiOutlinedInput-root": {
-                bgcolor: "white",
-                borderRadius: "24px",
-              },
-            }}
-          />
+          <Stack spacing={2} direction="row">
+            <TextField
+              label="Title"
+              name="title"
+              fullWidth
+              placeholder="Note Title..."
+              sx={{
+                "&.MuiOtilinedInput-root": {
+                  bgcolor: "white",
+                  borderRadius: "18px",
+                },
+              }}
+              value={note.title}
+              onChange={handleChange}
+            />
+            <TextField
+              select
+              label="Priority"
+              name="priority"
+              fullWidth
+              value={note.priority}
+              onChange={handleChange}
+              sx={{
+                "&.MuiOtilinedInput-root": {
+                  bgcolor: "gray",
+                  borderRadius: "20px",
+                },
+              }}
+            >
+              <MenuItem value="Low">Low</MenuItem>
+              <MenuItem value="Medium">Medium</MenuItem>
+              <MenuItem value="High">High</MenuItem>
+            </TextField>
+          </Stack>
+          <Stack spacing={2} direction="row">
+            <TextField
+              label="Description"
+              name="description"
+              multiline
+              rows={3}
+              placeholder="Write your notes..."
+              value={note.description}
+              onChange={handleChange}
+              sx={{
+                "&.MuiOutlinedInput-root": {
+                  bgcolor: "white",
+                  borderRadius: "24px",
+                },
+                width: "500px",
+                height: "auto",
+              }}
+            />
+              <TextField
+                select
+                label="Category"
+                name="category"
+                fullWidth
+                value={note.category}
+                onChange={handleChange}
+                sx={{
+                  "&.MuiOtilinedInput-root": {
+                    bgcolor: "gray",
+                    borderRadius: "20px",
+                  },
+                }}
+              >
+                <MenuItem value="My Note">
+                  <TaskIcon sx={{ color: "gray" }} />
+                  My Note
+                </MenuItem>
+                <MenuItem value="Company Note">
+                  <WorkIcon sx={{ color: "gray" }} />
+                  Company Note
+                </MenuItem>
+                <MenuItem value="Study">
+                  <SchoolIcon sx={{ color: "gray" }} />
+                  Study
+                </MenuItem>
+                <MenuItem value="Family & Friends">
+                  <FavoriteIcon sx={{ color: "gray" }} />
+                  Family & Friends
+                </MenuItem>
+                <MenuItem value="Fitness & Health">
+                  <FitnessCenterIcon sx={{ color: "gray" }} />
+                  Fitness & Health
+                </MenuItem>
+              </TextField>
+          </Stack>
+
+          {/* //status and assignee */}
+          <Stack spacing={2} direction="row">
+            <TextField
+                select
+                label="Status"
+                name="task"
+                fullWidth
+                value={note.task}
+                onChange={handleTaskChange}
+                error={taskError}
+                sx={{
+                  "&.MuiOtilinedInput-root": {
+                    bgcolor: "gray",
+                    borderRadius: "20px",
+                  },
+                }}
+              >
+                <MenuItem value="Todo">
+                  Todo
+                </MenuItem>
+                <MenuItem value="In Progress">
+                  In Progress 
+                </MenuItem>
+                <MenuItem value="Complete">
+                  Complete
+                </MenuItem>
+                <MenuItem value="Done">Done
+                </MenuItem>
+              </TextField>
+             <TextField
+                label="Assignee"
+                name="assignee"
+                fullWidth
+                placeholder="Note Assignee..."
+                sx={{
+                  "&.MuiOtilinedInput-root": {
+                    bgcolor: "white",
+                    borderRadius: "18px",
+                  },
+                }}
+                value={note.assignee}
+                onChange={handleChange}
+              />
+
+          </Stack>
+          <Stack spacing={2} direction="row" sx={{m:2}}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="caption" sx={{ display: "block", mb: 0.5, color: "text.secondary", fontWeight: 500, pl: 1 }}>
+                Start Date & Time
+              </Typography>
+              <Box className="custom-picker-wrapper">
+                <DateTimePicker
+                  onChange={(val) => setStartDate(val as DateTimeValue)}
+                  value={startDate}
+                  format="y-MM-dd h:mm a"
+                  clearIcon={null}
+                  
+                />
+              </Box>
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="caption" sx={{ display: "block", mb: 0.5, color: "text.secondary", fontWeight: 500, pl: 1 }}>
+                End Date & Time
+              </Typography>
+              <Box className="custom-picker-wrapper">
+                <DateTimePicker
+                  onChange={(val) => setEndDate(val as DateTimeValue)}
+                  value={endDate}
+                  format="y-MM-dd h:mm a"
+                  clearIcon={null}
+                  
+                />
+              </Box>
+            </Box>
+          </Stack>
+
           
-          <TextField
-            select
-            label="Category"
-            name="category"
-            fullWidth
-            value={note.category}
-            onChange={handleChange}
-            sx={{
-              mb: 1,
-              "&.MuiOtilinedInput-root": {
-                bgcolor: "gray",
-                borderRadius: "20px",
-              },
-            }}
-          >
-            <MenuItem value="My Note" ><TaskIcon sx={{color:'gray',m:1}}/>My Note</MenuItem>
-            <MenuItem value="Company Note" ><WorkIcon sx={{color:'gray',m:1}}/>Company Note</MenuItem>
-            <MenuItem value="Study" ><SchoolIcon sx={{color:'gray',m:1}}/>Study</MenuItem>
-            <MenuItem value="Family & Friends"><FavoriteIcon sx={{color:'gray',m:1}}/>Family & Friends</MenuItem>
-            <MenuItem value="Fitness & Health" ><FitnessCenterIcon sx={{color:'gray',m:1}}/>Fitness & Health</MenuItem>
-          </TextField>
-          <TextField
-            select
-            label="Priority"
-            name="priority"
-            fullWidth
-            value={note.priority}
-            onChange={handleChange}
-            sx={{
-              mb: 2,
-              "&.MuiOtilinedInput-root": {
-                bgcolor: "gray",
-                borderRadius: "20px",
-              },
-            }}
-          >
-            <MenuItem value="Low">Low</MenuItem>
-            <MenuItem value="Medium">Medium</MenuItem>
-            <MenuItem value="High">High</MenuItem>
-          </TextField>
-          <Stack direction="row" spacing={2}>
+          {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Stack spacing={2} direction="row">
+              <DateTimePicker
+                label="Start Date & Time"
+                value={startDate}
+                onChange={(newValue) => setStartDate(newValue)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    sx: { "& .MuiOutlinedInput-root": { borderRadius: "18px" } }
+                  }
+                }}
+                  />
+              <DateTimePicker
+                label="End Date & Time"
+                value={endDate}
+                onChange={(newValue) => setEndDate(newValue)}
+               slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    sx: { "& .MuiOutlinedInput-root": { borderRadius: "18px" } }
+                  }
+                }}
+              />
+            </Stack>
+          </LocalizationProvider> */}
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <Button
               variant="contained"
               fullWidth
@@ -199,7 +368,7 @@ export const CreateNotePage = () => {
                 textTransform: "none",
                 fontSize: "16px",
                 bgcolor: "#a1acd9",
-                fontWeight:'bold'
+                fontWeight: "bold",
               }}
               onClick={handleSubmit}
               disabled={isLoading}
@@ -209,6 +378,7 @@ export const CreateNotePage = () => {
             <Button
               variant="outlined"
               fullWidth
+              onClick={handleClear}
               sx={{
                 borderRadius: "18px",
                 py: 1.8,
@@ -216,7 +386,7 @@ export const CreateNotePage = () => {
                 fontSize: "16px",
                 bgcolor: "white",
                 color: "gray",
-                fontWeight:'bold'
+                fontWeight: "bold",
               }}
             >
               Clear
@@ -225,7 +395,5 @@ export const CreateNotePage = () => {
         </Stack>
       </Paper>
     </Box>
-   
-   
   );
 };

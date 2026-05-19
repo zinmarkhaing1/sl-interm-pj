@@ -12,13 +12,18 @@ export const createNote = async (
     req:AuthRequest, 
     res:Response):Promise<void> => {
   try {
-    const { title, content, category, priority } = req.body;
+    const { title, content, description, category, priority, assignee,task, startDate, endDate } = req.body;
 
     const note = new Note({
       title,
-      content,
+      content: content || description,
+      description,
       category,
       priority,
+      assignee,
+      task,
+      startDate,
+      endDate,
       user: req.user?.id,
     });
 

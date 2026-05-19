@@ -2,15 +2,16 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import path from "path";
 import helmet from 'helmet';
 
 import authRoutes from "./routes/auth/auth";
 import noteRoutes from "./routes/note";
-import taskRoutes from "./routes/notecategory";
 
 
 
-dotenv.config();
+
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 const app = express();
 app.use(cors());
 app.use(helmet());
@@ -20,7 +21,7 @@ app.use(express.urlencoded({extended:true}));
 
 
 
-//routes
+
 app.get("/", (req, res) => {
     res.send("Backend is running");
 });
@@ -28,12 +29,17 @@ app.get("/", (req, res) => {
 app.use('/notes',noteRoutes);
 app.use('/api/notes',noteRoutes);
 app.use('/api/auth',authRoutes);
-app.use('/tasks',taskRoutes);
-app.use('/api/tasks',taskRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;
-mongoose.connect(process.env.MONGO_URL as string)
+const mongoUrl = process.env.MONGO_URL;
+
+if (!mongoUrl) {
+    throw new Error("MONGO_URL is missing. Add it to note-taking-app-backend/.env");
+}
+
+mongoose.connect(mongoUrl)
 .then(async () => {
     app.listen(PORT,() => console.log(`Server Port : ${PORT}`));
     

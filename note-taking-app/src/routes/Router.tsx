@@ -8,14 +8,13 @@ import { LoginForm } from '../auth/LoginForm';
 import { SignUpForm } from '../auth/SignUpForm'
 import { CategoriesPage } from '../components/tag_categories/CategoriesPage'
 
-// import type { JSX } from 'react'
 import { CreateNotePage } from '../pages/CreateNotePage'
-import { NoteCategory } from '../components/note_layout/NoteCategory'
 import { MainLayout } from '../components/layout/MainLayout';
-import { TrashPage } from '../components/trash_page/TrashPage'
 import { ProfilePage } from '../pages/ProfilePage';
-
+import { NoteFrom } from '../pages/NoteFrom';
 import { ProtectedRoute } from './ProtectedRoute';
+import { EditNotePage } from '../pages/EditNotePage';
+import { NoteStatusPage } from '../components/status-page/NoteStatusPage';
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -34,14 +33,14 @@ export const Router = () => {
         <Route path='/signup' element= {<SignUpForm/>}/>
 
      
-
         <Route element={<AuthenticatedRoutes/>}>
         <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>}/>
-        <Route path='/note' element={<MainLayout><NoteCategory/></MainLayout>}/>
         <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
-        <Route path='/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
+        <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
+        <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
         <Route path='/profile' element={<MainLayout><ProfilePage/></MainLayout>}/>
-        <Route path='/trash' element={<MainLayout><TrashPage/></MainLayout>}/>
+        <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
+        <Route path='/board' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
         </Route>
     </Routes>
   )

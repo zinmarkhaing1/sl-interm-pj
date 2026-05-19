@@ -1,4 +1,3 @@
-
 import {
   Box,
   Paper,
@@ -9,10 +8,8 @@ import {
   Button,
 } from "@mui/material";
 
-
-
-import { Link as RouterLink } from 'react-router-dom';
-import { Link as MuiLink } from '@mui/material';
+import { Link as RouterLink } from "react-router-dom";
+import { Link as MuiLink } from "@mui/material";
 
 import Email from "@mui/icons-material/Email";
 import Lock from "@mui/icons-material/Lock";
@@ -21,39 +18,36 @@ import { useState } from "react";
 
 import { useLoginMutation } from "../services/authApi";
 
-
 export const LoginForm = () => {
   const navigate = useNavigate();
-  const [login, {isLoading}] = useLoginMutation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [login, { isLoading }] = useLoginMutation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // const [loading,setLoading] = useState(false);
   // setLoading(true);
-  const handleLogin = async() => {
+  const handleLogin = async () => {
     if (email.trim() === "" || password.trim() === "") {
       alert("Fill Email and Password");
       return;
     }
-    try{
-      const response = await login( {email, password}).unwrap();
+    try {
+      const response = await login({ email, password }).unwrap();
 
       if (response.success) {
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user",JSON.stringify(response.data.user));
+        localStorage.setItem("user", JSON.stringify(response.data.user));
 
         alert("Login Success");
-        navigate('/');
-      }else {
+        navigate("/");
+      } else {
         alert("Login failed");
       }
-    }catch(error){
+    } catch (error) {
       console.log(error);
       alert("Login Failed");
-      }
     }
-  
-          
+  };
 
   return (
     <Box
@@ -62,7 +56,7 @@ export const LoginForm = () => {
         justifyContent: "center",
         alignItems: "center",
         bgcolor: "primary.main",
-        minHeight: "100vh"
+        minHeight: "100vh",
         // "&:hover": { bgcolor: "primary.dark", pt: 5 },
       }}
     >
@@ -73,7 +67,7 @@ export const LoginForm = () => {
         >
           Sign In
         </Typography>
-        
+
         <TextField
           fullWidth
           margin="normal"
@@ -121,35 +115,33 @@ export const LoginForm = () => {
             variant="contained"
             color="info"
             fullWidth
-            
             sx={{
               mt: 1,
               py: 1.2,
               borderRadius: 2,
               textTransform: "none",
               fontWeight: "bold",
-              
             }}
             onClick={handleLogin}
             disabled={isLoading}
           >
-            {isLoading? "Logging in..." : "Submit"}
-           
+            {isLoading ? "Logging in..." : "Submit"}
           </Button>
-          </Stack>
-          <Stack
-            spacing={2} 
-            sx={{ mt: 3, justifyContent: "center", alignItems: "center" }}
+        </Stack>
+        <Stack
+          spacing={2}
+          sx={{ mt: 3, justifyContent: "center", alignItems: "center" }}
+        >
+          <MuiLink
+            component={RouterLink}
+            to="/signup"
+            color="inherit"
+            sx={{ cursor: "pointer" }}
           >
-            
-            <MuiLink component={RouterLink} to="/signup" color='inherit' sx={{cursor:'pointer'}}>Don't have an account?Sign Up here.</MuiLink>
-
-           
-          
-          </Stack>
-        </Paper>
-      </Box>
-    
-
+            Don't have an account?Sign Up here.
+          </MuiLink>
+        </Stack>
+      </Paper>
+    </Box>
   );
 };

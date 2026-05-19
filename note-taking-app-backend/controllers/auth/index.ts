@@ -53,13 +53,11 @@ export const signup = async (
     console.log('err', err);
   }
 }
-
-/* LOGGING IN */
-
 interface LoginBody{
   email :string;
   password : string;
 }
+
 export const login = async (
   req:Request<{},{},LoginBody>, 
   res : Response) :Promise<void> => {

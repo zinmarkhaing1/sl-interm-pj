@@ -11,7 +11,4 @@ router.post("/",verifyToken,createNote);
 router.delete("/:id", verifyToken, deleteNote);
 router.put("/:id", verifyToken, updateNote);
 
-
-
-
 export default router;

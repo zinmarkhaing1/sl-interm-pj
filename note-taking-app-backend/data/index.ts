@@ -13,6 +13,13 @@ const categoryIds = [
     new mongoose.Types.ObjectId(),
 ]
 
+const taskIds = [
+    new mongoose.Types.ObjectId(),
+    new mongoose.Types.ObjectId(),
+    new mongoose.Types.ObjectId(),
+    new mongoose.Types.ObjectId(),
+]
+
 export const categories = [
     {
         _id:categoryIds[0],
@@ -47,5 +54,23 @@ export const priority = [
      {
         _id:priorityIds[2],
         name : "Heigh"
+    },
+]
+export const task = [
+    {
+        _id:taskIds[0],
+        name : "Tod"
+    },
+     {
+        _id:taskIds[1],
+        name : "In Progress"
+    },
+     {
+        _id:taskIds[2],
+        name : "Complete"
+    },
+    {
+        _id:taskIds[3],
+        name : "Done"
     },
 ]

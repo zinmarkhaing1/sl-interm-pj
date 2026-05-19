@@ -26,8 +26,9 @@ export const noteApi = createApi({
       query : () => '/notes',
       providesTags : ['Note'],
     }),
-    getNoteById : builder.query<Note, string>({
-      query : (noteID) => `/notes/${encodeURIComponent(noteID)}`,
+    getNoteById : builder.query({
+      query : (id) => `/notes/${id}`,
+      providesTags:(result,error,id) => [{type:'Note',id}],
     }),
     createNote : builder.mutation<Note ,Partial<Note>>({
       query : (noteData) => ({
@@ -44,9 +45,17 @@ export const noteApi = createApi({
       }),
       invalidatesTags : ['Note'],
     }),
+    updateNote : builder.mutation<Note,{id:string;body:Partial<Note>}>({
+      query :({id,body}) => ({
+        url : `/notes/${id}`,
+        method :'PUT',
+        body,
+      }),
+      invalidatesTags:["Note"],
+    })
 
   }),
 
   
 });
-export const { useGetNotesQuery, useGetNoteByIdQuery,useCreateNoteMutation,useDeleteNoteMutation} = noteApi;
+export const { useGetNotesQuery, useGetNoteByIdQuery,useCreateNoteMutation,useDeleteNoteMutation,useUpdateNoteMutation} = noteApi;

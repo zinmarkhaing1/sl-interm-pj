@@ -20,13 +20,23 @@ export const CategoriesPage = () => {
       };
       if (isLoading) return <p>Loading...</p>
   return (
-   <Box sx={{bgcolor: "#ddecf1", width:'100%',height:'auto'}}>
-    <Typography variant='h4' sx={{fontWeight:'bold',mb:3,display:'flex',justifyContent:'center',alignItems:'center'}}>Categories</Typography>
-    <Grid container spacing={3}>
+   <Box sx={{ bgcolor: "#dee4ea", width: "100%", maxWidth: 1200, mx: "auto" }}>
+    <Typography
+      variant='h5'
+      sx={{
+        fontWeight: 'bold',
+        mb: 3,
+        textAlign: "center",
+        fontSize: { xs: "1.5rem", sm: "1.75rem" },
+      }}
+    >
+      Categories
+    </Typography>
+    <Grid container spacing={{ xs: 2, sm: 3 }}>
         {categoties.map((item) =>(
 
-             <Grid sx={{xs:12,sm:6,md:3,m:2}} key={item}>
-                <Card sx={{borderRadius:3,justifyContent:'center',alignItems:'center', boxShadow:3,cursor:'pointer',transition:'0.3s','&:hover':{transform:'translateY(-5px)',},}}>
+             <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={item}>
+                <Card sx={{borderRadius:3,justifyContent:'center',alignItems:'center', boxShadow:3,cursor:'pointer',transition:'0.3s',height:"100%",'&:hover':{transform:'translateY(-5px)',},}}>
                     <CardContent>
                         <Typography variant='h6' sx={{fontWeight:'bold'}}>
                             {item}

@@ -1,4 +1,4 @@
-// import reducers from "../reducer";
+
 import {configureStore} from '@reduxjs/toolkit';
 import {authApi } from "../../services/authApi";
 import {noteApi} from "../../services/noteApi";
@@ -14,4 +14,3 @@ export const store = configureStore({
     middleware : (getDefaultMiddleware) => getDefaultMiddleware().concat(authApi.middleware,noteApi.middleware,taskApi.middleware),
 });
 
-// export default store;
