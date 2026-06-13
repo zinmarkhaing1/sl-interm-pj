@@ -34,7 +34,7 @@ export const Router = () => {
 
      
         <Route element={<AuthenticatedRoutes/>}>
-        <Route path='/' element={<ProtectedRoute><HomePage/></ProtectedRoute>}/>
+        <Route path='/' element={<HomePage/>}/>
         <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
         <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
         <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
@@ -42,6 +42,8 @@ export const Router = () => {
         <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
         <Route path='/board' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
         </Route>
+
+        <Route path='*' element={<Navigate to='/' replace/>}/>
     </Routes>
   )
 

@@ -6,13 +6,14 @@ import {
   InputAdornment,
   Stack,
   Button,
+  IconButton
 } from "@mui/material";
 
 import { Link as RouterLink } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
-
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Email from "@mui/icons-material/Email";
-import Lock from "@mui/icons-material/Lock";
+// import Lock from "@mui/icons-material/Lock";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -24,6 +25,13 @@ export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
   // const [loading,setLoading] = useState(false);
   // setLoading(true);
   const handleLogin = async () => {
@@ -91,15 +99,28 @@ export const LoginForm = () => {
           margin="normal"
           variant="standard"
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           slotProps={{
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  {" "}
-                  <Lock />
+                 
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <VisibilityOff sx={{ fontSize: 20 }} />
+                    ) : (
+                      <Visibility sx={{ fontSize: 20 }} />
+                    )}
+                  </IconButton>
                 </InputAdornment>
               ),
             },

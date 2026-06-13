@@ -3,25 +3,31 @@ import React, { useState, useEffect } from "react";
 import {
   Drawer,
   List,
+  Toolbar,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Divider,
   Box,
   IconButton,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import NoteIcon from "@mui/icons-material/Note";
-import LabelIcon from "@mui/icons-material/Label";
+import CategoryIcon from '@mui/icons-material/Category';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate } from "react-router-dom";
 
-const drawerWidth = 150;
-const railWidth = 72;
+const drawerWidth = 240;
 
 export const SideMenu = () => {
   const [open, setOpen] = React.useState(false);
+  const theme = useTheme();
+
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
   };
@@ -51,15 +57,31 @@ export const SideMenu = () => {
       sx={{
         width: drawerWidth,
         maxWidth: "82vw",
-        boxShadow: scrolled ? 4 : 0,
+        // boxShadow: scrolled ? 4 : 0,
         transition: "0.3s",
-        minHeight: "100vh",
+        // minHeight: "100vh",
+        height: "calc(100vh - 64px)",
+        overflowY:"auto",
+        bgcolor:"#dee4ea",
+       "&::-webkit-scrollbar": {
+          width: "4px", 
+        },
+        "&::-webkit-scrollbar-track": {
+          background: "transparent",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          background: "#b0bec5", // Scrollbar အရောင်
+          borderRadius: "10px",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          background: "#90a4ae",
+        },
       }}
-      onClick={toggleDrawer(false)}
+      onClick={isDesktop ? undefined : toggleDrawer(false)}
     >
       <List>
         {/* dashboard  */}
-        <ListItemButton sx={{ position: "static" }} onClick={() => navigate("/")}>
+        <ListItemButton onClick={() => navigate("/")}>
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
@@ -78,7 +100,7 @@ export const SideMenu = () => {
 
         <ListItemButton onClick={() => navigate("/category")}>
           <ListItemIcon>
-            <LabelIcon />
+            <CategoryIcon/>
           </ListItemIcon>
           <ListItemText primary="Categories" />
         </ListItemButton>
@@ -86,7 +108,7 @@ export const SideMenu = () => {
     
         <ListItemButton onClick={() => navigate("/board")}>
           <ListItemIcon>
-            <LabelIcon />
+            <LeaderboardIcon/>
           </ListItemIcon>
           <ListItemText primary="Board" />
         </ListItemButton>
@@ -106,17 +128,19 @@ export const SideMenu = () => {
   );
   return (
     <Box
+    component="nav"
       sx={{
-        bgcolor: "#dee4ea",
-        width: { xs: 0, sm: railWidth },
+        // bgcolor: "#dee4ea",
+        width: { xs: 0, md: drawerWidth },
         flexShrink: 0,
-        position: "sticky",
-        top: 0,
-        minHeight: "100vh",
-        boxShadow: scrolled ? 4 : 0,
-        transition: "0.3s",
+        // position: "sticky",
+        // top: 0,
+        // minHeight: "100vh",
+        // boxShadow: scrolled ? 4 : 0,
+        // transition: "0.3s",
       }}
     >
+      {!isDesktop && (
       <IconButton
         onClick={toggleDrawer(true)}
         sx={{
@@ -132,24 +156,29 @@ export const SideMenu = () => {
       >
         <MenuIcon />
       </IconButton>
+      )};
       <Drawer
-        open={open}
-        onClose={toggleDrawer(false)}
-        variant="temporary"
+        variant={isDesktop ? "permanent" : "temporary"}
+        open= {isDesktop ? true : open}
+        onClose={isDesktop ? undefined : toggleDrawer(false)}
         sx={{
-          width: drawerWidth,
-          flexShrink: 0,
+          // width: drawerWidth,
+          // flexShrink: 0,
+          zIndex: (theme) => theme.zIndex.appBar - 1,
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             maxWidth: "82vw",
             boxSizing: "border-box",
+            borderRight:"1px solid #ccc",
+            bgcolor:"#dee4ea",
           },
           position: "fixed",
         }}
       >
-        {/* <Toolbar/> */}
+        <Toolbar/>
         {DraweList}
       </Drawer>
     </Box>
   );
+
 };

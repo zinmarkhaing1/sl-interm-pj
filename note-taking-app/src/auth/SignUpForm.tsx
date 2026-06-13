@@ -46,9 +46,12 @@ import {
   Typography,
   Stack,
   Button,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useSignupMutation } from "../services/authApi";
@@ -83,6 +86,15 @@ export const SignUpForm = () => {
     password: "",
   });
 
+ 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
 
   //input change
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,14 +140,22 @@ export const SignUpForm = () => {
     
     return (
       <ThemeProvider theme={theme}>
-        <Box>
+        <Box sx={{
+        
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          py: 3,
+        }}>
           <Typography
             variant="h5"
             sx={{
               textAlign: "center",
               fontWeight: "bold",
               color: "#2f72ba",
-              m: 2,
+              mb: 3,
             }}
           >
             Note Taking App
@@ -150,14 +170,17 @@ export const SignUpForm = () => {
             <Paper elevation={10} sx={{ width: 500, p: 4, borderRadius: 3 }}>
               <Stack spacing={2} direction="row" sx={{ m: 2 }}>
                 <TextField
+                fullWidth
                   variant="outlined"
                   name="firstName"
                   label="First Name"
                   value={form.firstName}
                   onChange={handleChange}
                   required
+
                 />
                 <TextField
+                fullWidth
                   variant="outlined"
                   name="lastName"
                   label="Last Name"
@@ -168,23 +191,46 @@ export const SignUpForm = () => {
               </Stack>
               <Stack spacing={2} sx={{ m: 2 }}>
                 <TextField
+                fullWidth
                   variant="outlined"
                   name="email"
                   label="Email"
                   value={form.email}
                   onChange={handleChange}
                   required
-                  sx={{}}
+                 
                 />
                 <TextField
                   variant="outlined"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   label="Password"
                   value={form.password}
                   onChange={handleChange}
                   required
-                  sx={{}}
+                  disabled={isLoading}
+                  slotProps={{
+                input: {
+                  
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? (
+                          <VisibilityOff sx={{ fontSize: 20}} />
+                        ) : (
+                          <Visibility sx={{ fontSize: 20 }} />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
                 />
               </Stack>
               <Stack spacing={2} sx={{ m: 1 }}>

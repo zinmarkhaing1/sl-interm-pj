@@ -105,6 +105,7 @@ export const CreateNotePage = () => {
     setStartDate(new Date());
     setEndDate(new Date());
     setTaskError(false);
+    navigate("/note-form")
   };
 
   const handleTaskChange = (e: React.ChangeEvent<{ value: unknown }>) => {
