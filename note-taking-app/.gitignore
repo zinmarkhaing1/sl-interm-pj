@@ -6,10 +6,16 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+# Dependencies
+# node_modules/
+# /node_modules
+# note-taking-app/node_modules/
+# note-taking-app-backend/node_modules/
+# Environment Variables
 note-taking-app/.env
 .env
 note-taking-app-backend/.env
+
 node_modules
 dist
 dist-ssr

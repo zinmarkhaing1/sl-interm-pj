@@ -15,6 +15,7 @@ import { NoteFrom } from '../pages/NoteFrom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { EditNotePage } from '../pages/EditNotePage';
 import { NoteStatusPage } from '../components/status-page/NoteStatusPage';
+import {TasksNotes} from '../pages/TasksNotes';
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -37,7 +38,9 @@ export const Router = () => {
         <Route path='/' element={<HomePage/>}/>
         <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
         <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
+        <Route path='/tasks-note' element={<MainLayout><TasksNotes/></MainLayout>}/>
         <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
+        <Route path='/tasks-note/note-status' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
         <Route path='/profile' element={<MainLayout><ProfilePage/></MainLayout>}/>
         <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
         <Route path='/board' element={<MainLayout><NoteStatusPage/></MainLayout>}/>

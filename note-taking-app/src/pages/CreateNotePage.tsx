@@ -121,7 +121,8 @@ export const CreateNotePage = () => {
         alignItems: "center",
         minHeight: { xs: "auto", md: "calc(100vh - 112px)" },
         width: "100%",
-        bgcolor: "#dee4ea",
+        // bgcolor: "#dee4ea",
+        backgroundColor:"#f4f6f8"
       }}
     >
       <Paper

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+// import React, { useState, useEffect } from "react";
 
 import {
   Drawer,
@@ -9,62 +9,68 @@ import {
   ListItemText,
   Divider,
   Box,
-  IconButton,
-  useTheme,
-  useMediaQuery,
+
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import NoteIcon from "@mui/icons-material/Note";
-import CategoryIcon from '@mui/icons-material/Category';
-import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+// import NoteIcon from "@mui/icons-material/Note";
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import CategoryIcon from "@mui/icons-material/Category";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import MenuIcon from "@mui/icons-material/Menu";
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+
 import { useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;
+const collapsedWidth = 72;
 
-export const SideMenu = () => {
-  const [open, setOpen] = React.useState(false);
-  const theme = useTheme();
+interface SideMenuProps {
+  open: boolean;
+  isDesktop: boolean;
+  onClose: () => void;
+}
 
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const toggleDrawer = (newOpen: boolean) => () => {
-    setOpen(newOpen);
-  };
+export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
+  // const [open, setOpen] = React.useState(false);
+  // const theme = useTheme();
+
+  // const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  // const toggleDrawer = (newOpen: boolean) => () => {
+  //   setOpen(newOpen);
+  // };
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
-  const [scrolled, setScrolled] = useState(false);
+  // const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (window.scrollY > 10) {
+  //       setScrolled(true);
+  //     } else {
+  //       setScrolled(false);
+  //     }
+  //   };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  //   window.addEventListener("scroll", handleScroll);
+  //   return () => window.removeEventListener("scroll", handleScroll);
+  // }, []);
 
   const DraweList = (
     <Box
       role="presentation"
       sx={{
-        width: drawerWidth,
-        maxWidth: "82vw",
-        // boxShadow: scrolled ? 4 : 0,
-        transition: "0.3s",
-        // minHeight: "100vh",
-        height: "calc(100vh - 64px)",
-        overflowY:"auto",
-        bgcolor:"#dee4ea",
-       "&::-webkit-scrollbar": {
-          width: "4px", 
+       
+        width: isDesktop && !open ? collapsedWidth : drawerWidth,
+        height: "100%",
+        
+        backgroundColor:"#f4f6f8",
+        overflowX: "hidden",
+        transition: "width 0.3s ease",
+        "&::-webkit-scrollbar": {
+          width: "4px",
         },
         "&::-webkit-scrollbar-track": {
           background: "transparent",
@@ -77,108 +83,213 @@ export const SideMenu = () => {
           background: "#90a4ae",
         },
       }}
-      onClick={isDesktop ? undefined : toggleDrawer(false)}
+      onClick={isDesktop ? undefined : onClose}
     >
+      <Toolbar />
       <List>
         {/* dashboard  */}
-        <ListItemButton onClick={() => navigate("/")}>
+        <ListItemButton
+          onClick={() => navigate("/")}
+          sx={{
+            flexDirection: isDesktop && !open ? "column" : "row",
+            py: 1.5,
+          px: isDesktop && !open ? 1 : 2, // Spacing 
+          justifyContent: isDesktop && !open ? "center" : "flex-start", 
+          alignItems: "center",
+          }}
+        >
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
-          <ListItemText primary="Dashboard" />
+          <ListItemText
+          primary="Home"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
         </ListItemButton>
 
         <Divider sx={{ my: 1 }} />
-        
 
-        <ListItemButton onClick={() => navigate("/note-form")}>
-          <ListItemIcon>
-           <NoteIcon />
+        <ListItemButton
+          onClick={() => navigate("/note-form")}
+          sx={{
+            flexDirection: isDesktop && !open ? "column" : "row",
+            py: 1.5,
+            px: isDesktop && !open ? 1 : 2,
+          justifyContent: isDesktop && !open ? "center" : "flex-start",
+          alignItems: "center",
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+            }}
+          >
+            <EventNoteIcon />
           </ListItemIcon>
-          <ListItemText primary="Note" />
+          <ListItemText
+            primary="Note Form"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+          
         </ListItemButton>
 
-        <ListItemButton onClick={() => navigate("/category")}>
-          <ListItemIcon>
-            <CategoryIcon/>
+        <ListItemButton
+          onClick={() => navigate("/tasks-note")}
+          sx={{
+            flexDirection: isDesktop && !open ? "column" : "row",
+            py: 1.5,
+            px: isDesktop && !open ? 1 : 2,
+          justifyContent: isDesktop && !open ? "center" : "flex-start",
+          alignItems: "center",
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+            }}
+          >
+            <TaskAltIcon />
           </ListItemIcon>
-          <ListItemText primary="Categories" />
+          <ListItemText
+            primary="Task Notes"
+          sx={{
+            display: isDesktop && !open ? "none" : "block", // စာသားဖျောက်ရန်
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+          
         </ListItemButton>
 
-    
-        <ListItemButton onClick={() => navigate("/board")}>
-          <ListItemIcon>
-            <LeaderboardIcon/>
+        <ListItemButton onClick={() => navigate("/category")}
+          sx={{
+          flexDirection: isDesktop && !open ? "column" : "row",
+          py: 1.5,
+          px: isDesktop && !open ? 1 : 2,
+          justifyContent: isDesktop && !open ? "center" : "flex-start",
+          alignItems: "center",
+        }}>
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+             
+            }}
+          >
+            <CategoryIcon />
           </ListItemIcon>
-          <ListItemText primary="Board" />
+          <ListItemText
+             primary="Categories"
+          sx={{
+            display: isDesktop && !open ? "none" : "block", 
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
         </ListItemButton>
 
-
-       
+        <ListItemButton
+          onClick={() => navigate("/board")}
+          sx={{
+            flexDirection: isDesktop && !open ? "column" : "row",
+            py: 1.5,
+            px: isDesktop && !open ? 1 : 2,
+          justifyContent: isDesktop && !open ? "center" : "flex-start",
+          alignItems: "center",
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+             
+            }}
+          >
+            <LeaderboardIcon />
+          </ListItemIcon>
+          <ListItemText
+           primary="Board"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+        </ListItemButton>
 
         {/* logout  */}
-        <ListItemButton onClick={handleLogout}>
-          <ListItemIcon>
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{
+            flexDirection: isDesktop && !open ? "column" : "row",
+            py: 1.5,
+            px: isDesktop && !open ? 1 : 2,
+          justifyContent: isDesktop && !open ? "center" : "flex-start",
+            alignItems: "center",
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              // mb: isDesktop && !open ? 0.5 : 0,
+            }}
+          >
             <ExitToAppIcon />
           </ListItemIcon>
-          <ListItemText primary="Logout" />
+          <ListItemText
+           primary="Logout"
+          sx={{
+            display: isDesktop && !open ? "none" : "block", 
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
         </ListItemButton>
       </List>
     </Box>
   );
   return (
     <Box
-    component="nav"
+      component="nav"
       sx={{
-        // bgcolor: "#dee4ea",
-        width: { xs: 0, md: drawerWidth },
+        width: isDesktop ? (open ? drawerWidth : collapsedWidth) : 0,
         flexShrink: 0,
-        // position: "sticky",
-        // top: 0,
-        // minHeight: "100vh",
-        // boxShadow: scrolled ? 4 : 0,
-        // transition: "0.3s",
+        transition: "width 0.3s ease",
+
       }}
     >
-      {!isDesktop && (
-      <IconButton
-        onClick={toggleDrawer(true)}
-        sx={{
-          position: "fixed",
-          top: { xs: 12, sm: 24 },
-          left: { xs: 12, sm: 16 },
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          bgcolor: "#dee4ea",
-          "&:hover": {
-            bgcolor: "#cfd8e3",
-          },
-        }}
-      >
-        <MenuIcon />
-      </IconButton>
-      )};
+      
       <Drawer
         variant={isDesktop ? "permanent" : "temporary"}
-        open= {isDesktop ? true : open}
-        onClose={isDesktop ? undefined : toggleDrawer(false)}
+        open={isDesktop ? true : open}
+        onClose={isDesktop ? undefined :onClose}
         sx={{
-          // width: drawerWidth,
-          // flexShrink: 0,
+         
           zIndex: (theme) => theme.zIndex.appBar - 1,
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
+            width:isDesktop ? (open ? drawerWidth : collapsedWidth) : drawerWidth,
             maxWidth: "82vw",
             boxSizing: "border-box",
-            borderRight:"1px solid #ccc",
-            bgcolor:"#dee4ea",
+            borderRight: "1px solid #ccc",
+            bgcolor: "#dee4ea",
+            transition: "width 0.3s ease",
+            overflowX: "hidden",
           },
-          position: "fixed",
+        
         }}
       >
-        <Toolbar/>
+    
+        
+         <Box sx={{ height: "10px", minHeight: 0 }} />
         {DraweList}
       </Drawer>
     </Box>
   );
-
 };
