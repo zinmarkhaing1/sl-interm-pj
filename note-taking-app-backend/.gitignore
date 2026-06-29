@@ -6,6 +6,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+# node_modules/
+# /node_modules
+# note-taking-app/node_modules/
+# note-taking-app-backend/node_modules/
 
 
 note-taking-app/.env

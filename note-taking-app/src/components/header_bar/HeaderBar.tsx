@@ -9,7 +9,7 @@ import {
   Stack,
   Button,
 } from "@mui/material";
-
+import MenuIcon from "@mui/icons-material/Menu";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 
@@ -17,16 +17,20 @@ import Brightness4Icon from "@mui/icons-material/Brightness4";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+
 interface UserProfile {
   firstName?: string;
   photo?: string;
 }
 
-const sideRailWidth = 72;
+interface HeaderBarProps {
+  onMenuClick : () => void;
+}
 
 
 
-export const HeaderBar = () => {
+
+export const HeaderBar = ({onMenuClick} : HeaderBarProps) => {
   // const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -82,36 +86,65 @@ export const HeaderBar = () => {
     <AppBar
       position="fixed"
       sx={{
-        bgcolor: darkMode ? "#59789a" : "#dee4ea",
-        boxShadow: scrolled ? 3:"none",
-        left: { xs: 0, sm: sideRailWidth },
+
+        backgroundColor:darkMode ? "#78828e" : "#f4f6f8",
+        // boxShadow: scrolled ? 0.5:"none",
+        // left: { xs: 0, sm: sideRailWidth },
+        left:0,
         right: 0,
-        width: { xs: "100%", sm: `calc(100% - ${sideRailWidth}px)` },
-        transition: "0.3s",
+       zIndex:(theme) => theme.zIndex.drawer + 1,
+        // width: { xs: "100%", sm: `calc(100% - ${sideRailWidth}px)` },
+        // transition: "0.3s",
+        borderBottom: scrolled ? "1px solid rgba(0,0,0,0.05)" : "1px solid transparent",
       }}
     >
       <Toolbar
         sx={{
-          maxHeight:25,
-          py: 0,
-          gap: { xs: 1, sm: 2 },
-          flexWrap: { xs: "wrap", sm: "nowrap" },
-          // py: { xs: 1, sm: 0 },
-          pl: { xs: 7, sm: 2 },
+          // maxHeight:25,
+          // py: 0,
+          // gap: { xs: 1, sm: 2 },
+          // flexWrap: { xs: "wrap", sm: "nowrap" },
+          // // py: { xs: 1, sm: 0 },
+          // pl: { xs: 7, sm: 2 },
+          height: 64,
+          px: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <Typography
-          variant="h5"
+      <Box
           sx={{
-            fontWeight: "bold",
-            color: "black",
-            fontSize: { xs: "1.25rem", sm: "1.5rem" },
-            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5, 
           }}
         >
-          {" "}
-          Note Book
-        </Typography>
+          {/* Hamburger Menu Button */}
+          <IconButton 
+            onClick={onMenuClick} 
+            sx={{ 
+              color: "black", 
+              p: 1 
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "bold",
+              color: "black",
+              fontSize: { xs: "1.2rem", sm: "1.4rem" },
+              whiteSpace: "nowrap",
+              lineHeight: 1,
+              letterSpacing: "0.5px",
+            }}
+          >
+            Note Book
+          </Typography>
+        </Box>
         
         <Box sx={{ flexGrow: 1 }} />
 
@@ -128,7 +161,7 @@ export const HeaderBar = () => {
             <IconButton component={Link} to="/profile">
               <Avatar
                 alt={user?.firstName || "User"}
-                src={user?.photo || "https://i.pravatar.cc/300"}
+                src={user?.photo || ""}
                 key={user?.photo || "default-avatar"}
               />
             </IconButton>
