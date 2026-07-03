@@ -27,7 +27,8 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
         minHeight: "100vh",
         // bgcolor: "#dee4ea",
         backgroundColor:"#f4f6f8",
-        overflow: "hidden",
+        // overflow: "hidden",
+         overflowX: "hidden",
       }}
     >
    
@@ -36,7 +37,7 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
         sx={{
           display: "flex",
           flexGrow: 1,
-          mt: "64px", // ⚠️ အရေးကြီးဆုံးအချက်: HeaderBar ရဲ့ Height (64px) အတိုင်း အောက်ကို တွန်းချလိုက်တာမို့ ကွက်လပ် လုံးဝ မကျန်တော့ပါဘူး
+          mt: "50px", 
           position: "relative",
         }}
       >
@@ -49,28 +50,26 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
         <Box
           component="main"
           sx={{
-            // width: "100%",
-            // minWidth: 0,
-            // px: { xs: 2, sm: 3, md: 4 },
-            // pt: { xs: 14, sm: 11 },
-            // pb: { xs: 2, sm: 3 },
-            // display:"flex",
-            // minHeight:"100vh",
-            // overflowX: "hidden",
-            // overflowY: "hidden",
-            flexGrow: 1,
-          // p: 3,
-          width: "100%",
-          // pt: "84px",
-          overflowY: "auto",
-           minWidth: 0,
-            px: { xs: 2, sm: 3, md: 4 },
-            pt: { xs: 14, sm: 11 },
-            pb: { xs: 2, sm: 3 },
-            display:"flex", 
-          transition: "margin 0.3s ease",
-          minHeight: "100vh",
-          boxSizing: "border-box",
+            
+          //   flexGrow: 1,
+          // width: "100%",
+        
+          //   px: { xs: 2, sm: 3, md: 4 },
+          //   pt: { xs: 14, sm: 11 },
+          //   pb: { xs: 2, sm: 3 },
+          //   display:"flex", 
+          // transition: "margin 0.3s ease",
+          // minHeight: "100vh",
+          // boxSizing: "border-box",
+          
+          flexGrow: 1,
+    width: "100%",
+    minWidth: 0,
+    px: { xs: 2, sm: 3, md: 4 },
+    pt: { xs: 2, sm: 2 },
+    pb: 2,
+    boxSizing: "border-box",
+    overflow:"visible"
           }}
         >
           {children}

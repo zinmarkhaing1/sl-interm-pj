@@ -12,10 +12,15 @@ import { CreateNotePage } from '../pages/CreateNotePage'
 import { MainLayout } from '../components/layout/MainLayout';
 import { ProfilePage } from '../pages/ProfilePage';
 import { NoteFrom } from '../pages/NoteFrom';
-import { ProtectedRoute } from './ProtectedRoute';
 import { EditNotePage } from '../pages/EditNotePage';
 import { NoteStatusPage } from '../components/status-page/NoteStatusPage';
 import {TasksNotes} from '../pages/TasksNotes';
+import {TaskLayout} from "../components/notelayout/TaskLayout";
+import { NoteDetailPage } from '../pages/NoteDetailPage';
+import { MyTaskNote } from '../pages/MyTaskNote';
+import { MyProjectPages } from '../pages/MyProjectPages';
+import { NewProjectLayout } from '../components/notelayout/NewProjectLayout';
+import { UpdateProfilePage } from '../components/myprofile/UpdateProfilePage';
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -39,11 +44,19 @@ export const Router = () => {
         <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
         <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
         <Route path='/tasks-note' element={<MainLayout><TasksNotes/></MainLayout>}/>
+        <Route path = 'tasks-note/task-layout' element = {<MainLayout><TaskLayout/></MainLayout>}/>
         <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
         <Route path='/tasks-note/note-status' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
         <Route path='/profile' element={<MainLayout><ProfilePage/></MainLayout>}/>
         <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
+        <Route path='/note-form/detail/:id' element={<MainLayout><NoteDetailPage/></MainLayout>} />
         <Route path='/board' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
+        <Route path='/my-tasks' element={<MainLayout><MyTaskNote/></MainLayout>}/>
+        <Route path='/my-project' element={<MainLayout><MyProjectPages/></MainLayout>}/>
+        <Route path='/my-project/new-project' element={<MainLayout><NewProjectLayout/></MainLayout>}/>
+        <Route path='/profile/edit-profile' element={<MainLayout><UpdateProfilePage/></MainLayout>}/>
+
+
         </Route>
 
         <Route path='*' element={<Navigate to='/' replace/>}/>

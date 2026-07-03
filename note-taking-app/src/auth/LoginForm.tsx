@@ -6,7 +6,8 @@ import {
   InputAdornment,
   Stack,
   Button,
-  IconButton
+  IconButton,
+  Alert
 } from "@mui/material";
 
 import { Link as RouterLink } from "react-router-dom";
@@ -26,6 +27,7 @@ export const LoginForm = () => {
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<String | null> (null);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -36,7 +38,7 @@ export const LoginForm = () => {
   // setLoading(true);
   const handleLogin = async () => {
     if (email.trim() === "" || password.trim() === "") {
-      alert("Fill Email and Password");
+      setErrorMessage("Fill Email and Password");
       return;
     }
     try {
@@ -46,14 +48,15 @@ export const LoginForm = () => {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        alert("Login Success");
+        
         navigate("/");
       } else {
-        alert("Login failed");
+        setErrorMessage(response.message || "Login Failed. Network Error");
       }
-    } catch (error) {
+    } catch (error:any) {
       console.log(error);
-      alert("Login Failed");
+      const errorMsg = error?.data?.message || error?.message || "Invalid Email or Password";
+      setErrorMessage(errorMsg)
     }
   };
 
@@ -69,6 +72,8 @@ export const LoginForm = () => {
       }}
     >
       <Paper elevation={10} sx={{ width: 420, p: 4, borderRadius: 3 }}>
+         
+
         <Typography
           variant="h5"
           sx={{ textAlign: "center", fontWeight: "bold", color: "#2f72ba" }}
@@ -126,12 +131,18 @@ export const LoginForm = () => {
             },
           }}
         />
-
+        {errorMessage && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                {errorMessage}
+              </Alert>
+            )}
         <Stack
           spacing={2}
           direction="row"
           sx={{ mt: 3, justifyContent: "center", alignItems: "center" }}
         >
+         
+        
           <Button
             variant="contained"
             color="info"

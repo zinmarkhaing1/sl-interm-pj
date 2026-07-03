@@ -2,6 +2,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {Request, Response} from "express";
 import Auth from "../../models/Auth";
+import Note from "../../models/Note";
+import ShareInvitation from "../../models/ShareInvitation";
+import WorkspaceAccess from "../../models/WorkspaceAccess";
 
 interface SignupBody {
   firstName : string;
@@ -9,6 +12,44 @@ interface SignupBody {
   email : string;
   password:string;
 }
+
+const acceptPendingInvites = async (email: string, userId: string) => {
+  const pendingInvites = await ShareInvitation.find({
+    invitedEmail: email.toLowerCase(),
+    status: "pending",
+  }).lean();
+
+  if (pendingInvites.length === 0) {
+    return;
+  }
+
+  await ShareInvitation.updateMany(
+    { invitedEmail: email.toLowerCase(), status: "pending" },
+    { $set: { status: "accepted", userId, updatedAt: new Date() } },
+  );
+
+  const accessEntries = [] as Array<{ userId: string; noteId: string; permission: "view" | "comment" | "edit"; grantedBy: string }>;
+
+  for (const invite of pendingInvites) {
+    const inviterNotes = await Note.find({ user: invite.invitedBy }).select("_id");
+    const permission = invite.role === "editor" ? "edit" : invite.role === "commenter" ? "comment" : "view";
+
+    for (const note of inviterNotes) {
+      accessEntries.push({
+        userId: userId,
+        noteId: note._id.toString(),
+        permission,
+        grantedBy: invite.invitedBy.toString(),
+      });
+    }
+  }
+
+  if (accessEntries.length > 0) {
+    await WorkspaceAccess.deleteMany({ userId, noteId: { $in: accessEntries.map((entry) => entry.noteId) } });
+    await WorkspaceAccess.insertMany(accessEntries);
+  }
+};
+
 export const signup = async (
   req : Request<{},{},SignupBody>,
    res : Response) : Promise<void> => {
@@ -39,6 +80,7 @@ export const signup = async (
       
     });
     const savedAuth = await newAuth.save();
+    await acceptPendingInvites(savedAuth.email, savedAuth._id.toString());
     
     if (!process.env.JWT_SECRET){
       throw new Error("JWT_SECRET is missing");
@@ -76,6 +118,8 @@ export const login = async (
        res.status(400).json({ msg: "Invalid credentials. " });
        return;
     }
+
+    await acceptPendingInvites(user.email, user._id.toString());
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string,{expiresIn:"7d"}
 

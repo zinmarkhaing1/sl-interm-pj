@@ -7,6 +7,8 @@ import helmet from 'helmet';
 
 import authRoutes from "./routes/auth/auth";
 import noteRoutes from "./routes/note";
+import shareRoutes from "./routes/share";
+import notificationRoutes from "./routes/notifications";
 
 
 
@@ -28,7 +30,9 @@ app.get("/", (req, res) => {
 
 app.use('/notes',noteRoutes);
 app.use('/api/notes',noteRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth',authRoutes);
+app.use('/api/share', shareRoutes);
 
 
 

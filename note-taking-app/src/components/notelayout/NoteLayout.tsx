@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React,{ useState } from "react";
 import { 
   Box, 
   Typography, 
@@ -6,28 +6,26 @@ import {
   CardContent, 
   TextField, 
   Chip, 
-  // Fab, 
-  InputAdornment,
   Stack,
-  // useTheme,
   Grid,
   Paper,
-  Divider
+  Divider,
+  IconButton
 } from "@mui/material";
-// import AutoStoriesIcon from '@mui/icons-material/AutoStories';
-import SearchIcon from "@mui/icons-material/Search";
-// import AddIcon from "@mui/icons-material/Add";
+import {Search} from "@mui/icons-material";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import LabelIcon from "@mui/icons-material/Label";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useNavigate } from "react-router-dom";
 import { useGetNotesQuery } from "../../services/noteApi";
+import type {Note} from "../../types/Note";
 
 export const NoteLayout = () => {
   const navigate = useNavigate();
   const { data: notes = [], isLoading } = useGetNotesQuery();
   
-  const [search, setSearch] = useState("");
+   const [searchOpen, setSearchOpen] = React.useState<boolean>(false);
+    const [searchText, setSearchText] = React.useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Categories 
@@ -37,36 +35,52 @@ export const NoteLayout = () => {
   
 
   //  Data Filtering 
-  const filteredNotes = notes.filter((note: any) => {
-    const matchesSearch = 
-      note.title?.toLowerCase().includes(search.toLowerCase()) ||
-      note.description?.toLowerCase().includes(search.toLowerCase()) ||
-      note.content?.toLowerCase().includes(search.toLowerCase());
+  // const filteredNotes = notes.filter((note: any) => {
+  //   const matchesSearch = 
+  //     note.title?.toLowerCase().includes(search.toLowerCase()) ||
+  //     note.description?.toLowerCase().includes(search.toLowerCase()) ||
+  //     note.content?.toLowerCase().includes(search.toLowerCase());
     
-    const matchesCategory = selectedCategory === "All" || note.category === selectedCategory;
+  //   const matchesCategory = selectedCategory === "All" || note.category === selectedCategory;
 
-    return matchesSearch && matchesCategory;
-  });
+  //   return matchesSearch && matchesCategory;
+  // });
+
+
+   const filteredNotes = React.useMemo(() => {
+      if (!Array.isArray(notes)) return [];
+  
+      return notes.filter((note: Note) => {
+  
+        if (searchText && !note.title?.toLowerCase().includes(searchText.toLowerCase())) {
+          return false;
+        }
+  
+        return true;
+      })
+       
+  
+    }, [notes,searchText,]);
 
   
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "High": return "#e74c3c";     
-      case "Medium": return "#f39c12";   
-      case "Low": return "#2ecc71";      
-      default: return "#bdc3c7";
+      case "High": return "#720026";     
+      case "Medium": return "#5a206c";   
+      case "Low": return "#357266";      
+      default: return "#9f86c0";
     }
   };
 
   if (isLoading) return <Typography sx={{ p: 4, textAlign: "center" }}>Loading Dashboard...</Typography>;
 
   return (
-    <Box sx={{ backgroundColor:"#f4f6f8", minHeight: "100vh", width: "100%" }}>
+    <Box sx={{ backgroundColor:"#F4F6F8", minHeight: "100vh", width: "100%" }}>
 
         <Box sx={{ width: "100%" }}>
           
           <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 4, alignItems:"center" }} >
-            <TextField
+            {/* <TextField
               size="small"
               placeholder="Search notes..."
               value={search}
@@ -86,7 +100,33 @@ export const NoteLayout = () => {
                 width: { xs: "100%", md: "350px" },
                 "& .MuiOutlinedInput-root": { borderRadius: 2 }
               }}
-            />
+            /> */}
+            <IconButton size="small" sx={{ color: '#7c7b77', mr: searchOpen ? 1 : 0, borderRadius: '4px' }} onClick={() => setSearchOpen((prev) => !prev)}>
+                          <Search fontSize="small" />
+                        </IconButton>
+            
+                        {searchOpen && (
+                          <TextField
+                            size="small"
+                            autoFocus
+                            placeholder="Search tasks..."
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            sx={{
+                              width: 160,
+                              mr: 1,
+                              '& .MuiOutlinedInput-root': {
+                                height: 28,
+                                fontSize: '13px',
+                                borderRadius: '4px',
+                                '& fieldset': { borderColor: '#ededed' },
+                                '&:hover fieldset': { borderColor: '#dfdfdf' },
+                                '&.Mui-focused fieldset': { borderColor: '#2383e2', borderWidth: '1px' },
+                              },
+                              '& .MuiOutlinedInput-input': { py: 0.5, px: 1 }
+                            }}
+                          />
+                        )}
 
             {/* Category Scrolling Chips */}
             <Box sx={{ display: "flex", gap: 1, overflowX: "auto", width: "100%", pb: 1, "&::-webkit-scrollbar": { height: "4px" } }}>
@@ -99,9 +139,15 @@ export const NoteLayout = () => {
                   variant={selectedCategory === cat ? "filled" : "outlined"}
                   onClick={() => setSelectedCategory(cat)}
                   sx={{ 
-                    bgcolor: selectedCategory === cat ? undefined : "white",
-                    fontWeight: "500",
-                    transition: "0.2s"
+                    bgcolor: selectedCategory === cat ? "#973aa8": "white",
+                    color: selectedCategory === cat ? "white" : "#000",
+                    fontWeight: "300",
+                    // transition: "0.2s"
+                    transition:"none",
+                    "&:hover": {
+    backgroundColor: selectedCategory === cat ? "#973aa8" : "white",
+    boxShadow: "none",
+  },
                   }}
                 />
               ))}
@@ -111,8 +157,8 @@ export const NoteLayout = () => {
 
           {/* Notes Grid Content */}
           <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-            <PushPinIcon sx={{ color: "#7f8c8d", fontSize: 20 }} />
-            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#34495e" }}>
+            <PushPinIcon sx={{ color: "#7f8c8d", fontSize: 18 }} />
+            <Typography variant="h6" sx={{ color: "#274c3c" }}>
               {selectedCategory === "All" ? "Recent Notes" : `${selectedCategory} Notes`} ({filteredNotes.length})
             </Typography>
           </Box>
@@ -134,7 +180,7 @@ export const NoteLayout = () => {
                       flexDirection: "column",
                       justifyContent: "space-between",
                       position: "relative",
-                      borderLeft: `6px solid ${getPriorityColor(note.priority)}`, // Priority အရောင်လိုင်း
+                      borderLeft: `6px solid ${getPriorityColor(note.priority)}`,
                       transition: "0.3s",
                       cursor: "pointer",
                       "&:hover": {
@@ -146,7 +192,7 @@ export const NoteLayout = () => {
                   >
                     <CardContent>
                       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1.5 }}>
-                        <Typography variant="h6" sx={{ fontWeight: "bold", color: "#2c3e50", lineHeight: 1.3 }}>
+                        <Typography variant="h6" sx={{ fontSize:"16px",  color:"#2F004F",lineHeight: 1.3 }}>
                           {note.title}
                         </Typography>
                         {/* Status Chip (Todo, In Progress, etc.) */}
@@ -161,7 +207,7 @@ export const NoteLayout = () => {
                       <Typography 
                         variant="body2" 
                         sx={{ 
-                          color: "#7f8c8d", 
+                          color: "#6b7677", 
                           mb: 2, 
                           display: "-webkit-box",
                           WebkitLineClamp: 3, 

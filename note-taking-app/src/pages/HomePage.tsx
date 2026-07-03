@@ -46,7 +46,7 @@ export const HomePage = () => {
 
   
 
-  if (isLoading) return <Typography sx={{ p: 4, textAlign: "center" }}>Loading Dashboard...</Typography>;
+  if (isLoading) return <Typography sx={{ p: 2, textAlign: "center" }}>Loading Dashboard...</Typography>;
 
   return (
     <Box sx={{ backgroundColor:"#f4f6f8", minHeight: "100vh", width: "100%" }}>
@@ -54,9 +54,9 @@ export const HomePage = () => {
         <Box sx={{ width: "100%" }}>
           
           
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: "bold", color: "#2c3e50" }}>
-            <AutoStoriesIcon sx={{fontSize:"28px",mr:1,}}/>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" sx={{  color: "#274c3c" }}>
+            <AutoStoriesIcon sx={{fontSize:"20px",mr:1,color:"#973aa8"}}/>
               My Workspace 
             </Typography>
             <Typography variant="body1" color="textSecondary">
@@ -66,24 +66,17 @@ export const HomePage = () => {
 
        {/* Notes Grid Content */}
          <NoteLayout/>
-         
-
-         
-         
-
-         
-          
 
            {/*  Dashboard Stats Cards */}
 
-          <Box sx={{mt:4,width:"100%"}}>
+          <Box sx={{mt:2,width:"100%"}}>
           <Grid container  spacing={2}>
             {/*  Total Notes */}
             <Grid size={{ xs: 12, sm: 4 }}>
-              <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #2980b9" }}>
+              <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #37123c" }}>
                 <CardContent>
                   <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600" }}>Total Notes</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#2980b9" }}>{totalNotes}</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#37123c" }}>{totalNotes}</Typography>
                 </CardContent>
               </Card>
             </Grid>
@@ -91,20 +84,20 @@ export const HomePage = () => {
             
            
             <Grid size={{ xs: 12, sm: 4 }}>
-              <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #e74c3c" ,}}>
+              <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #6247aa" ,}}>
                 <CardContent>
                   <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600" }}>Urgent (High)</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#e74c3c" }}>{highPriorityCount}</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#6247aa" }}>{highPriorityCount}</Typography>
                 </CardContent>
               </Card>
             </Grid>
 
            
             <Grid size={{xs: 12, sm: 4}}>
-              <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #f39c12" ,mb:2}}>
+              <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #a891bf" ,mb:2}}>
                 <CardContent>
                   <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600" }}>Tasks Remaining</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#f39c12" }}>{todoCount}</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#a891bf" }}>{todoCount}</Typography>
                 </CardContent>
               </Card>
             </Grid>

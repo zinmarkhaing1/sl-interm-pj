@@ -24,7 +24,7 @@ export const EditNotePage: React.FC = () => {
   const navigate = useNavigate();
 
   const { data, isLoading ,isError} = useGetNoteByIdQuery(id!,{skip:!id,});
-  const [updateNote,{isLoading:isUpadting}] = useUpdateNoteMutation();
+  const [updateNote] = useUpdateNoteMutation();
 
   const [form, setForm] = React.useState<NoteFormState>({
     title: "",
