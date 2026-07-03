@@ -143,7 +143,7 @@ export const CreateNotePage = () => {
         >
           <IconButton
             sx={{
-              color: "green",
+              color: "#973aa8",
               ml: 2,
               alignItems: "center",
               fontWeight: "bold",
@@ -154,12 +154,13 @@ export const CreateNotePage = () => {
           <Typography
             variant="h6"
             sx={{
-              fontWeight: "bold",
+              // fontWeight: "bold",
               mb: 1,
               mt: 2,
               textAlign: "center",
               color: "#293a4b",
-              fontSize: { xs: "1.75rem", sm: "2.125rem" },
+              // fontSize: { xs: "1.75rem", sm: "2.125rem" },
+              fontSize:"18px"
             }}
           >
             Create Note Form
@@ -176,7 +177,9 @@ export const CreateNotePage = () => {
                 "&.MuiOtilinedInput-root": {
                   bgcolor: "white",
                   borderRadius: "18px",
+
                 },
+                fontSize:"16px"
               }}
               value={note.title}
               onChange={handleChange}
@@ -193,6 +196,7 @@ export const CreateNotePage = () => {
                   bgcolor: "gray",
                   borderRadius: "20px",
                 },
+                fontSize:"16px"
               }}
             >
               <MenuItem value="Low">Low</MenuItem>
@@ -216,6 +220,7 @@ export const CreateNotePage = () => {
                 },
                 width: "500px",
                 height: "auto",
+                fontSize:"16px"
               }}
             />
               <TextField
@@ -230,6 +235,7 @@ export const CreateNotePage = () => {
                     bgcolor: "gray",
                     borderRadius: "20px",
                   },
+                  fontSize:"16px"
                 }}
               >
                 <MenuItem value="My Note">
@@ -270,6 +276,7 @@ export const CreateNotePage = () => {
                     bgcolor: "gray",
                     borderRadius: "20px",
                   },
+                  fontSize:"16px"
                 }}
               >
                 <MenuItem value="Todo">
@@ -294,6 +301,7 @@ export const CreateNotePage = () => {
                     bgcolor: "white",
                     borderRadius: "18px",
                   },
+                  fontSize:"16px"
                 }}
                 value={note.assignee}
                 onChange={handleChange}

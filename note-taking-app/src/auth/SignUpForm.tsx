@@ -48,6 +48,7 @@ import {
   Button,
   IconButton,
   InputAdornment,
+  Alert
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
@@ -88,6 +89,7 @@ export const SignUpForm = () => {
 
  
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<String | null >(null)
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -98,6 +100,7 @@ export const SignUpForm = () => {
 
   //input change
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage(null);
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -107,9 +110,10 @@ export const SignUpForm = () => {
    // submit
   const handleSubmit = async () => {
     const { firstName, lastName, email, password } = form;
+    setErrorMessage(null);
 
     if (!firstName || !lastName || !email || !password) {
-      alert("Please fill all fields");
+      setErrorMessage("Please fill all fields");
       return;
     }
 
@@ -125,15 +129,16 @@ export const SignUpForm = () => {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
 
-        alert("Signup Success");
+      
         navigate("/login");
        
       } else {
-        alert("Signup failed");
+       setErrorMessage(res.message || "Signup failed. Please try again.");
       }
-    } catch (err) {
+    } catch (err:any) {
       console.log(err);
-      alert("Signup Failed");
+     const errorMsg = err?.data?.message || err?.message || "Signup Failed. Network error.";
+      setErrorMessage(errorMsg);
     }
   };
 
@@ -168,6 +173,11 @@ export const SignUpForm = () => {
             }}
           >
             <Paper elevation={10} sx={{ width: 500, p: 4, borderRadius: 3 }}>
+              {errorMessage && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                {errorMessage}
+              </Alert>
+            )}
               <Stack spacing={2} direction="row" sx={{ m: 2 }}>
                 <TextField
                 fullWidth

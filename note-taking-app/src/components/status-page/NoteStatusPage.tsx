@@ -1,20 +1,40 @@
 
 import * as React from "react";
-import {Box,Card,CircularProgress,CardContent,Typography,Paper,Stack,IconButton,} from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {Box,Card,CircularProgress,CardContent,Typography,Paper,Stack,IconButton,TextField} from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { useGetNotesQuery ,useUpdateNoteMutation} from "../../services/noteApi"; 
 import type { Note } from "../../types/Note";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { Search,SwapVertOutlined  } from "@mui/icons-material";
 
 
-const COLUMNS = ["Todo", "In Progress", "Complete", "Done"];
+type ColumnConfig = {
+  id: string;
+  label: string;
+  color: string;
+};
+
+const COLUMNS: ColumnConfig[] = [
+  { id: "Todo", label: "Todo", color: "#a3c4f3" },
+  { id: "In Progress", label: "In Progress", color: "#ffadad" },
+  { id: "Complete", label: "Complete", color: "#a3b18a" },
+  { id: "Done", label: "Done", color: "#588157" },
+];
 
 export const NoteStatusPage: React.FC = () => {
+
+   const [searchOpen, setSearchOpen] = useState<boolean>(false);
+    const [searchText, setSearchText] = useState<string>("");
+    const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("asc");
+  
 
   const { data: notes = [], isLoading, isError } = useGetNotesQuery();
    const [updatedNote] = useUpdateNoteMutation();
   const [tasks, setTasks] = React.useState<Note[]>([]);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (notes) {
@@ -22,21 +42,30 @@ export const NoteStatusPage: React.FC = () => {
     }
   }, [notes]);
 
- const getCardBorderColor = (columnId: string) => {
-    switch (columnId) {
-      case "Todo":
-        return "#e7dfc3"; // Yellow
-      case "In Progress":
-        return "#91b8d2"; // Blue
-      case "Complete":
-        return "#4c795f"; // Green
-      case "Done":
-        return "#92d2ad"; // Green
-      default:
-        return "#e2e8f0";
-    }
-  };
 
+  const filteredNotes = React.useMemo<Note[]>(() => {
+        if (!Array.isArray(notes)) return [];
+    
+        return notes.filter((note: Note) => {
+          if (searchText.trim() !== "") {
+            const titleText = (note.title || "").toLowerCase();
+            const searchTarget = searchText.toLowerCase();
+            if (!titleText.includes(searchTarget)) return false;
+          }
+  
+          return true;
+        })
+         .sort((a, b) => {
+          const titleA = (a.title || "").toLowerCase();
+          const titleB = (b.title || "").toLowerCase();
+    
+          return sortOrder === "asc"
+            ? titleA.localeCompare(titleB)
+            : titleB.localeCompare(titleA);
+        });
+    
+      }, [ notes,  searchText,sortOrder]);
+  
   const handleOnDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
@@ -96,6 +125,8 @@ export const NoteStatusPage: React.FC = () => {
     }
   };
 
+
+
   if (isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 5}}>
@@ -113,14 +144,57 @@ export const NoteStatusPage: React.FC = () => {
     );
   }
 
+   const handleRowClick = (id: any) => {
+    navigate(`/note-form/detail/${id}`); 
+  }
+
   return (
-    <Box >
-      <Typography
+    <Box sx={{py:2}} >
+      {/* <Typography
         variant="h5"
         sx={{mb:1, fontWeight: "bold", textAlign: "center" }}
       >
         My Notes
-      </Typography>
+      </Typography> */}
+        <IconButton size="small" onClick={() =>
+                    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+                  }
+                 sx={{ color: sortOrder === 'desc' ? '#2383e2' : '#7c7b77', 
+                                bgcolor: sortOrder === 'desc' ? '#edf6ff' : 'transparent',
+                                borderRadius: '4px',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                                '& .MuiSvgIcon-root': {
+                                  transition: 'transform 0.3s ease',
+                                  transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)', 
+                                },
+                                '&:hover': {
+                                  bgcolor: sortOrder === 'desc' ? '#e3f2fd' : '#f1f1ef'
+                                }}}><SwapVertOutlined fontSize="small" /></IconButton>
+       <IconButton size="small" sx={{ color: '#7c7b77', mr: searchOpen ? 1 : 0, borderRadius: '4px'}} onClick={() => setSearchOpen((prev) => !prev)}>
+                  <Search fontSize="small" />
+                </IconButton>
+                {searchOpen && (
+                  <TextField
+                    size="small"
+                    autoFocus
+                    placeholder="Search text"
+                    value={searchText}
+                    onChange={(event) => setSearchText(event.target.value)}
+                    sx={{
+                      width: 180,
+                      '& .MuiOutlinedInput-root': {
+                        height: 30,
+                        fontSize: '0.85rem',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '4px',
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        py: 0.5,
+                        px: 1,
+                      },
+                    }}
+                  />
+                )}
 
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Box
@@ -135,8 +209,9 @@ export const NoteStatusPage: React.FC = () => {
             alignItems: "start",
           }}
         >
-          {COLUMNS.map((columnId) => {
-            const columnTasks = tasks.filter(
+          {COLUMNS.map((column) => {
+            const columnId = column.id;
+            const columnTasks = filteredNotes.filter(
               (t) => (t.task || "Todo") === columnId,
             );
 
@@ -152,11 +227,10 @@ export const NoteStatusPage: React.FC = () => {
                     mb: 1,
                     pl: 1,
                     textTransform: "uppercase",
-                    color: "#4a5568",
+                    color: column.color,
                   }}
                 >
-                  {columnId === "InProgress" ? "In Progress" : columnId} (
-                  {columnTasks.length})
+                  {column.label} ({columnTasks.length})
                 </Typography>
 
                 <Droppable droppableId={columnId}>
@@ -166,11 +240,11 @@ export const NoteStatusPage: React.FC = () => {
                       ref={provided.innerRef}
                       elevation={0}
                       sx={{
-                       P:1.5,
+                        p: 1.5,
                         bgcolor: "#e9e9ef",
                         minHeight: "100%",
                         borderRadius: 2,
-                        border: "1px solid #e2e8f0",
+                        border: `1px solid ${column.color}`,
                       }}
                     >
                       <Stack spacing={2}>
@@ -192,7 +266,7 @@ export const NoteStatusPage: React.FC = () => {
                                     boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
                                     borderRadius: 2,
                                     height:'250px',
-                                    borderLeft: `5px solid ${getCardBorderColor(columnId)}`,
+                                    borderLeft: `5px solid ${column.color}`,
                                     "&:hover": {
                                       boxShadow: "0px 4px 8px rgba(0,0,0,0.1)",
                                     },
@@ -200,11 +274,13 @@ export const NoteStatusPage: React.FC = () => {
                                 >
                                   <CardContent
                                     sx={{ p: "10px !important", width: "100%" }}
+                                    onClick={() => handleRowClick(task._id)} 
                                   >
                                     <Typography
                                       variant="subtitle1"
                                       sx={{
-                                        fontWeight: "bold",
+                                        // fontWeight: "bold",
+                                        fontSize:"16px",
                                         color: "#1a202c",
                                       }}
                                     >
