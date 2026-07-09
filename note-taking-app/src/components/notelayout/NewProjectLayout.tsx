@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import { useCreateNoteMutation } from "../../services/noteApi";
-import {Box, MenuItem,Paper,Button,Grid, Typography,TextField, Stack } from "@mui/material";
+import {Box, MenuItem,Paper,Button,Grid, Typography,TextField, Stack, colors } from "@mui/material";
 
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import DateRangeIcon from "@mui/icons-material/DateRange";
@@ -119,7 +119,7 @@ export const NewProjectLayout = () => {
       const modernField = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "14px",
-    backgroundColor: "#fafafa",
+    bgcolor:"background.default",
     transition: ".2s",
 
     "& fieldset": {
@@ -137,7 +137,7 @@ export const NewProjectLayout = () => {
   },
 
   "& .MuiInputLabel-root": {
-    color: "#777",
+    color: "text.primary",
   },
 
   "& .MuiInputLabel-root.Mui-focused": {
@@ -152,9 +152,9 @@ export const NewProjectLayout = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight:{xs:"auto",sm:"65vh"},
+        minHeight:{xs:"auto",sm:"100vh"},
         width: "100%",
-        backgroundColor: "#f4f6f8", 
+        bgcolor:"background.default" 
         
       }}
     >
@@ -163,14 +163,15 @@ export const NewProjectLayout = () => {
         elevation={0}
         sx={{
           width: "100%",
-          maxWidth: 620,
+          maxWidth: 960,
           height:"auto",
-          minHeight:100,
-          p:1.5,
-          px:2,
-          py:1.5,
+          p:3,
+          // p:1.5,
+          // px:2,
+          // py:1.5,
           borderRadius: "20px",
-          bgcolor: "#fff",
+          bgcolor: "background.default",
+          color:"text.primary",
           border: "1px solid #eef1f6",
           boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.02)", 
         }}
@@ -182,7 +183,7 @@ export const NewProjectLayout = () => {
         width:44,
         height:44,
         borderRadius:"14px",
-        bgcolor:"#f5ebfa",
+        bgcolor:"background.default",
         display:"flex",
         alignItems:"center",
         justifyContent:"center"
@@ -196,22 +197,21 @@ export const NewProjectLayout = () => {
     />
 </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontSize:"16px", color: "#1e293b", letterSpacing: "-0.5px" }}>
+            <Typography variant="h6" sx={{ fontSize:"16px", color: "text.primary", letterSpacing: "-0.5px" }}>
               Project Note Details
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b", mt: 0.2 }}>
+            <Typography variant="body2" sx={{ color: "text.primary", mt: 0.2 }}>
               Enter organized project note details.
             </Typography>
           </Box>
         </Stack>
 
         {/* Form Fields Grid */}
-        <Grid  container
-    rowSpacing={2.2}
-    columnSpacing={2}>
+        <Grid  container spacing={3}>
           
           {/* Note Title */}
           <Grid size={{ xs: 10, sm: 6 }}>
+            <Stack spacing={2.5}>
             <TextField
               label="Note Title"
               name="title"
@@ -224,10 +224,23 @@ export const NewProjectLayout = () => {
               helperText={titleError ? "Title is required" : ""}
               sx={modernField}
             />
+            <TextField
+              label="Description / Content"
+              name="description"
+              multiline
+              rows={4}
+              fullWidth
+              placeholder="Write your notes or project scope details here..."
+              value={note.description}
+              onChange={handleChange}
+              sx={modernField}
+            />
+            </Stack>
           </Grid>
 
           {/* Category */}
           <Grid size={{ xs: 12, sm: 6 }}>
+            <Stack spacing={2.2}>
             <TextField
              select
               label="Category"
@@ -261,10 +274,11 @@ export const NewProjectLayout = () => {
                   Fitness & Health
                 </MenuItem>
             </TextField>
-          </Grid>
+       
 
           {/* Status Dropdown (task) */}
-          <Grid size={{ xs: 12, sm: 4 }}>
+          <Grid container spacing={2}>
+          <Grid size={{ xs:6 }}>
 
             <TextField
               select
@@ -276,7 +290,7 @@ export const NewProjectLayout = () => {
               onChange={handleTaskChange}
               error={taskError}
               helperText={taskError ? "Please select a status action" : ""}
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+              sx={modernField}
             >
               <MenuItem value="Todo">Todo</MenuItem>
               <MenuItem value="In Progress">In Progress</MenuItem>
@@ -286,7 +300,7 @@ export const NewProjectLayout = () => {
           </Grid>
 
           {/* Priority Dropdown */}
-          <Grid size={{ xs: 12, sm: 4}}>
+          <Grid size={{ xs:6}}>
             
             <TextField
               select
@@ -303,9 +317,10 @@ export const NewProjectLayout = () => {
               <MenuItem value="High">High</MenuItem>
             </TextField>
           </Grid>
+          </Grid>
 
           {/* Assignee */}
-          <Grid size={{ xs: 12, sm: 4 }}>
+       
             
             <TextField
               label="Assignee"
@@ -317,52 +332,40 @@ export const NewProjectLayout = () => {
               onChange={handleChange}
               sx={modernField}
               
-            >
-               
-            </TextField>
-          </Grid>
-
-          {/* Description / Content */}
-          <Grid size={{ xs: 12,}} sx={{mt:1}}>
-            <TextField
-              label="Description / Content"
-              name="description"
-              multiline
-              rows={2}
-              fullWidth
-              placeholder="Write your notes or project scope details here..."
-              value={note.description}
-              onChange={handleChange}
-              sx={modernField}
             />
+               
+          
+ </Stack>
           </Grid>
-
-          {/* Start Date & Time */}
-          <Grid size={{ xs: 12, sm: 6 }}>
+         {/* date format  */}
+         <Grid container spacing={2} sx={{gap:3,display:'flex',justifyContent:'space-between'}}>
+       
+   
             <Box>
-              <Typography variant="caption" sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1, color: "#475569", fontWeight: 600, pl: 0.5 ,fontSize:13}}>
-                <DateRangeIcon sx={{ fontSize: 15, color: "#64748b" }} /> Start Date & Time
+              <Typography variant="caption" sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1, color: "text.primary", fontWeight: 600, pl: 0.5 ,fontSize:13}}>
+                <DateRangeIcon sx={{ fontSize: 15, color: "text.secondary" }} /> Start Date & Time
               </Typography>
-              <Box className="custom-picker-wrapper" sx={{ width: "100%" }}>
+              <Box className="custom-picker-wrapper" sx={{ width: "100%",color:"text.primary" }}>
                 <DateTimePicker
                   onChange={(val) => setStartDate(val as DateTimeValue)}
                   value={startDate}
                   format="y-MM-dd h:mm a"
                   clearIcon={null}
                   required
-
+                
                 />
               </Box>
             </Box>
-          </Grid>
+       
+     
 
           {/* End Date & Time */}
-          <Grid size={{ xs: 12, sm: 6 }}>
+
             <Box>
-              <Typography variant="caption" sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1, color: "#475569", fontWeight: 600, pl: 0.5 ,fontSize:13}}>
-                <DateRangeIcon sx={{ fontSize: 15, color: "#64748b" }} /> End Date & Time
+              <Typography variant="caption" sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1, color: "text.primary", fontWeight: 600, pl: 0.5 ,fontSize:13}}>
+                <DateRangeIcon sx={{ fontSize: 15, color: "text.primary" }} /> End Date & Time
               </Typography>
-              <Box className="custom-picker-wrapper" sx={{ width: "100%" }}>
+              <Box className="custom-picker-wrapper" sx={{ width: "100%",color:"text.primary" }}>
                 <DateTimePicker
                   onChange={(val) => setEndDate(val as DateTimeValue)}
                   value={endDate}
@@ -372,11 +375,14 @@ export const NewProjectLayout = () => {
                 />
               </Box>
             </Box>
-          </Grid>
+
+
+            </Grid>
+           
 
           {/* Action Buttons */}
           <Grid size={{ xs: 12 }} sx={{ mt: 2}}>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ justifyContent: "flex-end" }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ justifyContent: "center",alignItems:"center" }}>
               <Button
                 variant="text"
                 onClick={handleClear}
@@ -386,7 +392,7 @@ export const NewProjectLayout = () => {
                   py: 1.3,
                   textTransform: "none",
                   fontSize: "15px",
-                  color: "#64748b",
+                  color: "text.primary",
                   fontWeight: 600,
                   "&:hover": { bgcolor: "#dec9e9" ,color:"#121212"}
                 }}

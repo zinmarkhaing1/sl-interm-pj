@@ -78,7 +78,7 @@ export const EditNotePage: React.FC = () => {
   if (isLoading) return <Typography>Loading...</Typography>;
   if (isError) return <Typography color="error" sx={{ p: 3 }}>Error loading note data.</Typography>;
   return (
-    <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", mt: 4 ,width:'100%'}}>
+    <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", mt: 4 ,width:'100%',bgcolor:"background.default",color:"text.primary"}}>
       <Box sx={{display:"flex",justifyContent:'center',alignItems:'center'}}>
         <Typography variant="h6" sx={{mb:2}}>
         Edit Note
@@ -147,11 +147,11 @@ export const EditNotePage: React.FC = () => {
         />
 
         <Box sx={{display:'flex',gap:2,justifyContent:"center",alignItems:"center"}}>
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button variant="contained" onClick={handleSubmit} sx={{bgcolor:"#973aa8",color:"text.primary"}}>
             Update
           </Button>
 
-          <Button variant="outlined" sx={{color:'black'}} onClick={() => navigate("/note-form")}>
+          <Button variant="outlined" sx={{color:'text.primary'}} onClick={() => navigate("/note-form")}>
             Cancel
           </Button>
         </Box>

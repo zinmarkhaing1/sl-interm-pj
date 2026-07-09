@@ -22,12 +22,17 @@ export const noteApi = createApi({
 
   endpoints : (builder) => ({
 
-    getNotes : builder.query<Note [], {status?: string; assignee?: string} | void> ({
+    getNotes : builder.query<Note [], {status?: string; assignee?: string; shareScope?: "category" | "note-create-form "} | void> ({
       query : (params) => {
         if (!params) return '/notes';
         const qs = new URLSearchParams();
-        if (params.status) qs.set('status', params.status);
+        qs.set('populate', 'user');
+        if(params){
+            if (params.status) qs.set('status', params.status);
         if (params.assignee) qs.set('assignee', params.assignee);
+        if (params.shareScope) qs.set('shareScope', params.shareScope);
+        }
+      
         const q = qs.toString();
         return q ? `/notes?${q}` : '/notes';
       },
@@ -64,11 +69,11 @@ export const noteApi = createApi({
       query: (id) => `/notes/${id}/comments`,
       providesTags: (_result, _error, id) => [{ type: 'Note' as const, id }],
     }),
-    addComment: builder.mutation<{ comment: Comment }, { id: string; text: string; userName?: string }>({
-      query: ({ id, text, userName }) => ({
+    addComment: builder.mutation<{ comment: Comment }, { id: string; text: string; userName?: string ;userEmail?: string}>({
+      query: ({ id, text, userName,userEmail }) => ({
         url: `/notes/${id}/comments`,
         method: 'POST',
-        body: { text, userName },
+        body: { text, userName,userEmail },
       }),
       invalidatesTags: (_result, _error, arg) => [{ type: 'Note' as const, id: arg.id }],
     }),
@@ -82,6 +87,14 @@ export const noteApi = createApi({
         method: 'PUT',
       }),
       invalidatesTags: ['Note'],
+    }),
+    getCollaborators: builder.query<{ collaborators: any[] }, void>({
+      query: () => '/collaborators',
+      providesTags: ['Note'],
+    }),
+    getInvitations: builder.query<{ invitations: any[] }, void>({
+      query: () => '/invitations',
+      providesTags: ['Note'],
     }),
   }),
 
@@ -97,4 +110,6 @@ export const {
   useAddCommentMutation,
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
+  useGetCollaboratorsQuery,
+  useGetInvitationsQuery,
 } = noteApi;

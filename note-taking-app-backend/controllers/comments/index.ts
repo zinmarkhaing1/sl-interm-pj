@@ -85,7 +85,7 @@ export const addComment = async (req: AuthRequest, res: Response): Promise<void>
 
     const hasOwnerAccess = note.user.toString() === req.user?.id;
     const sharedAccess = await WorkspaceAccess.findOne({ userId: req.user?.id, noteId: note._id });
-    if (!hasOwnerAccess && (!sharedAccess || (sharedAccess.permission !== "edit" && sharedAccess.permission !== "comment"))) {
+    if (!hasOwnerAccess && (!sharedAccess || sharedAccess.permission !== "comment")) {
       res.status(403).json({ message: "You do not have permission to comment on this note." });
       return;
     }

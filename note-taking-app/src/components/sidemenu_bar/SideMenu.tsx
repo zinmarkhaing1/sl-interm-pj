@@ -1,4 +1,4 @@
-// import React, { useState, useEffect } from "react";
+
 
 import {
   Drawer,
@@ -15,10 +15,11 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import CategoryIcon from "@mui/icons-material/Category";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
+import NoteAltOutlinedIcon from '@mui/icons-material/NoteAltOutlined';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 
 
 import { useNavigate,useLocation } from "react-router-dom";
@@ -33,33 +34,10 @@ interface SideMenuProps {
 }
 
 export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
-  // const [open, setOpen] = React.useState(false);
-  // const theme = useTheme();
-
-  // const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  // const toggleDrawer = (newOpen: boolean) => () => {
-  //   setOpen(newOpen);
-  // };
+ 
   const navigate = useNavigate();
   const location = useLocation();
-  // const handleLogout = () => {
-  //   localStorage.removeItem("token");
-  //   navigate("/login");
-  // };
-  // const [scrolled, setScrolled] = useState(false);
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     if (window.scrollY > 10) {
-  //       setScrolled(true);
-  //     } else {
-  //       setScrolled(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, []);
+  
   const menuStyle = (path:string) => ({
      flexDirection: isDesktop && !open ? "column" : "row",
   py: 1,
@@ -70,15 +48,15 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
   my:0.5,
   borderRadius : "12px",
 
-  color: location.pathname === path ? "#973aa8" : "#000",
-  // backgroundColor:location.pathname === path ? "#ffe5ec" : "transparent",
+  color: location.pathname === path ? "#973aa8" : "text.primary",
+ 
 
   "& .MuiListItemIcon-root": {
-    color: location.pathname === path ? "#973aa8" : "#000",
+    color: location.pathname === path ? "#973aa8" : "text.primary",
   },
 
   "&:hover": {
-    // backgroundColor: "#ffe5ec",
+    
     color: "#973aa8",
 
     "& .MuiListItemIcon-root": {
@@ -95,7 +73,8 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
         width: isDesktop && !open ? collapsedWidth : drawerWidth,
         height: "100%",
         
-        backgroundColor:"#f4f6f8",
+       bgcolor: "background.default",
+        color:"text.primary",
         overflowX: "hidden",
         transition: "width 0.3s ease",
         "&::-webkit-scrollbar": {
@@ -115,8 +94,32 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
       onClick={isDesktop ? undefined : onClose}
     >
       <Toolbar />
-      <List>
+      <List sx={{ color:"text.primary",}}>
         {/* dashboard  */}
+          <ListItemButton
+          onClick={() => navigate("/dashboard")}
+           sx={menuStyle("/dashboard")}
+         
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+            }}
+          >
+            <DashboardIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Dashboard"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+          
+        </ListItemButton>
+        {/* Home Page  */}
         <ListItemButton
           onClick={() => navigate("/")}
          sx={menuStyle("/")}
@@ -129,7 +132,7 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
               
             }}
           >
-            <DashboardIcon  />
+            <HomeOutlinedIcon sx={{fontSize:28}} />
           </ListItemIcon>
           <ListItemText
           primary="Home"
@@ -139,20 +142,38 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
           }}
 />
         </ListItemButton>
+       
 
         {/* <Divider sx={{ my: 1 }} /> */}
 
         <ListItemButton
+          onClick={() => navigate("/note-create-form")}
+           sx={menuStyle("/note-create-form")}
+         
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+            }}
+          >
+            <NoteAltOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="New Notes"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+          
+        </ListItemButton>
+
+        <ListItemButton
           onClick={() => navigate("/note-form")}
            sx={menuStyle("/note-form")}
-          // sx={{
-          // //   flexDirection: isDesktop && !open ? "column" : "row",
-          // //   py: 1.5,
-          // //   px: isDesktop && !open ? 1 : 2,
-          // // justifyContent: isDesktop && !open ? "center" : "flex-start",
-          // // alignItems: "center",
          
-          // }}
         >
           <ListItemIcon
             sx={{
@@ -176,13 +197,7 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
         <ListItemButton
           onClick={() => navigate("/tasks-note")}
           sx={menuStyle("/tasks-note")}
-          // sx={{
-          //   flexDirection: isDesktop && !open ? "column" : "row",
-          //   py: 1.5,
-          //   px: isDesktop && !open ? 1 : 2,
-          // justifyContent: isDesktop && !open ? "center" : "flex-start",
-          // alignItems: "center",
-          // }}
+         
         >
           <ListItemIcon
             sx={{
@@ -226,13 +241,7 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
         <ListItemButton
           onClick={() => navigate("/board")}
           sx={menuStyle("/board")}
-          // sx={{
-          //   flexDirection: isDesktop && !open ? "column" : "row",
-          //   py: 1.5,
-          //   px: isDesktop && !open ? 1 : 2,
-          // justifyContent: isDesktop && !open ? "center" : "flex-start",
-          // alignItems: "center",
-          // }}
+        
         >
           <ListItemIcon
             sx={{
@@ -298,50 +307,7 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
         </ListItemButton>
 
 
-        {/* logout  */}
-        {/* <ListItemButton
-          onClick={handleLogout}
-        
-          sx={{
-            flexDirection: isDesktop && !open ? "column" : "row",
-            py: 1,
-            px: isDesktop && !open ? 1 : 2,
-          justifyContent: isDesktop && !open ? "center" : "flex-start",
-            alignItems: "center",
-            mx:2.5,
-            my:0.5,
-            borderRadius:"12px",
-            color:"000",
-            "& .MuiListItemIcon-root": {
-      color: "#000",
-    },
-     "&:hover": {
-      // backgroundColor: "#ffe5ec",
-      color: "#973aa8",
-
-      "& .MuiListItemIcon-root": {
-        color: "#973aa8",
-      },
-    },
-          }}
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              // mb: isDesktop && !open ? 0.5 : 0,
-            }}
-          >
-            <ExitToAppIcon />
-          </ListItemIcon>
-          <ListItemText
-           primary="Logout"
-          sx={{
-            display: isDesktop && !open ? "none" : "block", 
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton> */}
+       
       </List>
     </Box>
   );

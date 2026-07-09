@@ -6,7 +6,11 @@ export const getNotes = async (
     req : Request,
      res: Response): Promise<void> => {
     try {
-        const notes = await Note.find().populate('categories', 'name').populate('priority', 'name');
+        const notes = await Note.find().populate('categories', 'name').populate('priority', 'name').populate({
+                path: 'user',
+                model: 'Auth', 
+                select: 'firstName lastName email'
+            });
         res.status(200).json(notes);
     } catch (err:any) {
         res.status(500).json({ message: err.message });
@@ -26,7 +30,12 @@ export const getNoteById = async (
 
         const note = await Note.findById(id)
             .populate('priority', 'name')
-            .populate('categories', 'name');
+            .populate('categories', 'name')
+           .populate({
+                path: 'user',
+                model: 'Auth', 
+                select: 'firstName lastName email'
+            });
         if (!note) {
             res.status(404).json({ message: "Note not found." });
              return;

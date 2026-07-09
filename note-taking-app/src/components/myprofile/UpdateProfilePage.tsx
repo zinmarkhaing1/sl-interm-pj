@@ -15,7 +15,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import {useNavigate} from "react-router-dom";
 import AddAPhotoOutlinedIcon from '@mui/icons-material/AddAPhotoOutlined';
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 interface UserProfile {
   firstName: string;
   lastName: string;
@@ -144,8 +144,8 @@ export const UpdateProfilePage = () => {
   return (
     <Box sx={{minHeight:"400px",backgroundColor:"f4f6f8",width:"100%"}}>
      <Button 
-          startIcon={<ArrowBackIcon />} 
-          onClick={() => navigate(-1)} 
+          startIcon={<ArrowBackIosNewOutlinedIcon />} 
+          onClick={() => navigate("/")} 
           sx={{  textTransform: 'none', color: '#5a206c' }}
         >
           Back to Profile

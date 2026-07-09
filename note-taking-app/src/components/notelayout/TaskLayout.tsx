@@ -1,4 +1,4 @@
-import  { useState, useMemo } from 'react';
+import  React,{ useState, useMemo,useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
@@ -37,11 +37,15 @@ interface Task {
   title: string;
   date: string; // "YYYY-MM-DD" format
 }
+
 export const TaskLayout = () => {
 
      const navigate = useNavigate();
 
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+
+const dateInputRef = React.useRef<HTMLInputElement>(null);
 
  
   const [tasks] = useState<Task[]>([
@@ -80,10 +84,12 @@ export const TaskLayout = () => {
         </Typography>
         
         <Stack direction="row" spacing={0.5} sx={{alignItems:"center"}}>
-          <Button 
+          {/* <Button 
             variant="outlined" 
+           component="label"
             startIcon={<CalendarToday sx={{ width: 14, height: 14 }} />}
             sx={{ 
+              position:'relative',
               textTransform: 'none', 
               color: '#37352f', 
               borderColor: '#e0e0e0',
@@ -94,15 +100,71 @@ export const TaskLayout = () => {
             }}
           >
             Manage in Calendar
-          </Button>
+
+           <input
+    type="date"
+    onChange={(e) => {
+      if (e.target.value) {
+        setCurrentMonth(new Date(e.target.value));
+      }
+    }}
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      opacity: 0,
+      cursor: 'pointer'
+    }}
+  />
+          </Button> */}
+
+          <Button 
+  variant="outlined" 
+  startIcon={<CalendarToday sx={{ width: 14, height: 14 }} />}
+  onClick={() => {
+    
+    dateInputRef.current?.showPicker();
+  }}
+  sx={{ 
+    textTransform: 'none', 
+    color: '#37352f', 
+    borderColor: '#e0e0e0',
+    fontSize: '0.85rem',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    '&:hover': { borderColor: '#37352f', backgroundColor: 'transparent' }
+  }}
+>
+  Manage in Calendar
+
+  <input
+    ref={dateInputRef} 
+    type="date"
+    onChange={(e) => {
+      if (e.target.value) {
+        setCurrentMonth(new Date(e.target.value));
+      }
+    }}
+    style={{
+      position: 'absolute',
+      width: 0,
+      height: 0,
+      opacity: 0,
+      pointerEvents: 'none' 
+    }}
+  />
+</Button>
           
          
           <IconButton size="small" onClick={handlePrevMonth} sx={{ border: '1px solid #e0e0e0', borderRadius: '4px', p: '5px' }}>
-            <ChevronLeft fontSize="small" />
+            <ChevronLeft fontSize="small" sx={{color:"#37352f"}}/>
           </IconButton>
           
         
           <Button 
+          
             variant="text" 
             onClick={handleToday}
             sx={{ textTransform: 'none', color: '#37352f', minWidth: 'auto', fontSize: '0.85rem', px: 1 }}
@@ -112,7 +174,7 @@ export const TaskLayout = () => {
 
        
           <IconButton size="small" onClick={handleNextMonth} sx={{ border: '1px solid #e0e0e0', borderRadius: '4px', p: '5px' }}>
-            <ChevronRight fontSize="small" />
+            <ChevronRight fontSize="small" sx={{color:"#37352f"}}/>
           </IconButton>
         </Stack>
       </Stack>
@@ -147,7 +209,8 @@ export const TaskLayout = () => {
                   minHeight: '110px',
                   p: 1,
                   position: 'relative',
-                  backgroundColor: isToday ? '#fbfbfa' : 'transparent', 
+                 backgroundColor: isToday ? '#f3e8ff' : 'transparent', 
+                border: isToday ? '1px solid #c084fc' : 'transparent',
                   '&:hover .add-task-btn': { opacity: 1 }
                 }}
               >
@@ -172,7 +235,7 @@ export const TaskLayout = () => {
                   <Typography 
                     sx={{ 
                       fontSize: '0.8rem', 
-                      color: isCurrentM ? (isToday ? '#2383e2' : '#37352f') : '#bfbfae', 
+                      color: isCurrentM ? (isToday ? '#973aa8' : '#37352f') : '#bfbfae', 
                       fontWeight: isToday ? 700 : 500 
                     }}
                   >
@@ -214,3 +277,4 @@ export const TaskLayout = () => {
   );
 
 }
+

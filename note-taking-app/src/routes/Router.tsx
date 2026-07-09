@@ -15,12 +15,18 @@ import { NoteFrom } from '../pages/NoteFrom';
 import { EditNotePage } from '../pages/EditNotePage';
 import { NoteStatusPage } from '../components/status-page/NoteStatusPage';
 import {TasksNotes} from '../pages/TasksNotes';
-import {TaskLayout} from "../components/notelayout/TaskLayout";
+import  {TaskLayout} from "../components/notelayout/TaskLayout";
 import { NoteDetailPage } from '../pages/NoteDetailPage';
 import { MyTaskNote } from '../pages/MyTaskNote';
 import { MyProjectPages } from '../pages/MyProjectPages';
 import { NewProjectLayout } from '../components/notelayout/NewProjectLayout';
 import { UpdateProfilePage } from '../components/myprofile/UpdateProfilePage';
+import { SharedTaskPage } from '../components/status-page/SharedTaskPage';
+// import { PlainTextNotePage } from '../components/notecreatepage/PlainTextNotePage';
+import { NoteCreateForm } from '../components/createfolder/NoteCreateForm';
+import { DashBoardPage } from '../pages/DashBoardPage';
+
+
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -41,12 +47,12 @@ export const Router = () => {
      
         <Route element={<AuthenticatedRoutes/>}>
         <Route path='/' element={<HomePage/>}/>
+        <Route path='/dashboard' element={<DashBoardPage/>}/>
         <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
         <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
         <Route path='/tasks-note' element={<MainLayout><TasksNotes/></MainLayout>}/>
         <Route path = 'tasks-note/task-layout' element = {<MainLayout><TaskLayout/></MainLayout>}/>
         <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
-        <Route path='/tasks-note/note-status' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
         <Route path='/profile' element={<MainLayout><ProfilePage/></MainLayout>}/>
         <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
         <Route path='/note-form/detail/:id' element={<MainLayout><NoteDetailPage/></MainLayout>} />
@@ -55,6 +61,14 @@ export const Router = () => {
         <Route path='/my-project' element={<MainLayout><MyProjectPages/></MainLayout>}/>
         <Route path='/my-project/new-project' element={<MainLayout><NewProjectLayout/></MainLayout>}/>
         <Route path='/profile/edit-profile' element={<MainLayout><UpdateProfilePage/></MainLayout>}/>
+        <Route path='/my-tasks/shared-task' element={<MainLayout><SharedTaskPage/></MainLayout>}/>
+        <Route path='/note-create-form' element={<MainLayout><NoteCreateForm/></MainLayout>}/>
+        
+
+
+
+
+
 
 
         </Route>

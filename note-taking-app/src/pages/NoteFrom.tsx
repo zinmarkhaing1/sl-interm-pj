@@ -1,354 +1,3 @@
-// import * as React from 'react';
-// import { useState } from 'react';
-// import {Box,IconButton,Paper,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,TextField,Typography,Button,Stack,useTheme,useMediaQuery} from "@mui/material";
-// import { Search } from '@mui/icons-material';
-// import EditIcon from "@mui/icons-material/Edit";
-// import DeleteIcon from "@mui/icons-material/Delete";
-// import CloudDownloadOutlinedIcon from '@mui/icons-material/CloudDownloadOutlined';
-// import { useGetNotesQuery ,useDeleteNoteMutation  } from "../services/noteApi";
-// import NoteAddIcon from "@mui/icons-material/NoteAdd"
-// import { useNavigate } from 'react-router-dom';
-// import type { Note } from '../types/Note';
-
-// export const NoteFrom = () => {
-
-//     const navigate = useNavigate();
-
-//     const [searchOpen, setSearchOpen] = useState<boolean>(false);
-//         const [searchText, setSearchText] = useState<string>("");
-
-//         const { data: notes = [], isLoading,isError } = useGetNotesQuery();
-
-       
-        
-//           const filteredNotes = React.useMemo<Note[]>(() => {
-//                 if (!Array.isArray(notes)) return [];
-            
-//                 return notes.filter((note: Note) => {
-//                   if (searchText.trim() !== "") {
-//                     const titleText = (note.title || "").toLowerCase();
-//                     const searchTarget = searchText.toLowerCase();
-//                     if (!titleText.includes(searchTarget)) return false;
-//                   }
-          
-//                   return true;
-//                 })
-                 
-            
-//               }, [ notes,  searchText]);
-  
-   
-
-//     const handleCreate =():void =>{
-      
-//         navigate("/note-form/create")
-//     }
-  
-//     const [deleteNote] = useDeleteNoteMutation();
-//      const handleDelete = async (id:any,e: React.MouseEvent) => {
-//       e.stopPropagation();
-//     try {
-//         await deleteNote(id).unwrap();
-//     }catch(err:any){
-//         console.log("Delete Failed:",err);
-        
-//     }
-//   }
-
-//   //   const filteredRows = notes.filter(
-//   //   (row) =>
-//   //     row.title?.toLowerCase().includes(search.toLowerCase()) ||
-//   //     row.description?.toLowerCase().includes(search.toLowerCase()) ||
-//   //     row.content?.toLowerCase().includes(search.toLowerCase())
-//   // );
-//   const handleEdit = (id: any, e: React.MouseEvent) => {
-//     e.stopPropagation(); 
-//     navigate(`/note-form/edit/${id}`);
-//   } 
-
-//   const handleRowClick = (id: any) => {
-//     navigate(`/note-form/detail/${id}`); 
-//   }
-
-//   const theme = useTheme();
-// const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-
- 
-
-//   if (isLoading) return <Typography>Loading notes...</Typography>;
-//   if (isError) return <Typography color="error">Failed to load notes.</Typography>;
- 
-//   if (isMobile) {
-//   return (
-    
-//     <Box sx={{p:2}}>
-//         <Stack spacing={2} direction="row" sx={{display:"flex",alignItems:"center",mb:2}}>
-//         <Button
-//     onClick={handleCreate}
-//     startIcon={<NoteAddIcon />}
-//     sx={{
-//       ml: 2,
-//       textTransform: "none",
-//       color: "black",
-//       fontSize: "18px",
-//       fontWeight: "500",
-//       borderRadius: 3,
-//       px: 1.5,
-//       "& .MuiButton-startIcon": { color: "#973aa8" },
-//       "&:hover": { bgcolor: "#f5f5f5" },
-//     }}
-//   >
-//     Create Note
-//   </Button>
-          
-//             {/* <TextField  size='small' placeholder='Search' value={search} onChange={(e) => setSearch(e.target.value)}  slotProps={{input:{startAdornment: (<InputAdornment position="end"><SearchIcon/></InputAdornment>),},}}/> */}
-//              <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
-//              <IconButton size="small" sx={{ color: '#7c7b77', mr: searchOpen ? 1 : 0, borderRadius: '4px'}} onClick={() => setSearchOpen((prev) => !prev)}>
-//                               <Search fontSize="small" />
-//                             </IconButton>
-//                             {searchOpen && (
-//                               <TextField
-//                                 size="small"
-//                                 autoFocus
-//                                 placeholder="Search text"
-//                                 value={searchText}
-//                                 onChange={(event) => setSearchText(event.target.value)}
-//                                 sx={{
-//                                   width: 180,
-//                                   '& .MuiOutlinedInput-root': {
-//                                     height: 30,
-//                                     fontSize: '0.85rem',
-//                                     backgroundColor: '#ffffff',
-//                                     borderRadius: '4px',
-//                                   },
-//                                   '& .MuiOutlinedInput-input': {
-//                                     py: 0.5,
-//                                     px: 1,
-//                                   },
-//                                 }}
-//                               />
-//                             )}
-//                             </Box>
-
-//                             <Button
-  
-//     startIcon={<CloudDownloadOutlinedIcon/>}
-//     sx={{
-//       ml: 2,
-//       textTransform: "none",
-//       color: "black",
-//       fontSize: "14px",
-//       fontWeight: "500",
-//       borderRadius: 3,
-//       px: 1.3,
-//       "& .MuiButton-startIcon": { color: "#973aa8" },
-//       "&:hover": { bgcolor: "#f5f5f5" },
-//     }}
-//   >
-//      Save File 
-    
-//   </Button>
-            
-            
-//         </Stack>
-//       <Stack spacing={2}>
-//         {filteredNotes.map((row, index) => (
-//           <Paper
-//             key={row._id ?? index}
-//             elevation={2}
-//             sx={{
-//               p: 2,
-//               borderRadius: 3,
-//               cursor:"pointer",
-//             }}
-//             onClick={()=>handleRowClick(row._id)}
-//           >
-//             <Typography variant="h6" >
-//               {row.title}
-//             </Typography>
-
-//             <Typography sx={{mt:1}}>
-//               {row.description ?? row.content}
-//             </Typography>
-
-//             <Stack direction="row" spacing={1} sx={{mt:2}}>
-//               <Typography variant="body2">
-//                 <b>Priority:</b> {row.priority}
-//               </Typography>
-//             </Stack>
-
-//             <Stack direction="row" spacing={1}>
-//               <Typography variant="body2">
-//                 <b>Assignee:</b> {row.assignee}
-//               </Typography>
-//             </Stack>
-
-//             <Stack direction="row" spacing={1}>
-//               <Typography variant="body2">
-//                 <b>Category:</b> {row.category}
-//               </Typography>
-//             </Stack>
-
-//             <Stack direction="row" spacing={1}>
-//               <Typography variant="body2">
-//                 <b>Status:</b> {row.task}
-//               </Typography>
-//             </Stack>
-
-//             <Typography  variant="body2" sx={{mt:1}}>
-//               {row.startDate} - {row.endDate}
-//             </Typography>
-
-//             <Stack
-//               direction="row"
-//               spacing={1}
-//             //   justifyContent="flex-end"
-//             //   mt={2}
-//             sx={{justifyContent:"flex-end", mt:2}}
-//             >
-//               <IconButton
-//                 color="success"
-//                 onClick={(e) => handleEdit(row._id,e)}
-//               >
-//                 <EditIcon />
-//               </IconButton>
-
-//               <IconButton
-//                 color="error"
-//                 onClick={(e) => handleDelete(row._id,e)}
-//               >
-//                 <DeleteIcon />
-//               </IconButton>
-//             </Stack>
-//           </Paper>
-//         ))}
-//       </Stack>
-//     </Box>
-//   );
-// }
-  
-//   return (
-//     <Paper sx={{width:'100%',minWidth:400,p:2}}>
-//         {/* <Box sx={{display:'flex',justifyContent:"center",mb:2,alignItems:'center'}}>
-//             <Typography variant='h5'  sx={{display:'flex',mr:5,fontWeight:'bold'}}>Note Form </Typography>
-//         </Box> */}
-//         <Stack spacing={1} direction="row" sx={{display:"flex",alignItems:"center",mb:2}}>
-//         <Button
-//     onClick={handleCreate}
-//     startIcon={<NoteAddIcon />}
-//     sx={{
-//       ml: 2,
-//       textTransform: "none",
-//       color: "black",
-//       fontSize: "18px",
-//       fontWeight: "500",
-//       borderRadius: 3,
-//       px: 1.5,
-//       "& .MuiButton-startIcon": { color: "#973aa8" },
-//       "&:hover": { bgcolor: "#f5f5f5" },
-//     }}
-//   >
-//     Create Note
-//   </Button>
-//             {/* <TextField size='small' placeholder='Search' value={search} onChange={(e) => setSearch(e.target.value)}  slotProps={{input:{startAdornment: (<InputAdornment position="end"><SearchIcon/></InputAdornment>),},}}/> */}
-
-
-//             <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
-//              <IconButton size="small" sx={{ color: '#7c7b77', mr: searchOpen ? 1 : 0, borderRadius: '4px',}} onClick={() => setSearchOpen((prev) => !prev)}>
-//                               <Search fontSize="small" />
-//                             </IconButton>
-//                             {searchOpen && (
-//                               <TextField
-//                                 size="small"
-//                                 autoFocus
-//                                 placeholder="Search text"
-//                                 value={searchText}
-//                                 onChange={(event) => setSearchText(event.target.value)}
-//                                 sx={{
-//                                   width: 180,
-//                                   '& .MuiOutlinedInput-root': {
-//                                     height: 30,
-//                                     fontSize: '0.85rem',
-//                                     backgroundColor: '#ffffff',
-//                                     borderRadius: '4px',
-//                                   },
-//                                   '& .MuiOutlinedInput-input': {
-//                                     py:0.5,
-//                                     px: 1,
-//                                   },
-//                                 }}
-//                               />
-//                             )}
-//                       </Box>
-
-//   <Button
-  
-//     startIcon={<CloudDownloadOutlinedIcon/>}
-//     sx={{
-//       ml: 2,
-//       textTransform: "none",
-//       color: "black",
-//       fontSize: "14px",
-//       fontWeight: "500",
-//       borderRadius: 3,
-//       px: 1.3,
-//       "& .MuiButton-startIcon": { color: "#973aa8" },
-//       "&:hover": { bgcolor: "#f5f5f5" },
-//     }}
-//   >
-//      Save File 
-    
-//   </Button>
-           
-//         </Stack>
-
-//         <TableContainer 
-//          sx={{overflowX:"auto",mt:2}}>
-//             <Table sx={{minWidth:{xs:900,sm:1000,md:1100}}}>
-//                 <TableHead >
-//                     <TableRow sx={{bgcolor:'#dec9e9',fontWeight:'bold',color:"#2f004f"}}>
-//                         <TableCell>ID</TableCell>
-//                         <TableCell>Title</TableCell>
-//                         <TableCell>Description</TableCell>
-//                         <TableCell>Priority</TableCell>
-//                         <TableCell>Assignee</TableCell>
-//                         <TableCell>Category</TableCell>
-//                         <TableCell>Status</TableCell>
-//                         <TableCell>Start Date</TableCell>
-//                         <TableCell>End Date</TableCell>
-//                         <TableCell>Action</TableCell>
-
-//                     </TableRow>
-//                 </TableHead>
-//                 <TableBody>
-//                     {filteredNotes.map((row, index)=>(
-//                          <TableRow key={row._id ?? row.id ?? index} 
-//                         onClick={() => handleRowClick(row._id)} 
-//                         sx={{ cursor: 'pointer'}}>
-//                         <TableCell>{row.id ?? index + 1}</TableCell>
-//                         <TableCell>{row.title}</TableCell>
-//                         <TableCell>{row.description ?? row.content}</TableCell>
-//                         <TableCell>{row.priority}</TableCell>
-//                         <TableCell>{row.assignee}</TableCell>
-//                         <TableCell>{row.category}</TableCell>
-//                         <TableCell>{row.task}</TableCell>
-//                         <TableCell>{row.startDate}</TableCell>
-//                         <TableCell>{row.endDate}</TableCell>
-//                         <TableCell> <Box sx={{display:"flex", }}><IconButton sx={{fontWeight:'12px',color:"#5a206c"}}  onClick={(e)=>handleEdit(row._id,e)}><EditIcon/></IconButton>
-//                         <IconButton sx={{color:"#720026"}} onClick={(e) => handleDelete(row._id, e)}><DeleteIcon/></IconButton>
-//                         </Box></TableCell>
-
-
-//                     </TableRow>
-//                     ))}
-                   
-//                 </TableBody>
-//             </Table>
-//         </TableContainer>
-//     </Paper>
-//   )
-// }
 
 
 import * as React from 'react';
@@ -356,7 +5,7 @@ import { useState } from 'react';
 import {
   Box, IconButton, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TextField, Typography, Button, Stack, useTheme, useMediaQuery,
-  Dialog, DialogTitle, DialogContent, DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions,Popover
 } from "@mui/material";
 import { Search } from '@mui/icons-material';
 import EditIcon from "@mui/icons-material/Edit";
@@ -380,6 +29,10 @@ export const NoteFrom = () => {
   // States
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
+
+  const [deleteAnchorEl, setDeleteAnchorEl] = useState<HTMLButtonElement | null>(null);
+const [selectedDeleteId, setSelectedDeleteId] = useState<any>(null);
+const openDeletePopover = Boolean(deleteAnchorEl);
   
   // Dialog (Pop-up) Control States
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -407,14 +60,41 @@ export const NoteFrom = () => {
     navigate("/note-form/create");
   };
 
-  const handleDelete = async (id: any, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await deleteNote(id).unwrap();
-    } catch (err: any) {
-      console.log("Delete Failed:", err);
-    }
-  };
+  // const handleDelete = async (id: any, e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   try {
+  //     await deleteNote(id).unwrap();
+  //   } catch (err: any) {
+  //     console.log("Delete Failed:", err);
+  //   }
+  // };
+
+  const handleDeleteClick = (id: any, e: React.MouseEvent<HTMLButtonElement>) => {
+  e.stopPropagation(); 
+  setDeleteAnchorEl(e.currentTarget as HTMLButtonElement);
+  setSelectedDeleteId(id);
+};
+
+
+const handleDeleteClose = (e: React.MouseEvent) => {
+  e.stopPropagation();
+  setDeleteAnchorEl(null);
+  setSelectedDeleteId(null);
+};
+
+
+const handleConfirmDelete = async (e: React.MouseEvent) => {
+  e.stopPropagation();
+  if (!selectedDeleteId) return;
+  try {
+    await deleteNote(selectedDeleteId).unwrap();
+  } catch (err: any) {
+    console.log("Delete Failed:", err);
+  } finally {
+    setDeleteAnchorEl(null);
+    setSelectedDeleteId(null);
+  }
+};
 
   const handleEdit = (id: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -493,30 +173,30 @@ export const NoteFrom = () => {
   if (isError) return <Typography color="error">Failed to load notes.</Typography>;
 
   return (
-    <Paper sx={{ width: '100%', minWidth: isMobile ? 300 : 400, p: 2 }}>
+    <Paper sx={{ width: '100%', minWidth: isMobile ? 300 : 400, p: 2 ,bgcolor:"background.default",color:"text.primary"}}>
     
-      <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb:  2,bgcolor:"backgroundColor.default",color:"text.primary" }}>
         <Button
           onClick={handleCreate}
           startIcon={<NoteAddIcon />}
           sx={{
             textTransform: "none",
-            color: "black",
+            color: "text.primary",
             fontSize: "18px",
             fontWeight: "500",
             borderRadius: 3,
             px: 1.5,
             whiteSpace: 'nowrap',
             "& .MuiButton-startIcon": { color: "#973aa8" },
-            "&:hover": { bgcolor: "#f5f5f5" },
+           
           }}
         >
           Create Note
         </Button>
         
         {/* Search Field */}
-        <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
-          <IconButton size="small" sx={{ color: '#7c7b77', mr: searchOpen ? 1 : 0, borderRadius: '4px' }} onClick={() => setSearchOpen((prev) => !prev)}>
+        <Box sx={{ display: "flex", alignItems: "center", ml: 1,color:"text.primary"}}>
+          <IconButton size="small" sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px' }} onClick={() => setSearchOpen((prev) => !prev)}>
             <Search fontSize="small" />
           </IconButton>
           {searchOpen && (
@@ -527,8 +207,9 @@ export const NoteFrom = () => {
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               sx={{
+                color:"text.primary",
                 width: 180,
-                '& .MuiOutlinedInput-root': { height: 30, fontSize: '0.85rem', backgroundColor: '#ffffff', borderRadius: '4px' },
+                '& .MuiOutlinedInput-root': { height: 30, fontSize: '0.85rem',  borderRadius: '4px' },
                 '& .MuiOutlinedInput-input': { py: 0.5, px: 1 },
               }}
             />
@@ -542,14 +223,14 @@ export const NoteFrom = () => {
           sx={{
             ml: 2,
             textTransform: "none",
-            color: "black",
+            color: "text.primary",
             fontSize: "14px",
             fontWeight: "500",
             borderRadius: 3,
             px: 1.3,
             whiteSpace: 'nowrap',
             "& .MuiButton-startIcon": { color: "#973aa8" },
-            "&:hover": { bgcolor: "#f5f5f5" },
+            
           }}
         >
           Download File
@@ -595,7 +276,7 @@ export const NoteFrom = () => {
             onClick={handleExportPDF} 
             variant="contained"
             disabled={!exportStartDate || !exportEndDate}
-            sx={{ bgcolor: "#973aa8",color:"white", "&:hover": { bgcolor: "#7b2e8a" }, textTransform: 'none' }}
+            sx={{ bgcolor: "#973aa8",color:"text.primary", "&:hover": { bgcolor: "#7b2e8a" }, textTransform: 'none' }}
           >
             Download PDF
           </Button>
@@ -615,17 +296,17 @@ export const NoteFrom = () => {
               <Typography variant="body2"><b>Status:</b> {row.task}</Typography>
               <Typography variant="body2" sx={{ mt: 1 }}>{row.startDate} - {row.endDate}</Typography>
               <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end", mt: 2 }}>
-                <IconButton color="success" onClick={(e) => handleEdit(row._id, e)}><EditIcon /></IconButton>
-                <IconButton color="error" onClick={(e) => handleDelete(row._id, e)}><DeleteIcon /></IconButton>
+                <IconButton sx={{color:"#973aa8"}} onClick={(e) => handleEdit(row._id, e)}><EditIcon /></IconButton>
+                <IconButton color="error" onClick={(e) => handleDeleteClick(row._id, e)}><DeleteIcon /></IconButton>
               </Stack>
             </Paper>
           ))}
         </Stack>
       ) : (
-        <TableContainer sx={{ overflowX: "auto", mt: 2 }}>
+        <TableContainer sx={{ overflowX: "auto", mt: 1}}>
           <Table sx={{ minWidth: 1000 }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: '#dec9e9', fontWeight: 'bold', color: "#2f004f" }}>
+              <TableRow sx={{ bgcolor: '#dec9e9', fontWeight: 'bold', color: "#2f004f",mx:0 }}>
                 <TableCell>ID</TableCell>
                 <TableCell>Title</TableCell>
                 <TableCell>Description</TableCell>
@@ -643,7 +324,7 @@ export const NoteFrom = () => {
                 <TableRow key={row._id ?? row.id ?? index} onClick={() => handleRowClick(row._id)} sx={{ cursor: 'pointer' }}>
                   <TableCell>{row.id ?? index + 1}</TableCell>
                   <TableCell>{row.title}</TableCell>
-                  <TableCell>{row.description ?? row.content}</TableCell>
+                  <TableCell >{row.description ?? row.content}</TableCell>
                   <TableCell>{row.priority}</TableCell>
                   <TableCell>{row.assignee}</TableCell>
                   <TableCell>{row.category}</TableCell>
@@ -652,8 +333,8 @@ export const NoteFrom = () => {
                   <TableCell>{row.endDate}</TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex" }}>
-                      <IconButton sx={{ color: "#5a206c" }} onClick={(e) => handleEdit(row._id, e)}><EditIcon /></IconButton>
-                      <IconButton sx={{ color: "#720026" }} onClick={(e) => handleDelete(row._id, e)}><DeleteIcon /></IconButton>
+                      <IconButton sx={{ color:"text.primary"}} onClick={(e) => handleEdit(row._id, e)}><EditIcon /></IconButton>
+                      <IconButton sx={{ color: "#720026" }} onClick={(e) => handleDeleteClick(row._id, e)}><DeleteIcon /></IconButton>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -662,6 +343,43 @@ export const NoteFrom = () => {
           </Table>
         </TableContainer>
       )}
+
+    
+     
+
+      <Popover
+        open={openDeletePopover}
+        anchorEl={deleteAnchorEl}
+        onClose={(e: any) => handleDeleteClose(e)}
+        onClick={(e) => e.stopPropagation()} 
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        slotProps={{
+          paper: {
+            sx: { p: 1.5, boxShadow: '0px 2px 10px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0', borderRadius: '8px' }
+          }
+        }}
+      >
+        <Typography sx={{ fontSize: '13px', fontWeight: 500, mb: 1, color: 'text.primary' }}>
+          Delete this note?
+        </Typography>
+        <Stack direction="row" spacing={1}  sx={{justifyContent:"flex-end"}}>
+          <Button size="small" onClick={handleDeleteClose} sx={{ textTransform: 'none', color: 'text.secondary', fontSize: '11px' }}>
+            Cancel
+          </Button>
+          <Button size="small" variant="contained" onClick={handleConfirmDelete} sx={{ textTransform: 'none', bgcolor: '#720026', fontSize: '11px', '&:hover': { bgcolor: '#50001a' } }}>
+            Confirm
+          </Button>
+        </Stack>
+      </Popover>
+
+    
     </Paper>
   );
 };

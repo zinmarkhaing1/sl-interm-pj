@@ -1,5 +1,5 @@
 import React,{ useState } from 'react';
-import { Box, Button, Stack, Typography, IconButton, TextField, Tabs, Tab ,Menu,MenuItem} from "@mui/material";
+import { Box, Button, Stack, Typography, IconButton, TextField, Tabs, Tab ,Menu,MenuItem,CircularProgress} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { SwapVertOutlined, Search } from "@mui/icons-material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -71,16 +71,33 @@ export const MyProjectPages = () => {
     setCurrentTab(0); 
     handleMenuClose();
   };
+
+
+  if (isLoading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+          <CircularProgress />
+        </Box>
+      );
+    }
+  
+    if (isError) {
+      return (
+        <Typography color="error" sx={{ textAlign: 'center', mt: 5 }}>
+          Unable to load projects.
+        </Typography>
+      );
+    }
   return (
   <Box>
-    <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' ,backgroundColor:"#f4f6f8",}}>
+    <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',bgcolor:"background.defalut",color:"text.primary"}}>
       
       {/* Header Section */}
       <Box sx={{ mb: 1 }}>
-        <Typography variant="h3" sx={{ fontWeight: 500, color: '#2F004F', mb: 1, fontSize: '18px' }}>
+        <Typography variant="h3" sx={{ fontWeight: 500, color: 'text.primary', mb: 1, fontSize: '18px' }}>
          Projects 
         </Typography>
-        <Typography variant="body1" sx={{ color: '#2F004F', fontSize: '16px' }}>
+        <Typography variant="body1" sx={{ color: 'text.primary', fontSize: '16px' }}>
           Stay organized with projects, your way.
         </Typography>
       </Box>
@@ -98,20 +115,20 @@ export const MyProjectPages = () => {
           }
           sx={{
             minHeight: 'auto',
-            '& .MuiTabs-indicator': { backgroundColor: '#37352f', height: '2px' },
+            '& .MuiTabs-indicator': { bgcolor:'background.default', height: '2px' },
             '& .MuiTab-root': { 
               textTransform: 'none', 
               fontWeight: 500, 
               fontSize: '0.9rem', 
               minWidth: 'auto', 
               padding: '6px 12px',
-              color: '#6b6a65',
-              '&.Mui-selected': { color: '#37352f' }
+              color: 'text.primary',
+              '&.Mui-selected': { color: 'text.primary' }
             }
           }}
         >
           <Tab label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, }}>
                   By Status ({selectedStatus})
                   <ArrowDropDownIcon sx={{ fontSize: 18 }} />
                 </Box>
@@ -143,21 +160,18 @@ export const MyProjectPages = () => {
             <MenuItem onClick={() => handleStatusSelect("Todo")} selected={selectedStatus === "Todo"}>Todo</MenuItem>
             <MenuItem onClick={() => handleStatusSelect("In Progress")} selected={selectedStatus === "In Progress"}>In Progress</MenuItem>
             <MenuItem onClick={() => handleStatusSelect("Complete")} selected={selectedStatus === "Complete"}>Complete</MenuItem>
-            <MenuItem onClick={() => handleStatusSelect("Done")} selected={selectedStatus === "Done"}>Done</MenuItem>
+            <MenuItem onClick={() => handleStatusSelect("Not Started")} selected={selectedStatus === "Not Started"}>Done</MenuItem>
           </Menu>
 
         {/* Right side controls */}
         <Stack direction="row" spacing={1} sx={{alignItems:"center",}}>
 
          
-          {/* <IconButton size="small" sx={{ color: '#6b6a65' }}><FilterList fontSize="small" /></IconButton>
-          <IconButton size="small" sx={{ color: '#6b6a65' }}><Sort fontSize="small" /></IconButton>
-          <IconButton size="small" sx={{ color: '#6b6a65' }}><AutoAwesome fontSize="small" /></IconButton> */}
           <IconButton size="small" onClick={() =>
               setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
             }
-           sx={{ color: sortOrder === 'desc' ? '#2383e2' : '#7c7b77', 
-                          bgcolor: sortOrder === 'desc' ? '#edf6ff' : 'transparent',
+           sx={{ color: sortOrder === 'desc' ? 'text.primary' : '#text.primary', 
+                          bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent',
                           borderRadius: '4px',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
                           '& .MuiSvgIcon-root': {
@@ -165,10 +179,10 @@ export const MyProjectPages = () => {
                             transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)', 
                           },
                           '&:hover': {
-                            bgcolor: sortOrder === 'desc' ? '#e3f2fd' : '#f1f1ef'
+                            bgcolor: sortOrder === 'desc' ? 'background.default' : 'background.paper'
                           }}}><SwapVertOutlined fontSize="small" /></IconButton>
 
-          <IconButton size="small" sx={{ color: '#6b6a65' }} onClick={() => setSearchOpen((prev) => !prev)}>
+          <IconButton size="small" sx={{ color: 'text.primary' }} onClick={() => setSearchOpen((prev) => !prev)}>
             <Search fontSize="small" />
           </IconButton>
           {searchOpen && (
@@ -183,7 +197,7 @@ export const MyProjectPages = () => {
                 '& .MuiOutlinedInput-root': {
                   height: 30,
                   fontSize: '0.85rem',
-                  backgroundColor: '#ffffff',
+                  bgcolor:'background.default',
                   borderRadius: '4px',
                 },
                 '& .MuiOutlinedInput-input': {

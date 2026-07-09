@@ -2,7 +2,7 @@ import { Box, Card, CardContent, Typography, Button, Stack, Chip, Divider, TextF
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetNotesQuery } from "../../services/noteApi";
 import { useEffect, useState } from "react";
-import { ArrowBack,CalendarToday ,Person } from "@mui/icons-material";
+import { ArrowBackIosNewOutlined,CalendarToday ,Person } from "@mui/icons-material";
 
 export const CommentPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -65,7 +65,7 @@ export const CommentPage = () => {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography color="error" variant="h6">Note Not Found!</Typography>
-        <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
+        <Button startIcon={<ArrowBackIosNewOutlined />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
           Go Back
         </Button>
       </Box>
@@ -80,7 +80,7 @@ export const CommentPage = () => {
         
       
         <Button 
-          startIcon={<ArrowBack />} 
+          startIcon={<ArrowBackIosNewOutlined />} 
           onClick={() => navigate(-1)} 
           sx={{ mb: 3, textTransform: 'none', color: '#5a206c' }}
         >

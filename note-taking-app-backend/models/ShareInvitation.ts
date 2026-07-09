@@ -6,6 +6,7 @@ export interface IShareInvitation extends Document {
   role: "editor" | "viewer" | "commenter";
   status: "pending" | "accepted" | "declined";
   pageUrl?: string;
+  source?: "category_page" | "note_create_form_page" | "default";
   noteId?: Types.ObjectId;
   userId?: Types.ObjectId;
   createdAt: Date;
@@ -37,6 +38,11 @@ const ShareInvitationSchema = new mongoose.Schema(
     },
     pageUrl: {
       type: String,
+    },
+    source: {
+      type: String,
+      enum: ["category_page", "note_create_form_page", "default"],
+      default: "default",
     },
     noteId: {
       type: mongoose.Schema.Types.ObjectId,

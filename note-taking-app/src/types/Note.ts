@@ -15,7 +15,15 @@ export interface Note  {
     notetypes?:string;
     createdAt? : string;
     isOwned?: boolean;
-    accessPermission?: "owner" | "edit" | "comment" | "view";
+  // Owner fields: backend sometimes uses `authId`, `user`, or `userId`
+  authId?: string;
+  user?: string;
+  userId?: string;
+  // Accept both legacy and newer permission labels
+  accessPermission?: "owner" | "edit" | "editor" | "comment" | "commenter" | "view";
+  isShared?: boolean;
+  sharedWith?: string[] | any[];
+  
 }
 
 export interface Comment {
@@ -24,6 +32,7 @@ export interface Comment {
   userId?: string;
   userName?: string;
   text: string;
+  userEmail?:string;
   createdAt?: string;
 }
 
@@ -32,7 +41,7 @@ export interface Notification {
   fromUser?: string;
   toUser?: string;
   noteId?: string;
-  type?: "view" | "edit" | "comment";
+  type?: "view" | "edit" | "comment" | "invite";
   message?: string;
   isRead?: boolean;
   createdAt?: string;

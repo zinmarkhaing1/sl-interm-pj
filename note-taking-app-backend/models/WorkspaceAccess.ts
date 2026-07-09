@@ -4,6 +4,7 @@ export interface IWorkspaceAccess extends Document {
   userId: Types.ObjectId;
   noteId: Types.ObjectId;
   permission: "view" | "comment" | "edit";
+  accessScope: "global" | "category" | "note-create-form";
   grantedBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +27,11 @@ const WorkspaceAccessSchema = new mongoose.Schema(
       enum: ["view", "comment", "edit"],
       required: true,
     },
+    accessScope: {
+      type: String,
+      enum: ["global", "category","note-create-form"],
+      default: "global",
+    },
     grantedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Auth",
@@ -35,7 +41,7 @@ const WorkspaceAccessSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-WorkspaceAccessSchema.index({ userId: 1, noteId: 1 }, { unique: true });
+WorkspaceAccessSchema.index({ userId: 1, noteId: 1, accessScope: 1 }, { unique: true });
 
 const WorkspaceAccess = mongoose.model<IWorkspaceAccess>("WorkspaceAccess", WorkspaceAccessSchema);
 

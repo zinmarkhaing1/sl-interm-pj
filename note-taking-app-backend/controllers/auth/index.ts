@@ -5,6 +5,7 @@ import Auth from "../../models/Auth";
 import Note from "../../models/Note";
 import ShareInvitation from "../../models/ShareInvitation";
 import WorkspaceAccess from "../../models/WorkspaceAccess";
+import Notification from "../../models/Notification";
 
 interface SignupBody {
   firstName : string;
@@ -47,6 +48,19 @@ const acceptPendingInvites = async (email: string, userId: string) => {
   if (accessEntries.length > 0) {
     await WorkspaceAccess.deleteMany({ userId, noteId: { $in: accessEntries.map((entry) => entry.noteId) } });
     await WorkspaceAccess.insertMany(accessEntries);
+  }
+  // Create notifications for the user about accepted invitations
+  try {
+    for (const invite of pendingInvites) {
+      await Notification.create({
+        fromUser: invite.invitedBy,
+        toUser: userId,
+        type: "invite",
+        message: `You were granted access (role: ${invite.role}) to a collaborator's notes.`,
+      });
+    }
+  } catch (err) {
+    // Ignore notification creation errors
   }
 };
 
@@ -121,9 +135,11 @@ export const login = async (
 
     await acceptPendingInvites(user.email, user._id.toString());
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string,{expiresIn:"7d"}
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing");
+    }
 
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
     const userToReturn = user.toObject();
     delete (userToReturn as any).password;
     res.status(201).json({ success:true, data:{token, user: userToReturn}, });

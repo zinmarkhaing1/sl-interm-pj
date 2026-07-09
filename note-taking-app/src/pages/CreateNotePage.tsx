@@ -19,10 +19,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import SchoolIcon from "@mui/icons-material/School";
 import { useCreateNoteMutation } from "../services/noteApi";
-// import { LocalizationProvider } from "@mui/x-date-pickers";
-// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-// import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-// import type { Dayjs } from "dayjs";
+
 
 import DateTimePicker from "react-datetime-picker";
 import "react-datetime-picker/dist/DateTimePicker.css";
@@ -105,7 +102,7 @@ export const CreateNotePage = () => {
     setStartDate(new Date());
     setEndDate(new Date());
     setTaskError(false);
-    navigate("/note-form")
+    navigate(-1);
   };
 
   const handleTaskChange = (e: React.ChangeEvent<{ value: unknown }>) => {
@@ -121,8 +118,9 @@ export const CreateNotePage = () => {
         alignItems: "center",
         minHeight: { xs: "auto", md: "calc(100vh - 112px)" },
         width: "100%",
-        // bgcolor: "#dee4ea",
-        backgroundColor:"#f4f6f8"
+        bgcolor: "background.default",
+        color:"text.primary"
+        // backgroundColor:"#f4f6f8"
       }}
     >
       <Paper
@@ -134,7 +132,8 @@ export const CreateNotePage = () => {
           p: { xs: 2, sm: 4 },
           borderRadius: 4,
           m: { xs: 0, sm: 3 },
-          bgcolor: "white",
+          bgcolor: "background.default",
+          color:"text.primary"
         }}
       >
         <Stack
@@ -175,7 +174,7 @@ export const CreateNotePage = () => {
               placeholder="Note Title..."
               sx={{
                 "&.MuiOtilinedInput-root": {
-                  bgcolor: "white",
+                  bgcolor: "background.default",
                   borderRadius: "18px",
 
                 },
@@ -193,10 +192,12 @@ export const CreateNotePage = () => {
               onChange={handleChange}
               sx={{
                 "&.MuiOtilinedInput-root": {
-                  bgcolor: "gray",
+                  bgcolor: "background.default",
                   borderRadius: "20px",
                 },
-                fontSize:"16px"
+                fontSize:"16px",
+                bgcolor:"background.default",
+                color:'text.primary'
               }}
             >
               <MenuItem value="Low">Low</MenuItem>
@@ -215,12 +216,14 @@ export const CreateNotePage = () => {
               onChange={handleChange}
               sx={{
                 "&.MuiOutlinedInput-root": {
-                  bgcolor: "white",
+                  bgcolor: "background.default",
                   borderRadius: "24px",
                 },
                 width: "500px",
                 height: "auto",
-                fontSize:"16px"
+                fontSize:"16px",
+                  bgcolor: "background.default",
+                  color:"text.primary",
               }}
             />
               <TextField
@@ -232,10 +235,12 @@ export const CreateNotePage = () => {
                 onChange={handleChange}
                 sx={{
                   "&.MuiOtilinedInput-root": {
-                    bgcolor: "gray",
+                    bgcolor: "background.default",
                     borderRadius: "20px",
                   },
-                  fontSize:"16px"
+                  fontSize:"16px",
+                  bgcolor: "background.default",
+                  color:"text.primary"
                 }}
               >
                 <MenuItem value="My Note">
@@ -273,10 +278,12 @@ export const CreateNotePage = () => {
                 error={taskError}
                 sx={{
                   "&.MuiOtilinedInput-root": {
-                    bgcolor: "gray",
+                    bgcolor: "background.default",
                     borderRadius: "20px",
                   },
-                  fontSize:"16px"
+                  bgcolor: "background.default",
+                  fontSize:"16px",
+                  color:"text.primary"
                 }}
               >
                 <MenuItem value="Todo">
@@ -288,7 +295,7 @@ export const CreateNotePage = () => {
                 <MenuItem value="Complete">
                   Complete
                 </MenuItem>
-                <MenuItem value="Done">Done
+                <MenuItem value="Not Started">Not Started
                 </MenuItem>
               </TextField>
              <TextField
@@ -298,7 +305,7 @@ export const CreateNotePage = () => {
                 placeholder="Note Assignee..."
                 sx={{
                   "&.MuiOtilinedInput-root": {
-                    bgcolor: "white",
+                    bgcolor: "background.default",
                     borderRadius: "18px",
                   },
                   fontSize:"16px"
@@ -377,7 +384,7 @@ export const CreateNotePage = () => {
                 py: 1.8,
                 textTransform: "none",
                 fontSize: "16px",
-                bgcolor: "#a1acd9",
+                bgcolor: "background.default",
                 fontWeight: "bold",
               }}
               onClick={handleSubmit}

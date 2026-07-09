@@ -46,13 +46,13 @@ export const AllProject:React.FC<AllProjectProps> = ({filteredNotes}) => {
         <TableBody>
           {filteredNotes.map((note: Note) => (
             <TableRow key={note._id || note.id} sx={{ '&:hover': { bgcolor: '#f7f7f5' } }}>
-              <TableCell sx={{ fontWeight: 500 }}>
+              <TableCell sx={{ fontWeight: 500,color:"#6d6875" }}>
                 <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
                   <ChatBubbleOutlineOutlined sx={{ fontSize: 12 }} />
                   <Typography variant="body2">{note.title || 'Untitled'}</Typography>
                 </Box>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{color:"#6d6875"}}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Avatar sx={{ width: 18, height: 18, fontSize: '0.65rem' }}>
                     {note.assignee ? note.assignee.charAt(0).toUpperCase() : 'U'}
@@ -60,15 +60,15 @@ export const AllProject:React.FC<AllProjectProps> = ({filteredNotes}) => {
                   <Typography variant="body2">{note.assignee || 'Unassigned'}</Typography>
                 </Box>
               </TableCell>
-              <TableCell>
-                <Chip label={note.task || 'Todo'} size="small" sx={{ fontSize: '0.75rem', height: 20 }} />
+              <TableCell sx={{color:"#6d6875"}}>
+                <Chip label={note.task || 'Todo'} size="small" sx={{ fontSize: '0.75rem', height: 20, color:"#6d6875"}} />
               </TableCell>
-              <TableCell sx={{ color: '#6b6a65' }}>{note.startDate || '-'}</TableCell>
+              <TableCell sx={{ color: '#6d6875' }}>{note.startDate || '-'}</TableCell>
               <TableCell sx={{ color: '#6b6a65' }}>{note.endDate || '-'}</TableCell>
-              <TableCell>
-                <Chip label={note.priority || '-'} size="small" sx={{ fontSize: '0.75rem', height: 20, borderRadius: '4px' }} />
+              <TableCell sx={{color:"#6d6875"}}>
+                <Chip label={note.priority || '-'} size="small" sx={{ fontSize: '0.75rem', height: 20, borderRadius: '4px' ,color:"#6d6875"}} />
               </TableCell>
-              <TableCell>{note.category || '-'}</TableCell>
+              <TableCell sx={{color:"#6d6875"}}>{note.category || '-'}</TableCell>
             </TableRow>
           ))}
           <TableRow>

@@ -1,351 +1,259 @@
 // import React from 'react'
-// import { useGetNotesQuery } from "../../services/noteApi";
-// import type {Note} from "../../types/Note";
+
 // export const SharePage = () => {
-//     const [showSharedWorkspace, setShowSharedWorkspace] = React.useState<boolean>(false);
-//       const [watchLaterEnabled, setWatchLaterEnabled] = React.useState<boolean>(false);
-//       const sharedNotes = React.useMemo(() => {
-//           return Array.isArray(notes)
-//             ? notes.filter((note: any) => note.isOwned !== true)
-//             : [];
-//         }, [notes]);
-
-//         React.useEffect(() => {
-//             const shouldShowShared = location.search.includes("view=shared") || localStorage.getItem("sharedNotesRequested") === "true";
-//             const shouldWatchLater = localStorage.getItem("watchLaterSharedNotes") === "true";
-//             setShowSharedWorkspace(shouldShowShared);
-//             setWatchLaterEnabled(shouldWatchLater);
-//           }, [location.search]);
-
-//           const filteredNotes = React.useMemo(() => {
-//               if(!Array.isArray(notes)) return [];
-          
-//               return notes.filter((note:Note)=>{
-//                 if(showSharedWorkspace && note.isOwned === true) return false;
-          
-                
-          
-//                 return true;
-//               });
-//             },[notes,showSharedWorkspace,]);
 //   return (
-//     <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 54px' }}>
-//         {showSharedWorkspace ? (
-//                   <Box sx={{ mt: 2 }}>
-//                     <Box sx={{ mb: 3, p: 2.5, border: '1px solid #e0e0e0', borderRadius: '12px', bgcolor: '#f9fbff' }}>
-//                       <Typography sx={{ fontWeight: 700, color: '#1f3a5f', mb: 0.5 }}>
-//                         Shared workspace
-//                       </Typography>
-//                       <Typography sx={{ color: '#5f6b7a', fontSize: '14px' }}>
-//                         These are the notes shared with you from the owner’s workspace. Edits made here update the same note for the owner too.
-//                       </Typography>
-//                     </Box>
-        
-//                     {watchLaterEnabled && (
-//                       <Box onClick={handleWatchLaterClick} sx={{ mb: 3, p: 2, border: '1px solid #f3d9a3', borderRadius: '10px', bgcolor: '#fff7e6' }}>
-//                         <Typography sx={{ fontWeight: 600, color: '#7a4b00' }}>
-//                           Watch later
-//                         </Typography>
-//                         {/* <Typography sx={{ color: '#8a5a10', fontSize: '13px', mt: 0.5 }}>
-//                           You marked this shared workspace to review later. Open a note and edit it to sync changes instantly.
-//                         </Typography> */}
-//                       </Box>
-//                     )}
-        
-//                     {filteredNotes.length === 0 ? (
-//                       <Typography sx={{ color: '#9b9a97', fontSize: '14px', textAlign: 'center', mt: 4 }}>
-//                         No tasks match your filter criteria.
-//                       </Typography>
-//                     ) : (
-//                       <Stack spacing={1.5}>
-//                         {filteredNotes.map((note: any) => (
-//                           <Box key={note._id || note.id} sx={{ p: 2, border: '1px solid #e8ecef', borderRadius: '10px', bgcolor: 'white' }}>
-//                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' } }}>
-//                               <Box>
-//                                 <Typography sx={{ fontWeight: 600, color: '#37352f' }}>{note.title || 'Untitled note'}</Typography>
-//                                 <Typography sx={{ color: '#6b7280', fontSize: '13px', mt: 0.5 }}>
-//                                   {note.content || note.description || 'No content yet'}
-//                                 </Typography>
-//                               </Box>
-//                               <Button
-//                                 variant="contained"
-//                                 disableElevation
-//                                 onClick={() => {
-//                                   if (note.accessPermission === 'edit' || note.accessPermission === 'owner') {
-//                                     navigate(`/note-form/edit/${note._id}`);
-//                                     return;
-//                                   }
-//                                   navigate(`/note-form/detail/${note._id}`);
-//                                 }}
-//                                 sx={{ textTransform: 'none', bgcolor: '#dec9e9', width: 150, height: 40, borderRadius: 3, '&:hover': { bgcolor: '#973aa8', color: "#ffe5ec" } }}
-//                               >
-//                                 {note.accessPermission === 'edit' || note.accessPermission === 'owner' ? 'Open / Edit' : 'Open / View'}
-//                               </Button>
-//                             </Stack>
-//                           </Box>
-//                         ))}
-//                       </Stack>
-//                     )}
-//                   </Box>
-//                 ) : (
-//                   //standard non-shred layout
-//                   <Box sx={{ mt: 2 }}>
-//                     {filteredNotes.length === 0 ? (
-//                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pt: 10, pb: 10 }}>
-//                         <IconButton disabled sx={{ p: 1.5, bgcolor: '#f1f1ef', borderRadius: '8px', mb: 2, '& .MuiSvgIcon-root': { color: '#acaba9', fontSize: 32 } }}>
-//                           <TaskAltIcon />
-//                         </IconButton>
-//                         <Typography sx={{ color: '#9b9a97', fontSize: '14px', mb: 1.5 }}>
-//                           No matching tasks found.
-//                         </Typography>
-//                         <Typography onClick={() => navigate("/note-form/create")} sx={{ color: '#2383e2', fontSize: '14px', cursor: 'pointer', fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
-//                           + New task
-//                         </Typography>
-//                       </Box>
-//                     ) : (
-//                       <Stack spacing={1.5}>
-//                         {filteredNotes.map((note: Note) => (
-//                           <Box key={note._id || note.id} sx={{ p: 2, border: '1px solid #ededed', borderRadius: '8px', '&:hover': { bgcolor: '#f7f7f5' } }}>
-//                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{note.title || 'Untitled'}</Typography>
-//                             <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-//                               <Typography variant="caption" sx={{ color: '#6b6a65' }}>Assignee: {note.assignee || 'Unassigned'}</Typography>
-//                               <Typography variant="caption" sx={{ color: '#6b6a65' }}>Status: {note.task || 'Todo'}</Typography>
-//                             </Stack>
-//                           </Box>
-//                         ))}
-//                       </Stack>
-//                     )}
-//                     </Box>
-//                 )}
-//                       {/* for shared notes  */}
-//                     <Box sx={{ mt: 4, pt: 4, borderTop: '1px dashed #ededed' }}>
-//                     <Typography variant="h6" sx={{ fontWeight: 600, color: '#37352f', mb: 2 }}>
-//                       Shared Notes Directory Summary
-//                     </Typography>
-//                     {sharedNotes.length === 0 ? (
-//                       <Typography sx={{ color: '#9b9a97', fontSize: '14px' }}>
-//                         No shared notes available yet.
-//                       </Typography>
-//                     ) : (
-//                       <Stack spacing={1.5}>
-//                         {sharedNotes.map((note: any) => (
-//                           <Box key={note._id} sx={{ p: 2, border: '1px solid #e8ecef', borderRadius: '10px', bgcolor: 'white' }}>
-//                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' } }}>
-//                               <Box>
-//                                 <Typography sx={{ fontWeight: 600, color: '#37352f' }}>{note.title || 'Untitled note'}</Typography>
-//                                 <Typography sx={{ color: '#6b7280', fontSize: '13px', mt: 0.5, mr: 2 }}>
-//                                   {note.content || note.description || 'No content yet'}
-//                                 </Typography>
-//                               </Box>
-//                               <Button
-//                                 variant="contained"
-//                                 disableElevation
-//                                 onClick={() => {
-//                                   if (note.accessPermission === 'edit' || note.accessPermission === 'owner') {
-//                                     navigate(`/note-form/edit/${note._id}`);
-//                                     return;
-//                                   }
-//                                   navigate(`/note-form/detail/${note._id}`);
-//                                 }}
-//                                 sx={{ textTransform: 'none', bgcolor: '#dec9e9', width: 150, height: 40, borderRadius: 3, '&:hover': { bgcolor: '#973aa8', color: "#ffe5ec" } }}
-//                               >
-//                                 {note.accessPermission === 'edit' || note.accessPermission === 'owner'
-//                                   ? 'Open / Edit'
-//                                   : note.accessPermission === 'comment'
-//                                     ? 'Open / Comment'
-//                                     : 'Open / View'}
-//                               </Button>
-//                             </Stack>
-//                           </Box>
-//                         ))}
-//                       </Stack>
-//                     )}
-//                   </Box>
-//         </Box>
+//     <div>SharePage</div>
 //   )
 // }
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Avatar,
+  Tabs,
+  Tab,
+  Divider,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
+interface CollaboratorItem {
+  _id?: string;
+  invitedEmail: string;
+  status: string;
+  role: string;
+  pageUrl?: string;
+  source?: string;
+}
 
-import React from 'react';
-// Assuming you are using react-router-dom for navigation and URL parsing
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, Typography, Button, Stack, IconButton } from '@mui/material';
-import TaskAltIcon from '@mui/icons-material/TaskAlt'; 
-import { useGetNotesQuery } from "../../services/noteApi";
-import type { Note } from "../../types/Note";
+interface UserProfile {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  photo?: string;
+}
 
-export const SharePage = () => {
-  // 1. Fetch data from RTK Query hook
-  const { data: notes } = useGetNotesQuery();
-  
-  const navigate = useNavigate();
-  const location = useLocation();
+interface SharePopoverComponentProps {
+  user: UserProfile | null;
+  collaborators: CollaboratorItem[];
+  setCollaborators: React.Dispatch<React.SetStateAction<CollaboratorItem[]>>;
+  handleOpenPermissionMenu: (event: React.MouseEvent<HTMLButtonElement>, id: string | null, currentRole: string) => void;
+  getRoleLabel: (role: string) => string;
+}
 
-  const [showSharedWorkspace, setShowSharedWorkspace] = React.useState<boolean>(false);
-  const [watchLaterEnabled, setWatchLaterEnabled] = React.useState<boolean>(false);
+export const SharePage = ({
+  user,
+  collaborators,
+  setCollaborators,
+  handleOpenPermissionMenu,
+  getRoleLabel,
+}: SharePopoverComponentProps) => {
+  const [tabValue, setTabValue] = useState<number>(0);
+  const [email, setEmail] = useState<string>("");
+  const [inviteMessage, setInviteMessage] = useState<string>("");
+  const [isInviting, setIsInviting] = useState<boolean>(false);
 
-  // Derive shared notes safely using strict typing
-  const sharedNotes = React.useMemo(() => {
-    return Array.isArray(notes)
-      ? notes.filter((note: Note) => note.isOwned !== true)
-      : [];
-  }, [notes]);
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setInviteMessage("Please enter at least one email address.");
+      return;
+    }
+    const emailList = email.split(",").map((str) => str.trim()).filter((str) => str !== "");
+    if (emailList.length === 0) {
+      setInviteMessage("Please enter at least one valid email address.");
+      return;
+    }
 
-  // Synchronize component state with URL search parameters and localStorage
-  React.useEffect(() => {
-    const shouldShowShared = location.search.includes("view=shared") || localStorage.getItem("sharedNotesRequested") === "true";
-    const shouldWatchLater = localStorage.getItem("watchLaterSharedNotes") === "true";
-    
-    setShowSharedWorkspace(shouldShowShared);
-    setWatchLaterEnabled(shouldWatchLater);
-  }, [location.search]);
+    setIsInviting(true);
+    setInviteMessage("");
 
-  // Handle filtering logic for core layout views
-  const filteredNotes = React.useMemo(() => {
-    if (!Array.isArray(notes)) return [];
+    try {
+      const response = await fetch("http://localhost:5000/api/share/multiple", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify({
+          emails: emailList,
+          pageUrl: window.location.href,
+        }),
+      });
 
-    return notes.filter((note: Note) => {
-      if (showSharedWorkspace && note.isOwned === true) return false;
-      return true;
-    });
-  }, [notes, showSharedWorkspace]);
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setInviteMessage(data.message || `Invite sent to ${emailList.length} email${emailList.length > 1 ? "s" : ""}.`);
+        setEmail("");
+        const nextCollaborators = (data.invitations || []).map((item: any) => ({
+          invitedEmail: item.email,
+          status: item.status,
+          role: item.role || "full",
+          pageUrl: item.pageUrl,
+          source: "Shared link",
+        }));
+        setCollaborators((prev) => [...nextCollaborators, ...prev]);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setInviteMessage(errorData.message || "Unable to send invitations right now.");
+      }
+    } catch {
+      setInviteMessage("Unable to send invitations right now.");
+    } finally {
+      setIsInviting(false);
+    }
+  };
 
-  // Placeholder handler for watch later action click
-  const handleWatchLaterClick = () => {
-    console.log("Watch later region interactive click triggered");
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Link copied to clipboard!");
   };
 
   return (
-    <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 54px' }}>
-      {showSharedWorkspace ? (
-        <Box sx={{ mt: 2 }}>
-          <Box sx={{ mb: 3, p: 2.5, border: '1px solid #e0e0e0', borderRadius: '12px', bgcolor: '#f9fbff' }}>
-            <Typography sx={{ fontWeight: 700, color: '#1f3a5f', mb: 0.5 }}>
-              Shared workspace
+    <Box>
+      <Tabs
+        value={tabValue}
+        onChange={(_, newValue) => setTabValue(newValue)}
+        textColor="primary"
+        indicatorColor="primary"
+        sx={{ minHeight: 32, mb: 2, borderBottom: "1px solid #f0f0f0" }}
+      >
+        <Tab label="Share" sx={{ textTransform: "none", minHeight: 32, fontWeight: 600 }} />
+      </Tabs>
+
+      {tabValue === 0 && (
+        <Box>
+          <Box component="form" onSubmit={handleInvite} sx={{ display: "flex", gap: 1, mb: 2.5 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Email or group, separated by commas"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              sx={{ "& .MuiOutlinedInput-root": { fontSize: "13px" } }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              disableElevation
+              disabled={isInviting}
+              sx={{ textTransform: "none", bgcolor: "#e9c0f1", "&:hover": { bgcolor: "#973aa8", color: "white" } }}
+            >
+              {isInviting ? "Sending..." : "Invite"}
+            </Button>
+          </Box>
+
+          {inviteMessage && (
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 1.5,
+                color: inviteMessage.includes("Unable") || inviteMessage.includes("Please") ? "error.main" : "success.main",
+              }}
+            >
+              {inviteMessage}
             </Typography>
-            <Typography sx={{ color: '#5f6b7a', fontSize: '14px' }}>
-              These are the notes shared with you from the owner’s workspace. Edits made here update the same note for the owner too.
+          )}
+
+          {/* Current User (You) Row */}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, color: "text.primary" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar src={user?.photo || ""} sx={{ width: 36, height: 36, bgcolor: "#e3e3e3" }}>
+                {!user?.photo && (user?.firstName?.charAt(0) || "Z")}
+              </Avatar>
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "13.5px" }}>
+                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "Zin Mar Khaing"} (You)
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontSize: "11px" }}>
+                  {user?.email || "zinmarkhaing979@gmail.com"}
+                </Typography>
+              </Box>
+            </Box>
+            <Button
+              size="small"
+              variant="text"
+              endIcon={<KeyboardArrowDownIcon />}
+              onClick={(e) => handleOpenPermissionMenu(e, null, "full")}
+              sx={{ textTransform: "none", color: "text.secondary", fontSize: "13px" }}
+            >
+              Full access
+            </Button>
+          </Box>
+
+          {/* Collaborators List */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
+            {collaborators.map((person) => (
+              <Box key={person._id || person.invitedEmail} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: "#e8f3ff", color: "#1a6cb3", fontSize: "14px", fontWeight: "bold" }}>
+                    {person.invitedEmail.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontSize: "13.5px", fontWeight: 500 }}>
+                      {person.invitedEmail}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "inline-block", bgcolor: "background.default", px: 0.8, py: 0.1, borderRadius: 1, fontSize: "10px", fontWeight: 600, mt: 0.3 }}
+                    >
+                      {person.status === "accepted" ? "Active" : "Invited"}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Button
+                  size="small"
+                  variant="text"
+                  endIcon={<KeyboardArrowDownIcon />}
+                  onClick={(e) => handleOpenPermissionMenu(e, person._id || null, person.role)}
+                  sx={{ textTransform: "none", color: "text.primary", fontSize: "13px", bgcolor: "background.default", borderRadius: 3, px: 1 }}
+                >
+                  {getRoleLabel(person.role)}
+                </Button>
+              </Box>
+            ))}
+          </Box>
+
+          <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary", display: "block", mb: 1 }}>
+            General access
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: "#f0f0f0" }}>🔒</Avatar>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: "13px" }}>
+              Only people invited can open this link
             </Typography>
           </Box>
 
-          {watchLaterEnabled && (
-            <Box onClick={handleWatchLaterClick} sx={{ mb: 3, p: 2, border: '1px solid #f3d9a3', borderRadius: '10px', bgcolor: '#fff7e6', cursor: 'pointer' }}>
-              <Typography sx={{ fontWeight: 600, color: '#7a4b00' }}>
-                Watch later
-              </Typography>
-            </Box>
-          )}
+          <Divider sx={{ my: 1.5 }} />
 
-          {filteredNotes.length === 0 ? (
-            <Typography sx={{ color: '#9b9a97', fontSize: '14px', textAlign: 'center', mt: 4 }}>
-              No tasks match your filter criteria.
-            </Typography>
-          ) : (
-            <Stack spacing={1.5}>
-              {filteredNotes.map((note: Note) => (
-                <Box key={note._id || note.id} sx={{ p: 2, border: '1px solid #e8ecef', borderRadius: '10px', bgcolor: 'white' }}>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' } }}>
-                    <Box>
-                      <Typography sx={{ fontWeight: 600, color: '#37352f' }}>{note.title || 'Untitled note'}</Typography>
-                      <Typography sx={{ color: '#6b7280', fontSize: '13px', mt: 0.5 }}>
-                        {note.content || note.description || 'No content yet'}
-                      </Typography>
-                    </Box>
-                    <Button
-                      variant="contained"
-                      disableElevation
-                      onClick={() => {
-                        if (note.accessPermission === 'edit' || note.accessPermission === 'owner') {
-                          navigate(`/note-form/edit/${note._id}`);
-                          return;
-                        }
-                        navigate(`/note-form/detail/${note._id}`);
-                      }}
-                      sx={{ textTransform: 'none', bgcolor: '#dec9e9', width: 150, height: 40, borderRadius: 3, '&:hover': { bgcolor: '#973aa8', color: "#ffe5ec" } }}
-                    >
-                      {note.accessPermission === 'edit' || note.accessPermission === 'owner' ? 'Open / Edit' : 'Open / View'}
-                    </Button>
-                  </Stack>
-                </Box>
-              ))}
-            </Stack>
-          )}
-        </Box>
-      ) : (
-        // Standard non-shared layout
-        <Box sx={{ mt: 2 }}>
-          {filteredNotes.length === 0 ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pt: 10, pb: 10 }}>
-              <IconButton disabled sx={{ p: 1.5, bgcolor: '#f1f1ef', borderRadius: '8px', mb: 2, '& .MuiSvgIcon-root': { color: '#acaba9', fontSize: 32 } }}>
-                <TaskAltIcon />
-              </IconButton>
-              <Typography sx={{ color: '#9b9a97', fontSize: '14px', mb: 1.5 }}>
-                No matching tasks found.
-              </Typography>
-              <Typography onClick={() => navigate("/note-form/create")} sx={{ color: '#2383e2', fontSize: '14px', cursor: 'pointer', fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
-                + New task
-              </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary", cursor: "pointer" }}>
+              <HelpOutlineIcon sx={{ fontSize: 16 }} />
+              <Typography variant="caption" sx={{ fontSize: "12px" }}>Learn about sharing</Typography>
             </Box>
-          ) : (
-            <Stack spacing={1.5}>
-              {filteredNotes.map((note: Note) => (
-                <Box key={note._id || note.id} sx={{ p: 2, border: '1px solid #ededed', borderRadius: '8px', '&:hover': { bgcolor: '#f7f7f5' } }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{note.title || 'Untitled'}</Typography>
-                  <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                    <Typography variant="caption" sx={{ color: '#6b6a65' }}>Assignee: {note.assignee || 'Unassigned'}</Typography>
-                    <Typography variant="caption" sx={{ color: '#6b6a65' }}>Status: {note.task || 'Todo'}</Typography>
-                  </Stack>
-                </Box>
-              ))}
-            </Stack>
-          )}
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
+              onClick={handleCopyLink}
+              sx={{ textTransform: "none", borderRadius: 2, borderColor: "#e0e0e0", color: "text.primary" }}
+            >
+              Copy link
+            </Button>
+          </Box>
         </Box>
       )}
 
-      {/* Directory section for shared notes */}
-      <Box sx={{ mt: 4, pt: 4, borderTop: '1px dashed #ededed' }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, color: '#37352f', mb: 2 }}>
-          Shared Notes Directory Summary
-        </Typography>
-        {sharedNotes.length === 0 ? (
-          <Typography sx={{ color: '#9b9a97', fontSize: '14px' }}>
-            No shared notes available yet.
-          </Typography>
-        ) : (
-          <Stack spacing={1.5}>
-            {sharedNotes.map((note: Note) => (
-              <Box key={note._id} sx={{ p: 2, border: '1px solid #e8ecef', borderRadius: '10px', bgcolor: 'white' }}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' } }}>
-                  <Box>
-                    <Typography sx={{ fontWeight: 600, color: '#37352f' }}>{note.title || 'Untitled note'}</Typography>
-                    <Typography sx={{ color: '#6b7280', fontSize: '13px', mt: 0.5, mr: 2 }}>
-                      {note.content || note.description || 'No content yet'}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="contained"
-                    disableElevation
-                    onClick={() => {
-                      if (note.accessPermission === 'edit' || note.accessPermission === 'owner') {
-                        navigate(`/note-form/edit/${note._id}`);
-                        return;
-                      }
-                      navigate(`/note-form/detail/${note._id}`);
-                    }}
-                    sx={{ textTransform: 'none', bgcolor: '#dec9e9', width: 150, height: 40, borderRadius: 3, '&:hover': { bgcolor: '#973aa8', color: "#ffe5ec" } }}
-                  >
-                    {note.accessPermission === 'edit' || note.accessPermission === 'owner'
-                      ? 'Open / Edit'
-                      : note.accessPermission === 'comment'
-                        ? 'Open / Comment'
-                        : 'Open / View'}
-                  </Button>
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
-        )}
-      </Box>
+      {tabValue === 1 && (
+        <Box sx={{ p: 1 }}>
+          <Typography variant="body2" color="text.secondary">Publish settings will go here.</Typography>
+        </Box>
+      )}
     </Box>
   );
 };

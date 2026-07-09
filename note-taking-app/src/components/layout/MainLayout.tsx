@@ -14,7 +14,6 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   
-  // Sidebar ပွင့်/ပိတ် State ကို Layout မှာ သိမ်းထားပါတယ်
   const [menuOpen, setMenuOpen] = useState(true);
 
   const handleToggleMenu = () => {
@@ -24,11 +23,10 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
     <Box
       sx={{
         display: "flex",
-        minHeight: "100vh",
-        // bgcolor: "#dee4ea",
-        backgroundColor:"#f4f6f8",
-        // overflow: "hidden",
+        minHeight: "100vh",     
+        bgcolor: "background.default",
          overflowX: "hidden",
+         
       }}
     >
    

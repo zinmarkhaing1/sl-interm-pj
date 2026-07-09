@@ -2,13 +2,14 @@
 import * as React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {Box,Card,CircularProgress,CardContent,Typography,Paper,Stack,IconButton,TextField} from "@mui/material";
+import {Box,Card,CircularProgress,CardContent,Typography,Paper,Stack,IconButton,TextField, Button} from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { useGetNotesQuery ,useUpdateNoteMutation} from "../../services/noteApi"; 
 import type { Note } from "../../types/Note";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import { Search,SwapVertOutlined  } from "@mui/icons-material";
+import { Search,SwapVertOutlined, LineWeightOutlined  } from "@mui/icons-material";
+
 
 
 type ColumnConfig = {
@@ -21,7 +22,7 @@ const COLUMNS: ColumnConfig[] = [
   { id: "Todo", label: "Todo", color: "#a3c4f3" },
   { id: "In Progress", label: "In Progress", color: "#ffadad" },
   { id: "Complete", label: "Complete", color: "#a3b18a" },
-  { id: "Done", label: "Done", color: "#588157" },
+  { id: "Not Started", label: "Not Started", color: "#588157" },
 ];
 
 export const NoteStatusPage: React.FC = () => {
@@ -156,11 +157,29 @@ export const NoteStatusPage: React.FC = () => {
       >
         My Notes
       </Typography> */}
+      <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+       <Button
+              
+                startIcon={<LineWeightOutlined/>}
+                sx={{
+                  textTransform: "none",
+                  color: "text.primary",
+                  fontSize: "18px",
+                  fontWeight: "500",
+                  borderRadius: 3,
+                  px: 1.5,
+                  whiteSpace: 'nowrap',
+                  "& .MuiButton-startIcon": { color: "#973aa8" },
+                  // "&:hover": { bgcolor: "#f5f5f5" },
+                }}
+              >
+                Status Page 
+              </Button>
         <IconButton size="small" onClick={() =>
                     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
                   }
-                 sx={{ color: sortOrder === 'desc' ? '#2383e2' : '#7c7b77', 
-                                bgcolor: sortOrder === 'desc' ? '#edf6ff' : 'transparent',
+                 sx={{ color: sortOrder === 'desc' ? '#973aa8' : 'text.primary', 
+                                bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent',
                                 borderRadius: '4px',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
                                 '& .MuiSvgIcon-root': {
@@ -168,9 +187,9 @@ export const NoteStatusPage: React.FC = () => {
                                   transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)', 
                                 },
                                 '&:hover': {
-                                  bgcolor: sortOrder === 'desc' ? '#e3f2fd' : '#f1f1ef'
+                                  bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent'
                                 }}}><SwapVertOutlined fontSize="small" /></IconButton>
-       <IconButton size="small" sx={{ color: '#7c7b77', mr: searchOpen ? 1 : 0, borderRadius: '4px'}} onClick={() => setSearchOpen((prev) => !prev)}>
+       <IconButton size="small" sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px'}} onClick={() => setSearchOpen((prev) => !prev)}>
                   <Search fontSize="small" />
                 </IconButton>
                 {searchOpen && (
@@ -185,7 +204,7 @@ export const NoteStatusPage: React.FC = () => {
                       '& .MuiOutlinedInput-root': {
                         height: 30,
                         fontSize: '0.85rem',
-                        backgroundColor: '#ffffff',
+                       bgcolor:'background.default',
                         borderRadius: '4px',
                       },
                       '& .MuiOutlinedInput-input': {
@@ -195,6 +214,8 @@ export const NoteStatusPage: React.FC = () => {
                     }}
                   />
                 )}
+
+                </Stack>
 
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Box

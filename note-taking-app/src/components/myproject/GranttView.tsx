@@ -31,8 +31,8 @@ export const GranttView = ({ filteredNotes }: GranttViewProps) => {
   return (
     <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1.5, overflow: 'hidden' }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '240px 1fr' } }}>
-        <Box sx={{ borderRight: { md: '1px solid #e0e0e0' }, p: 2, bgcolor: '#fafafa' }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, color: '#878682' }}>
+        <Box sx={{ borderRight: { md: '1px solid #e0e0e0' }, p: 2, bgcolor: "background.default" }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.primary' }}>
             Project name
           </Typography>
           <Divider sx={{ my: 1 }} />
@@ -55,7 +55,7 @@ export const GranttView = ({ filteredNotes }: GranttViewProps) => {
             <Typography variant="caption" sx={{ fontWeight: 600, color: '#878682' }}>
               Timeline
             </Typography>
-            <Typography variant="caption" sx={{ fontWeight: 600, color: '#2383e2' }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: ' #973aa8' }}>
               Today
             </Typography>
           </Box>
@@ -74,7 +74,7 @@ export const GranttView = ({ filteredNotes }: GranttViewProps) => {
                       left: 0,
                       height: 20,
                       width: getTimelineWidth(note),
-                      bgcolor: '#7bb9ff',
+                      bgcolor: ' #dec9e9',
                       borderRadius: 1,
                     }}
                   />

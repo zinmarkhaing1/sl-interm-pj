@@ -4,7 +4,7 @@ export interface INotification extends Document {
   fromUser: Types.ObjectId;
   toUser: Types.ObjectId;
   noteId: Types.ObjectId;
-  type: "view" | "edit" | "comment";
+  type: "view" | "edit" | "comment" | "invite";
   message: string;
   isRead: boolean;
   createdAt: Date;
@@ -26,11 +26,10 @@ const NotificationSchema = new mongoose.Schema(
     noteId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Note",
-      required: true,
     },
     type: {
       type: String,
-      enum: ["view", "edit", "comment"],
+      enum: ["view", "edit", "comment", "invite"],
       required: true,
     },
     message: {

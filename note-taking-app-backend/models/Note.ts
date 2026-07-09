@@ -27,7 +27,7 @@ const NoteSchema =  new mongoose.Schema(
         task : {type:String,required:true},
         startDate: {type:String},
         endDate: {type:String},
-        user: {type: mongoose.Schema.Types.ObjectId,ref: "Auth",required: true},
+        user: {type: mongoose.Schema.Types.ObjectId,ref: "Auth",required: true},   
     },
     {timestamps:true}
 );

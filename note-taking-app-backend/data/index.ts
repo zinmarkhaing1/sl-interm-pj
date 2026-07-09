@@ -71,6 +71,6 @@ export const task = [
     },
     {
         _id:taskIds[3],
-        name : "Done"
+        name : "Not Started"
     },
 ]
