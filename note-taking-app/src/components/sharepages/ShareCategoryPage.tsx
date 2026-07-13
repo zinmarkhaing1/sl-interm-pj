@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LinkIcon from "@mui/icons-material/Link";
-
 interface CollaboratorItem {
   _id?: string;
   invitedEmail: string;
@@ -51,10 +50,8 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
-
   const handleCopyLink = async () => {
     try {
-      
       await navigator.clipboard.writeText(window.location.href);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
@@ -63,9 +60,15 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
     }
   };
 
-  //to invite email
+  // to invite email
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
+
+   
+    if (user?.email && inviteEmail.trim().toLowerCase() === user.email.toLowerCase()) {
+      console.log('You cannot invite yourself');
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -76,6 +79,7 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
           Authorization: `Bearer ${token || ""}`,
         },
         body: JSON.stringify({
+          email: inviteEmail.trim(),          
           invitedEmail: inviteEmail.trim(),
           role: "viewer", 
           pageUrl: window.location.href, 
@@ -86,8 +90,18 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
       if (response.ok) {
         const data = await response.json();
      
-        if (data.collaborator) {
+        if (data && data.collaborator) {
           setCollaborators((prev) => [...prev, data.collaborator]);
+        } else if (data && data.data) {
+          setCollaborators((prev) => [...prev, data.data]);
+        } else {
+          const fallbackNewCollaborator: CollaboratorItem = {
+            _id: data._id || String(Date.now()),
+            invitedEmail: inviteEmail.trim(),
+            status: data.status || "pending",
+            role: "viewer",
+          };
+          setCollaborators((prev) => [...prev, fallbackNewCollaborator]);
         }
         setInviteEmail("");
       } else {
@@ -100,12 +114,10 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
 
   return (
     <Box>
-
       <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
         Share Category Page
       </Typography>
 
-  
       <Box sx={{ display: "flex", gap: 1, mb: 2.5 }}>
         <TextField
           fullWidth
@@ -136,13 +148,11 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
         </Button>
       </Box>
 
-
       <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
         People with access
       </Typography>
 
       <List disablePadding sx={{ maxHeight: 180, overflowY: "auto", mb: 2 }}>
-    
         {user && (
           <ListItem disableGutters sx={{ py: 0.75 }}>
             <ListItemAvatar sx={{ minWidth: 40 }}>
@@ -172,45 +182,45 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
           </ListItem>
         )}
 
-        {/* ဖိတ်ခေါ်ထားသော Collaborators များ စာရင်း */}
-        {collaborators.map((person) => (
-          <ListItem disableGutters key={person._id} sx={{ py: 0.75 }}>
-            <ListItemAvatar sx={{ minWidth: 40 }}>
-              <Avatar sx={{ width: 32, height: 32, bgcolor: "action.focus", fontSize: "14px" }}>
-                {person.invitedEmail.charAt(0).toUpperCase()}
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={
-                <Typography variant="body2" >
-                  {person.invitedEmail}
-                </Typography>
-              }
-              secondary={
-                <Typography variant="caption" color="text.secondary">
-                  {person.status}
-                </Typography>
-              }
-            />
-            {/* Permission ပြောင်းလဲရန် Menu ခေါ်မည့် Button */}
-            <Button
-              size="small"
-              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 14 }} />}
-              onClick={(e) => handleOpenPermissionMenu(e, person._id || null, person.role)}
-              sx={{
-                textTransform: "none",
-                color: "text.secondary",
-                fontSize: "0.75rem",
-                py: 0.5,
-              }}
-            >
-              {getRoleLabel(person.role)}
-            </Button>
-          </ListItem>
-        ))}
+        
+        {collaborators && collaborators
+          .filter((person: CollaboratorItem) => person.invitedEmail !== user?.email)
+          .map((person, index) => (
+            <ListItem disableGutters key={person._id || person.invitedEmail || index} sx={{ py: 0.75 }}>
+              <ListItemAvatar sx={{ minWidth: 40 }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: "action.focus", fontSize: "14px" }}>
+                  {person.invitedEmail ? person.invitedEmail.charAt(0).toUpperCase() : "U"}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={
+                  <Typography variant="body2" >
+                    {person.invitedEmail}
+                  </Typography>
+                }
+                secondary={
+                  <Typography variant="caption" color="text.secondary">
+                    {person.status}
+                  </Typography>
+                }
+              />
+              <Button
+                size="small"
+                endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 14 }} />}
+                onClick={(e) => handleOpenPermissionMenu(e, person._id || null, person.role)}
+                sx={{
+                  textTransform: "none",
+                  color: "text.secondary",
+                  fontSize: "0.75rem",
+                  py: 0.5,
+                }}
+              >
+                {getRoleLabel(person.role)}
+              </Button>
+            </ListItem>
+          ))}
       </List>
 
-      {/* အောက်ခြေ Copy Link ယူမည့်အပိုင်း */}
       <Box
         sx={{
           pt: 1.5,

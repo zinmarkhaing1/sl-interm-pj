@@ -1,16 +1,31 @@
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {Box,Card,CircularProgress,CardContent,Typography,Paper,Stack,IconButton,TextField, Button} from "@mui/material";
+import { Box, Card, CircularProgress, CardContent, Typography, Paper, Stack, IconButton, TextField, Button, Menu, MenuItem, ListItemText, ListItemIcon, Popover } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
-import { useGetNotesQuery ,useUpdateNoteMutation} from "../../services/noteApi"; 
+import { useGetNotesQuery, useUpdateNoteMutation } from "../../services/noteApi";
 import type { Note } from "../../types/Note";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import { Search,SwapVertOutlined, LineWeightOutlined  } from "@mui/icons-material";
+import { Search, SwapVertOutlined, LineWeightOutlined, Share, Check, DeleteOutlined } from "@mui/icons-material";
+import { ShareStatusPage } from "../sharepages/ShareStatusPage";
 
+interface CollaboratorItem {
+  _id?: string;
+  invitedEmail: string;
+  status: string;
+  role: string;
+  pageUrl?: string;
+  source?: string;
+}
 
+interface UserProfile {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  photo?: string;
+}
 
 type ColumnConfig = {
   id: string;
@@ -26,48 +41,101 @@ const COLUMNS: ColumnConfig[] = [
 ];
 
 export const NoteStatusPage: React.FC = () => {
-
-   const [searchOpen, setSearchOpen] = useState<boolean>(false);
-    const [searchText, setSearchText] = useState<string>("");
-    const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("asc");
-  
-
-  const { data: notes = [], isLoading, isError } = useGetNotesQuery();
-   const [updatedNote] = useUpdateNoteMutation();
-  const [tasks, setTasks] = React.useState<Note[]>([]);
+  const [searchOpen, setSearchOpen] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [tasks, setTasks] = useState<Note[]>([]);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    if (notes) {
-      setTasks(notes);
+  // ============ FIX: Remove refetchOnMountOrArgChange ============
+  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery();
+  const [updatedNote] = useUpdateNoteMutation();
+
+  // For sharing state
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
+  const [shareAnchorEl, setShareAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [permissionMenuAnchorEl, setPermissionMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
+  const [activeRole, setActiveRole] = useState<string>("full");
+
+  // ============ FIX: Use useRef to track previous values ============
+  const isUpdatingRef = useRef(false);
+  const previousNotesRef = useRef<Note[]>([]);
+
+  // ============ FIX: Use useMemo for filtered notes ============
+  const filteredAndSortedNotes = useMemo(() => {
+    if (!notes || !Array.isArray(notes)) return [];
+
+    let result = [...notes];
+
+    // Filter by search text
+    if (searchText.trim() !== "") {
+      const searchLower = searchText.toLowerCase();
+      result = result.filter((note: Note) => {
+        const titleText = (note.title || "").toLowerCase();
+        const contentText = (note.content || note.description || "").toLowerCase();
+        return titleText.includes(searchLower) || contentText.includes(searchLower);
+      });
     }
-  }, [notes]);
 
+    // Sort by title
+    result.sort((a, b) => {
+      const titleA = (a.title || "").toLowerCase();
+      const titleB = (b.title || "").toLowerCase();
+      return sortOrder === "asc" 
+        ? titleA.localeCompare(titleB) 
+        : titleB.localeCompare(titleA);
+    });
 
-  const filteredNotes = React.useMemo<Note[]>(() => {
-        if (!Array.isArray(notes)) return [];
+    return result;
+  }, [notes, searchText, sortOrder]);
+
+  // ============ FIX: Update tasks only when needed ============
+  useEffect(() => {
+    // Compare with previous notes to avoid unnecessary updates
+    const currentData = JSON.stringify(filteredAndSortedNotes);
+    const previousData = JSON.stringify(previousNotesRef.current);
     
-        return notes.filter((note: Note) => {
-          if (searchText.trim() !== "") {
-            const titleText = (note.title || "").toLowerCase();
-            const searchTarget = searchText.toLowerCase();
-            if (!titleText.includes(searchTarget)) return false;
-          }
-  
-          return true;
-        })
-         .sort((a, b) => {
-          const titleA = (a.title || "").toLowerCase();
-          const titleB = (b.title || "").toLowerCase();
-    
-          return sortOrder === "asc"
-            ? titleA.localeCompare(titleB)
-            : titleB.localeCompare(titleA);
+    if (currentData !== previousData) {
+      previousNotesRef.current = filteredAndSortedNotes;
+      setTasks(filteredAndSortedNotes);
+    }
+  }, [filteredAndSortedNotes]);
+
+  // ============ FIX: Load user and collaborators once ============
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+      }
+    }
+
+    const loadCollaborators = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const response = await fetch("http://localhost:5000/api/share/collaborators", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-    
-      }, [ notes,  searchText,sortOrder]);
-  
-  const handleOnDragEnd = async (result: DropResult) => {
+        if (response.ok) {
+          const data = await response.json();
+          setCollaborators(data.collaborators || []);
+        }
+      } catch (err) {
+        console.error("Failed to load collaborators", err);
+      }
+    };
+
+    loadCollaborators();
+  }, []); // Empty dependency array - runs once
+
+  // ============ FIX: Handle drag end with useCallback ============
+  const handleOnDragEnd = useCallback(async (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
     if (!destination) return;
@@ -78,59 +146,160 @@ export const NoteStatusPage: React.FC = () => {
       return;
     }
 
-    const movedTask = tasks.find((t) => (t._id || t.id) === draggableId);
-    if (!movedTask) return;
-
-    const updatedTasks = Array.from(tasks);
-
-    const sourceTasksInColumn = updatedTasks.filter(
-      (t) => (t.task || "Todo") === source.droppableId,
-    );
-    const targetTask = sourceTasksInColumn[source.index];
-    const globalSourceIndex = updatedTasks.indexOf(targetTask);
-    if (globalSourceIndex !== -1) {
-      updatedTasks.splice(globalSourceIndex, 1);
-    }
-
-    const updatedMovedTask = { ...targetTask, task: destination.droppableId };
-
-    const destTasksInColumn = updatedTasks.filter(
-      (t) => (t.task || "Todo") === destination.droppableId,
-    );
-
-    let globalDestIndex = updatedTasks.length;
-    if (destination.index < destTasksInColumn.length) {
-      const nextTask = destTasksInColumn[destination.index];
-      globalDestIndex = updatedTasks.indexOf(nextTask);
-    } else if (destTasksInColumn.length > 0) {
-      const lastTask = destTasksInColumn[destTasksInColumn.length - 1];
-      globalDestIndex = updatedTasks.indexOf(lastTask) + 1;
-    }
-
-    updatedTasks.splice(globalDestIndex, 0, updatedMovedTask);
-
-    setTasks(updatedTasks);
-    //something need
+    if (isUpdatingRef.current) return;
+    isUpdatingRef.current = true;
 
     try {
+      const movedTask = tasks.find((t) => (t._id || t.id) === draggableId);
+      if (!movedTask) {
+        isUpdatingRef.current = false;
+        return;
+      }
+
+      // Update UI
+      const updatedTasks = Array.from(tasks);
+      const sourceTasksInColumn = updatedTasks.filter(
+        (t) => (t.task || "Todo") === source.droppableId,
+      );
+      const targetTask = sourceTasksInColumn[source.index];
+      const globalSourceIndex = updatedTasks.indexOf(targetTask);
+      
+      if (globalSourceIndex !== -1) {
+        updatedTasks.splice(globalSourceIndex, 1);
+      }
+
+      const updatedMovedTask = { ...targetTask, task: destination.droppableId };
+      const destTasksInColumn = updatedTasks.filter(
+        (t) => (t.task || "Todo") === destination.droppableId,
+      );
+
+      let globalDestIndex = updatedTasks.length;
+      if (destination.index < destTasksInColumn.length) {
+        const nextTask = destTasksInColumn[destination.index];
+        globalDestIndex = updatedTasks.indexOf(nextTask);
+      } else if (destTasksInColumn.length > 0) {
+        const lastTask = destTasksInColumn[destTasksInColumn.length - 1];
+        globalDestIndex = updatedTasks.indexOf(lastTask) + 1;
+      }
+
+      updatedTasks.splice(globalDestIndex, 0, updatedMovedTask);
+      setTasks(updatedTasks);
+
+      // Update backend
       const taskId = targetTask._id || targetTask.id;
       if (taskId) {
         await updatedNote({
           id: taskId,
           body: { task: destination.droppableId },
         }).unwrap();
+        // Refetch to sync with backend - but only once
+        refetch();
       }
     } catch (err) {
-      console.log("Failed to update task status in backend:", err);
-      setTasks(notes);
+      console.error("Failed to update task status in backend:", err);
+      setTasks(filteredAndSortedNotes);
+    } finally {
+      isUpdatingRef.current = false;
+    }
+  }, [tasks, updatedNote, refetch, filteredAndSortedNotes]);
+
+  // Share Popover Handlers
+  const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setShareAnchorEl(event.currentTarget);
+  };
+
+  const handleShareClose = () => {
+    setShareAnchorEl(null);
+  };
+
+  const handleOpenPermissionMenu = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: string | null,
+    currentRole: string
+  ) => {
+    setPermissionMenuAnchorEl(event.currentTarget);
+    setActiveCollaboratorId(id);
+    setActiveRole(currentRole || "full");
+  };
+
+  const handleClosePermissionMenu = () => {
+    setPermissionMenuAnchorEl(null);
+    setActiveCollaboratorId(null);
+  };
+
+  const handlePermissionChange = async (role: string) => {
+    if (!activeCollaboratorId) {
+      handleClosePermissionMenu();
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}/role`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify({ role }),
+      });
+      if (response.ok) {
+        setCollaborators((prev) =>
+          prev.map((person) =>
+            person._id === activeCollaboratorId ? { ...person, role } : person
+          )
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      handleClosePermissionMenu();
     }
   };
 
+  const handleRemoveCollaborator = async () => {
+    if (!activeCollaboratorId) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      });
+      if (response.ok) {
+        setCollaborators((prev) => prev.filter((person) => person._id !== activeCollaboratorId));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      handleClosePermissionMenu();
+    }
+  };
 
+  const getRoleLabel = (role: string) => {
+    if (role === "full") return "Full access";
+    if (role === "editor") return "Can edit";
+    if (role === "commenter") return "Can comment";
+    return "Can view";
+  };
+
+  const isShareOpen = Boolean(shareAnchorEl);
+
+  const handleRowClick = (id: any) => {
+    navigate(`/note-form/detail/${id}`);
+  };
+
+  // ============ FIX: Handle search and sort without infinite loop ============
+  const handleSearchToggle = () => {
+    setSearchOpen((prev) => !prev);
+    if (searchOpen) {
+      setSearchText("");
+    }
+  };
+
+  const handleSortToggle = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 5}}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
         <CircularProgress />
         <Typography sx={{ ml: 2 }}>Loading notes...</Typography>
       </Box>
@@ -140,83 +309,182 @@ export const NoteStatusPage: React.FC = () => {
   if (isError) {
     return (
       <Typography color="error" sx={{ textAlign: "center", mt: 5 }}>
-        Failed to load notes .
+        Failed to load notes.
       </Typography>
     );
   }
 
-   const handleRowClick = (id: any) => {
-    navigate(`/note-form/detail/${id}`); 
-  }
-
   return (
-    <Box sx={{py:2}} >
-      {/* <Typography
-        variant="h5"
-        sx={{mb:1, fontWeight: "bold", textAlign: "center" }}
-      >
-        My Notes
-      </Typography> */}
+    <Box sx={{ py: 2 }}>
+      {/* Header Section */}
       <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-       <Button
-              
-                startIcon={<LineWeightOutlined/>}
-                sx={{
-                  textTransform: "none",
-                  color: "text.primary",
-                  fontSize: "18px",
-                  fontWeight: "500",
-                  borderRadius: 3,
-                  px: 1.5,
-                  whiteSpace: 'nowrap',
-                  "& .MuiButton-startIcon": { color: "#973aa8" },
-                  // "&:hover": { bgcolor: "#f5f5f5" },
-                }}
-              >
-                Status Page 
-              </Button>
-        <IconButton size="small" onClick={() =>
-                    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-                  }
-                 sx={{ color: sortOrder === 'desc' ? '#973aa8' : 'text.primary', 
-                                bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent',
-                                borderRadius: '4px',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                                '& .MuiSvgIcon-root': {
-                                  transition: 'transform 0.3s ease',
-                                  transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)', 
-                                },
-                                '&:hover': {
-                                  bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent'
-                                }}}><SwapVertOutlined fontSize="small" /></IconButton>
-       <IconButton size="small" sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px'}} onClick={() => setSearchOpen((prev) => !prev)}>
-                  <Search fontSize="small" />
-                </IconButton>
-                {searchOpen && (
-                  <TextField
-                    size="small"
-                    autoFocus
-                    placeholder="Search text"
-                    value={searchText}
-                    onChange={(event) => setSearchText(event.target.value)}
-                    sx={{
-                      width: 180,
-                      '& .MuiOutlinedInput-root': {
-                        height: 30,
-                        fontSize: '0.85rem',
-                       bgcolor:'background.default',
-                        borderRadius: '4px',
-                      },
-                      '& .MuiOutlinedInput-input': {
-                        py: 0.5,
-                        px: 1,
-                      },
-                    }}
-                  />
-                )}
+        <Button
+          startIcon={<LineWeightOutlined />}
+          sx={{
+            textTransform: "none",
+            color: "text.primary",
+            fontSize: "18px",
+            fontWeight: "500",
+            borderRadius: 3,
+            px: 1.5,
+            whiteSpace: 'nowrap',
+            "& .MuiButton-startIcon": { color: "#973aa8" },
+          }}
+        >
+          Status Page
+        </Button>
+        
+        <IconButton
+          size="small"
+          onClick={handleSortToggle}
+          sx={{
+            color: sortOrder === 'desc' ? '#973aa8' : 'text.primary',
+            bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent',
+            borderRadius: '4px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '& .MuiSvgIcon-root': {
+              transition: 'transform 0.3s ease',
+              transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+            },
+            '&:hover': {
+              bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent'
+            }
+          }}
+        >
+          <SwapVertOutlined fontSize="small" />
+        </IconButton>
+        
+        <IconButton 
+          size="small" 
+          sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px' }} 
+          onClick={handleSearchToggle}
+        >
+          <Search fontSize="small" />
+        </IconButton>
+        
+        {searchOpen && (
+          <TextField
+            size="small"
+            autoFocus
+            placeholder="Search text"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            sx={{
+              width: 180,
+              '& .MuiOutlinedInput-root': {
+                height: 30,
+                fontSize: '0.85rem',
+                bgcolor: 'background.default',
+                borderRadius: '4px',
+              },
+              '& .MuiOutlinedInput-input': {
+                py: 0.5,
+                px: 1,
+              },
+            }}
+          />
+        )}
 
-                </Stack>
+        <Button
+          startIcon={<Share />}
+          onClick={handleShareClick}
+          sx={{
+            color: 'text.primary',
+            bgcolor: isShareOpen ? 'action.selected' : 'background.default',
+            borderRadius: '4px',
+            textTransform: 'none',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              bgcolor: 'action.hover'
+            }
+          }}
+        >
+          Share
+        </Button>
+      </Stack>
 
+      {/* Share Popover */}
+      <Popover
+        open={isShareOpen}
+        anchorEl={shareAnchorEl}
+        onClose={handleShareClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 420,
+              p: 2.5,
+              mt: 1,
+              borderRadius: 3,
+              boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
+              bgcolor: 'background.paper',
+              color: 'text.primary'
+            }
+          }
+        }}
+      >
+        <ShareStatusPage
+          user={user}
+          collaborators={collaborators}
+          setCollaborators={setCollaborators}
+          handleOpenPermissionMenu={handleOpenPermissionMenu}
+          getRoleLabel={getRoleLabel}
+        />
+      </Popover>
+
+      {/* Permission Menu */}
+      <Menu
+        anchorEl={permissionMenuAnchorEl}
+        open={Boolean(permissionMenuAnchorEl)}
+        onClose={handleClosePermissionMenu}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{ paper: { sx: { width: 340, borderRadius: 3, p: 0.5, boxShadow: "0px 4px 16px rgba(0,0,0,0.12)" } } }}
+      >
+        <MenuItem onClick={() => handlePermissionChange("full")} sx={{ py: 1 }}>
+          <ListItemText
+            primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Full access</Typography>}
+            secondary={<Typography variant="caption" color="text.secondary">Edit, suggest, comment, and share</Typography>}
+          />
+          {activeRole === "full" && <Check sx={{ fontSize: 16, ml: 1 }} />}
+        </MenuItem>
+
+        <MenuItem onClick={() => handlePermissionChange("editor")} sx={{ py: 1 }}>
+          <ListItemText
+            primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can edit</Typography>}
+            secondary={<Typography variant="caption" color="text.secondary">Edit, suggest, and comment</Typography>}
+          />
+          {activeRole === "editor" && <Check sx={{ fontSize: 16, ml: 1 }} />}
+        </MenuItem>
+
+        <MenuItem onClick={() => handlePermissionChange("commenter")} sx={{ py: 1 }}>
+          <ListItemText
+            primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can comment</Typography>}
+            secondary={<Typography variant="caption" color="text.secondary">Suggest and comment</Typography>}
+          />
+          {activeRole === "commenter" && <Check sx={{ fontSize: 16, ml: 1 }} />}
+        </MenuItem>
+
+        <MenuItem onClick={() => handlePermissionChange("viewer")} sx={{ py: 1 }}>
+          <ListItemText primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can view</Typography>} />
+          {activeRole === "viewer" && <Check sx={{ fontSize: 16, ml: 1 }} />}
+        </MenuItem>
+
+        {activeCollaboratorId && (
+          <>
+            <Box sx={{ my: 0.5, borderTop: "1px solid #f0f0f0" }} />
+            <MenuItem onClick={handleRemoveCollaborator} sx={{ py: 1, color: "error.main" }}>
+              <ListItemIcon sx={{ color: "error.main", minWidth: 30 }}>
+                <DeleteOutlined sx={{ fontSize: 18 }} />
+              </ListItemIcon>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Remove</Typography>
+            </MenuItem>
+          </>
+        )}
+      </Menu>
+
+      {/* Drag and Drop Board */}
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Box
           sx={{
@@ -232,15 +500,12 @@ export const NoteStatusPage: React.FC = () => {
         >
           {COLUMNS.map((column) => {
             const columnId = column.id;
-            const columnTasks = filteredNotes.filter(
+            const columnTasks = tasks.filter(
               (t) => (t.task || "Todo") === columnId,
             );
 
             return (
-              <Box
-                key={columnId}
-                sx={{ display: "flex", flexDirection: "column" }}
-              >
+              <Box key={columnId} sx={{ display: "flex", flexDirection: "column" }}>
                 <Typography
                   variant="subtitle1"
                   sx={{
@@ -263,7 +528,7 @@ export const NoteStatusPage: React.FC = () => {
                       sx={{
                         p: 1.5,
                         bgcolor: "#e9e9ef",
-                        minHeight: "100%",
+                        minHeight: "400px",
                         borderRadius: 2,
                         border: `1px solid ${column.color}`,
                       }}
@@ -273,11 +538,7 @@ export const NoteStatusPage: React.FC = () => {
                           const taskId = task._id || task.id || String(index);
 
                           return (
-                            <Draggable
-                              key={taskId}
-                              draggableId={taskId}
-                              index={index}
-                            >
+                            <Draggable key={taskId} draggableId={taskId} index={index}>
                               {(provided) => (
                                 <Card
                                   ref={provided.innerRef}
@@ -286,7 +547,7 @@ export const NoteStatusPage: React.FC = () => {
                                   sx={{
                                     boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
                                     borderRadius: 2,
-                                    height:'250px',
+                                    height: '250px',
                                     borderLeft: `5px solid ${column.color}`,
                                     "&:hover": {
                                       boxShadow: "0px 4px 8px rgba(0,0,0,0.1)",
@@ -294,74 +555,73 @@ export const NoteStatusPage: React.FC = () => {
                                   }}
                                 >
                                   <CardContent
-                                    sx={{ p: "10px !important", width: "100%" }}
-                                    onClick={() => handleRowClick(task._id)} 
+                                    sx={{ 
+                                      p: "10px !important", 
+                                      width: "100%", 
+                                      height: "100%", 
+                                      display: "flex", 
+                                      flexDirection: "column", 
+                                      justifyContent: "space-between",
+                                      cursor: "pointer"
+                                    }}
+                                    onClick={() => handleRowClick(task._id || task.id)}
                                   >
-                                    <Typography
-                                      variant="subtitle1"
-                                      sx={{
-                                        // fontWeight: "bold",
-                                        fontSize:"16px",
-                                        color: "#1a202c",
-                                      }}
-                                    >
-                                      {task.title || "No Title"}
-                                    </Typography>
+                                    <Box>
+                                      <Typography
+                                        variant="subtitle1"
+                                        sx={{ fontSize: "16px", color: "#1a202c", fontWeight: 500 }}
+                                      >
+                                        {task.title || "No Title"}
+                                      </Typography>
 
-                                    <Typography
-                                      variant="body2"
-                                      color="textSecondary"
-                                      sx={{ my: 1,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:'hidden',textOverflow:'ellipsis',lineHeight:1.5,maxHeight:'6em' ,}}
-                                    >
-                                      {task.description ||
-                                        task.content ||
-                                        "No Description"}
-                                    </Typography>
+                                      <Typography
+                                        variant="body2"
+                                        color="textSecondary"
+                                        sx={{
+                                          my: 1,
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: 3,
+                                          WebkitBoxOrient: "vertical",
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          lineHeight: 1.5,
+                                        }}
+                                      >
+                                        {task.description || task.content || "No Description"}
+                                      </Typography>
+                                    </Box>
 
-                                    <Stack
-                                      direction="row"
-                                      spacing={1}
-                                      useFlexGap
-                                      sx={{ mt: 1, flexWrap: "wrap" }}
-                                    >
-                                      {task.priority && (
-                                        <Typography
-                                          variant="caption"
-                                          sx={{
-                                            bgcolor: "#edf2f7",
-                                            px: 1,
-                                            py: 0.5,
-                                            borderRadius: 1,
-                                          }}
-                                        >
-                                          Priority: {task.priority}
-                                        </Typography>
-                                      )}
-                                      {task.category && (
-                                        <Typography
-                                          variant="caption"
-                                          sx={{
-                                            bgcolor: "#e2e8f0",
-                                            px: 1,
-                                            py: 0.5,
-                                            borderRadius: 1,
-                                          }}
-                                        >
-                                          Category: {task.category}
-                                        </Typography>
-                                      )}
-                                    </Stack>
+                                    <Box>
+                                      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: "wrap" }}>
+                                        {task.priority && (
+                                          <Typography
+                                            variant="caption"
+                                            sx={{ bgcolor: "#edf2f7", px: 1, py: 0.5, borderRadius: 1 }}
+                                          >
+                                            Priority: {task.priority}
+                                          </Typography>
+                                        )}
+                                        {task.category && (
+                                          <Typography
+                                            variant="caption"
+                                            sx={{ bgcolor: "#e2e8f0", px: 1, py: 0.5, borderRadius: 1 }}
+                                          >
+                                            Category: {task.category}
+                                          </Typography>
+                                        )}
+                                      </Stack>
 
-                                    {(task.startDate || task.endDate) && (
-                                      <Stack direction="row" sx={{ mt: 1.5,alignItems:'center',color:'blue' }}>
-                                        <IconButton size="small" sx={{ color: 'blue', p: 0, mr: 0.5 }} disabled>
-                                            <CalendarMonthIcon sx={{fontSize:'medium',color:'skyblue'}} />
-                                            </IconButton>
-                                            <Typography variant='caption' color="textSecondary">
+                                      {(task.startDate || task.endDate) && (
+                                        <Stack direction="row" sx={{ mt: 1.5, alignItems: 'center', color: 'blue' }}>
+                                          <IconButton size="small" sx={{ color: 'blue', p: 0, mr: 0.5 }} disabled>
+                                            <CalendarMonthIcon sx={{ fontSize: 'medium', color: 'skyblue' }} />
+                                          </IconButton>
+                                          <Typography variant='caption' color="textSecondary">
                                             {task.startDate || '-'} To {task.endDate || '-'}
-                                            </Typography>
-                                            </Stack>
-                                    )}
+                                          </Typography>
+                                        </Stack>
+                                      )}
+                                    </Box>
                                   </CardContent>
                                 </Card>
                               )}

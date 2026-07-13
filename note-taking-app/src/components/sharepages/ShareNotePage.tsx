@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Box,
@@ -20,7 +21,7 @@ interface CollaboratorItem {
   role: string;
   pageUrl?: string;
   source?: string;
-
+  noteId?: string;
 }
 
 interface UserProfile {
@@ -40,24 +41,22 @@ interface ShareNotePageProps {
     currentRole: string
   ) => void;
   getRoleLabel: (role: string) => string;
-  onShareSubmit: (emails: string[]) => Promise<void>;
+  onInvite: (email: string) => Promise<void>; // Add onInvite prop
 }
 
 export const ShareNotePage: React.FC<ShareNotePageProps> = ({
   user,
   collaborators,
-  setCollaborators,
   handleOpenPermissionMenu,
   getRoleLabel,
-  onShareSubmit,
+  onInvite, // Receive onInvite
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
-
+  const [isInviting, setIsInviting] = useState<boolean>(false);
 
   const handleCopyLink = async () => {
     try {
-      
       await navigator.clipboard.writeText(window.location.href);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
@@ -66,131 +65,29 @@ export const ShareNotePage: React.FC<ShareNotePageProps> = ({
     }
   };
 
-  //to invite email
-  // const handleInvite = async () => {
-  //   if (onShareSubmit) {
-  //     onShareSubmit(emails); // ဒီနေရာမှာ trigger လုပ်ပေးမှ data က NoteCreateForm ရဲ့ handleShareNoteSubmit ဆီ ရောက်မှာပါ
-  //   }
-  //   if (!inviteEmail.trim()) return;
-
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await fetch("http://localhost:5000/api/share/invite", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token || ""}`,
-  //       },
-  //       body: JSON.stringify({
-  //         invitedEmail: inviteEmail.trim(),
-  //         role: "viewer", 
-  //         pageUrl: window.location.href, 
-  //         source: "note_create_form_page",
-  //       }),
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-     
-  //       if (data.collaborator) {
-  //         setCollaborators((prev) => [...prev, data.collaborator]);
-  //       }
-  //       setInviteEmail("");
-  //     } else {
-  //       console.error("Failed to invite collaborator");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error inviting collaborator:", error);
-  //   }
-  // };
-
-  // to invite email
-  // const handleInvite = async () => {
-  //   const trimmedEmail = inviteEmail.trim();
-
-  //   // 
-  //   if (!trimmedEmail) return;
-
-  //   // 
-  //   if (onShareSubmit) {
-  //     await onShareSubmit([trimmedEmail]); 
-  //   }
-
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await fetch("http://localhost:5000/api/share/invite", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token || ""}`,
-  //       },
-  //       body: JSON.stringify({
-  //         invitedEmail: trimmedEmail,
-  //         role: "viewer", 
-  //         pageUrl: window.location.href, 
-  //         source: "note_create_form_page",
-  //       }),
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-     
-  //       if (data.collaborator) {
-  //         setCollaborators((prev) => [...prev, data.collaborator]);
-  //       }
-  //       setInviteEmail(""); 
-  //     } else {
-  //       console.error("Failed to invite collaborator");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error inviting collaborator:", error);
-  //   }
-  // };
-
-  // to invite email
-  // const handleInvite = async () => {
-  //   const trimmedEmail = inviteEmail.trim();
-
- 
-  //   if (!trimmedEmail) return;
-
-
-  //   if (onShareSubmit) {
-  //     try {
-  //       await onShareSubmit([trimmedEmail]);
-  //       setInviteEmail("");
-  //     } catch (error) {
-  //       console.error("Error from parent submit:", error);
-  //     }
-  //   }
-  // };
-  // to invite email
   const handleInvite = async () => {
-    const trimmedEmail = inviteEmail.trim();
-
-    if (!trimmedEmail) return;
-
-    if (onShareSubmit) {
-      try {
-        // Parent ရဲ့ handleShareNoteSubmit ဆီကို array အနေနဲ့ ပို့ပေးလိုက်မယ်
-        await onShareSubmit([trimmedEmail]); 
-        setInviteEmail(""); // အောင်မြင်ရင် input အကွက်ကို ရှင်းမယ်
-      } catch (error) {
-        console.error("Error from parent submit:", error);
-      }
+    if (!inviteEmail.trim()) {
+      alert("Please enter an email address!");
+      return;
+    }
+    
+    setIsInviting(true);
+    try {
+      await onInvite(inviteEmail.trim());
+      setInviteEmail("");
+    } catch (error) {
+      console.error("Error inviting collaborator:", error);
+    } finally {
+      setIsInviting(false);
     }
   };
 
-  
-
   return (
     <Box>
-
       <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
-        Share Note Page
+        Share Note
       </Typography>
 
-  
       <Box sx={{ display: "flex", gap: 1, mb: 2.5 }}>
         <TextField
           fullWidth
@@ -198,6 +95,7 @@ export const ShareNotePage: React.FC<ShareNotePageProps> = ({
           placeholder="Add people by email"
           value={inviteEmail}
           onChange={(e) => setInviteEmail(e.target.value)}
+          disabled={isInviting}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
@@ -209,25 +107,25 @@ export const ShareNotePage: React.FC<ShareNotePageProps> = ({
           variant="contained"
           size="small"
           onClick={handleInvite}
+          disabled={isInviting || !inviteEmail.trim()}
           sx={{
             bgcolor: "#973aa8",
             textTransform: "none",
             borderRadius: 2,
             px: 2.5,
             "&:hover": { bgcolor: "#7b2c8a" },
+            "&.Mui-disabled": { bgcolor: "#c9a0d4" },
           }}
         >
-          Invite
+          {isInviting ? "Inviting..." : "Invite"}
         </Button>
       </Box>
-
 
       <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
         People with access
       </Typography>
 
       <List disablePadding sx={{ maxHeight: 180, overflowY: "auto", mb: 2 }}>
-    
         {user && (
           <ListItem disableGutters sx={{ py: 0.75 }}>
             <ListItemAvatar sx={{ minWidth: 40 }}>
@@ -257,45 +155,48 @@ export const ShareNotePage: React.FC<ShareNotePageProps> = ({
           </ListItem>
         )}
 
-        {/*invited collaborators lists */}
-        {collaborators.map((person) => (
-          <ListItem disableGutters key={person._id} sx={{ py: 0.75 }}>
-            <ListItemAvatar sx={{ minWidth: 40 }}>
-              <Avatar sx={{ width: 32, height: 32, bgcolor: "action.focus", fontSize: "14px" }}>
-                {person.invitedEmail.charAt(0).toUpperCase()}
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={
-                <Typography variant="body2" >
-                  {person.invitedEmail}
-                </Typography>
-              }
-              secondary={
-                <Typography variant="caption" color="text.secondary">
-                  {person.status}
-                </Typography>
-              }
-            />
-            {/*menu button*/}
-            <Button
-              size="small"
-              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 14 }} />}
-              onClick={(e) => handleOpenPermissionMenu(e, person._id || null, person.role)}
-              sx={{
-                textTransform: "none",
-                color: "text.secondary",
-                fontSize: "0.75rem",
-                py: 0.5,
-              }}
+        {collaborators
+          .filter((person) => person.invitedEmail !== user?.email)
+          .map((person, index) => (
+            <ListItem 
+              disableGutters 
+              key={person._id || person.invitedEmail || index} 
+              sx={{ py: 0.75 }}
             >
-              {getRoleLabel(person.role)}
-            </Button>
-          </ListItem>
-        ))}
+              <ListItemAvatar sx={{ minWidth: 40 }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: "action.focus", fontSize: "14px" }}>
+                  {person.invitedEmail ? person.invitedEmail.charAt(0).toUpperCase() : "U"}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={
+                  <Typography variant="body2">
+                    {person.invitedEmail}
+                  </Typography>
+                }
+                secondary={
+                  <Typography variant="caption" color="text.secondary">
+                    {person.status === "accepted" ? "Active" : "Invited"}
+                  </Typography>
+                }
+              />
+              <Button
+                size="small"
+                endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 14 }} />}
+                onClick={(e) => handleOpenPermissionMenu(e, person._id || null, person.role)}
+                sx={{
+                  textTransform: "none",
+                  color: "text.secondary",
+                  fontSize: "0.75rem",
+                  py: 0.5,
+                }}
+              >
+                {getRoleLabel(person.role)}
+              </Button>
+            </ListItem>
+          ))}
       </List>
 
-      {/* copy link*/}
       <Box
         sx={{
           pt: 1.5,

@@ -147,8 +147,8 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
         {/* <Divider sx={{ my: 1 }} /> */}
 
         <ListItemButton
-          onClick={() => navigate("/note-create-form")}
-           sx={menuStyle("/note-create-form")}
+          onClick={() => navigate("/note")}
+           sx={menuStyle("/note")}
          
         >
           <ListItemIcon
