@@ -1,12 +1,10 @@
-
-
 import {
   Box,
   Card,
   CardContent,
   Grid,
   Typography,
-  Link ,
+  Link,
   Stack,
   Button,
   IconButton,
@@ -16,10 +14,11 @@ import {
   MenuItem,
   ListItemText,
   ListItemIcon,
-  Popover
+  Popover,
+  Alert
 } from "@mui/material";
-import React, { useState } from "react";
-import { SwapVertOutlined, Search, CategoryOutlined ,Share,DeleteOutlined,Check} from "@mui/icons-material";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { SwapVertOutlined, Search, CategoryOutlined, Share, DeleteOutlined, Check } from "@mui/icons-material";
 import { useGetNotesQuery, useUpdateNoteMutation } from "../../services/noteApi";
 import { useNavigate } from "react-router-dom";
 import type { Note } from "../../types/Note";
@@ -41,6 +40,7 @@ interface UserProfile {
   lastName?: string;
   email?: string;
   photo?: string;
+  _id?: string;
 }
 
 type CategoryConfig = {
@@ -60,14 +60,21 @@ const COLUMNS: CategoryConfig[] = [
 export const CategoriesPage = () => {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
-  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("asc");
-  // const [user, setUser] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
-  const { data: notes = [], isLoading, isError } = useGetNotesQuery({ shareScope: "category" });
-  const [categoryTasks, setCategoryTasks] = React.useState<Note[]>([]);
+
+  // ============ FIX: Remove shareScope parameter to get all notes ============
+  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery();
   const [updatedNote] = useUpdateNoteMutation();
 
-  //for sharing
+  // Local state for tasks
+  const [categoryTasks, setCategoryTasks] = useState<Note[]>([]);
+
+  // ============ FIX: Use useRef to prevent infinite loop ============
+  const isUpdatingRef = useRef(false);
+  const previousNotesRef = useRef<Note[]>([]);
+
+  // For sharing
   const [user, setUser] = useState<UserProfile | null>(null);
   const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
   const [shareAnchorEl, setShareAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -75,150 +82,157 @@ export const CategoriesPage = () => {
   const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<string>("full");
 
- 
+  // ============ FIX: Use useMemo for filtered and sorted notes ============
+  const filteredAndSortedNotes = useMemo(() => {
+    if (!Array.isArray(notes)) return [];
 
+    let result = [...notes];
 
-  const stringifiedNotes = JSON.stringify(notes);
-  React.useEffect(() => {
-    if (notes && Array.isArray(notes)) {
-      setCategoryTasks(JSON.parse(stringifiedNotes));
-    }
-  }, [stringifiedNotes]);
-
-  //for sharing state
-
-  
-React.useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    try {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-    } catch (e) {
-      console.error("Failed to parse user from localStorage", e);
-    }
-  }
-
-  const loadCollaborators = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const response = await fetch("http://localhost:5000/api/share/collaborators", {
-        headers: { Authorization: `Bearer ${token}` },
+    // Filter by search text
+    if (searchText.trim() !== "") {
+      const searchLower = searchText.toLowerCase();
+      result = result.filter((note: Note) => {
+        const titleText = (note.title || "").toLowerCase();
+        const contentText = (note.content || note.description || "").toLowerCase();
+        return titleText.includes(searchLower) || contentText.includes(searchLower);
       });
-      if (response.ok) {
-        const data = await response.json();
-        setCollaborators(data.collaborators || []);
-      }
-    } catch (err) {
-      console.error("Failed to load collaborators", err);
     }
-  };
 
-  loadCollaborators();
-}, []); // Empty dependency array ensures this runs ONLY ONCE on mount
+    // Sort by title
+    result.sort((a, b) => {
+      const titleA = (a.title || "").toLowerCase();
+      const titleB = (b.title || "").toLowerCase();
+      return sortOrder === "asc"
+        ? titleA.localeCompare(titleB)
+        : titleB.localeCompare(titleA);
+    });
 
-  
+    return result;
+  }, [notes, searchText, sortOrder]);
 
-  
+  // ============ FIX: Update tasks only when data actually changes ============
+  useEffect(() => {
+    const currentData = JSON.stringify(filteredAndSortedNotes);
+    const previousData = JSON.stringify(previousNotesRef.current);
 
+    if (currentData !== previousData) {
+      previousNotesRef.current = filteredAndSortedNotes;
+      setCategoryTasks(filteredAndSortedNotes);
+    }
+  }, [filteredAndSortedNotes]);
 
+  // ============ FIX: Load user and collaborators once ============
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+      }
+    }
+
+    const loadCollaborators = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const response = await fetch("http://localhost:5000/api/share/collaborators", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCollaborators(data.collaborators || []);
+        }
+      } catch (err) {
+        console.error("Failed to load collaborators", err);
+      }
+    };
+
+    loadCollaborators();
+  }, []); // Empty dependency array - runs once
 
   const handleRowClick = (id: any) => {
-    navigate(`/note-form/detail/${id}`); 
+    navigate(`/note-form/detail/${id}`);
   };
 
-
-
-  // Drag and Drop Logic 
-  const handleOnDragEnd = async (result: DropResult) => {
+  // ============ FIX: Handle drag end with useCallback ============
+  const handleOnDragEnd = useCallback(async (result: DropResult) => {
     const { source, destination, draggableId } = result;
+    
     if (!destination) return;
     if (
-      source.droppableId === destination.droppableId && 
+      source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) {
       return;
     }
 
-    const movedNote = categoryTasks.find((c) => (c._id || c.id) === draggableId);
-    if (!movedNote) return;
+    if (isUpdatingRef.current) return;
+    isUpdatingRef.current = true;
 
-    const updatedTasksList = Array.from(categoryTasks);
-
-  
-    const sourceNotesInColumn = updatedTasksList.filter(
-      (c) => (c.category || "My Note") === source.droppableId
-    );
-    const targetNote = sourceNotesInColumn[source.index];
-    const globalSourceIndex = updatedTasksList.indexOf(targetNote);
-    if (globalSourceIndex !== -1) {
-      updatedTasksList.splice(globalSourceIndex, 1);
-    }
-
-    // Category  update
-    const updatedMovedNote = { ...targetNote, category: destination.droppableId };
-
-   //put a place
-    const destNotesInColumn = updatedTasksList.filter(
-      (t) => (t.category || "My Note") === destination.droppableId
-    );
-
-    let globalDestIndex = updatedTasksList.length;
-    if (destination.index < destNotesInColumn.length) {
-      const nextNote = destNotesInColumn[destination.index];
-      globalDestIndex = updatedTasksList.indexOf(nextNote);
-    } else if (destNotesInColumn.length > 0) {
-      const lastNote = destNotesInColumn[destNotesInColumn.length - 1];
-      globalDestIndex = updatedTasksList.indexOf(lastNote) + 1;
-    }
-
-    updatedTasksList.splice(globalDestIndex, 0, updatedMovedNote);
-    setCategoryTasks(updatedTasksList);
-
-    // update database
     try {
+      const movedNote = categoryTasks.find((c) => (c._id || c.id) === draggableId);
+      if (!movedNote) {
+        isUpdatingRef.current = false;
+        return;
+      }
+
+      const updatedTasksList = Array.from(categoryTasks);
+
+      // Remove from source
+      const sourceNotesInColumn = updatedTasksList.filter(
+        (c) => (c.category || "My Note") === source.droppableId
+      );
+      const targetNote = sourceNotesInColumn[source.index];
+      const globalSourceIndex = updatedTasksList.indexOf(targetNote);
+      if (globalSourceIndex !== -1) {
+        updatedTasksList.splice(globalSourceIndex, 1);
+      }
+
+      // Update category
+      const updatedMovedNote = { ...targetNote, category: destination.droppableId };
+
+      // Insert at destination
+      const destNotesInColumn = updatedTasksList.filter(
+        (t) => (t.category || "My Note") === destination.droppableId
+      );
+
+      let globalDestIndex = updatedTasksList.length;
+      if (destination.index < destNotesInColumn.length) {
+        const nextNote = destNotesInColumn[destination.index];
+        globalDestIndex = updatedTasksList.indexOf(nextNote);
+      } else if (destNotesInColumn.length > 0) {
+        const lastNote = destNotesInColumn[destNotesInColumn.length - 1];
+        globalDestIndex = updatedTasksList.indexOf(lastNote) + 1;
+      }
+
+      updatedTasksList.splice(globalDestIndex, 0, updatedMovedNote);
+      setCategoryTasks(updatedTasksList);
+
+      // Update backend
       const noteId = targetNote._id || targetNote.id;
       if (noteId) {
         await updatedNote({
           id: noteId,
           body: { category: destination.droppableId },
         }).unwrap();
+        // Refetch to sync
+        refetch();
       }
     } catch (err) {
-      console.log("Failed to update note category in backend:", err);
-      setCategoryTasks(notes); 
+      console.error("Failed to update note category:", err);
+      setCategoryTasks(filteredAndSortedNotes);
+    } finally {
+      isUpdatingRef.current = false;
     }
-  };
-
-  // Search & Sorting UI filter 
-  const filteredNotes = React.useMemo<Note[]>(() => {
-    if (!Array.isArray(categoryTasks)) return [];
-
-    return categoryTasks
-      .filter((note: Note) => {
-        if (searchText.trim() !== "") {
-          const titleText = (note.title || "").toLowerCase();
-          const searchTarget = searchText.toLowerCase();
-          if (!titleText.includes(searchTarget)) return false;
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        const titleA = (a.title || "").toLowerCase();
-        const titleB = (b.title || "").toLowerCase();
-
-        return sortOrder === "asc"
-          ? titleA.localeCompare(titleB)
-          : titleB.localeCompare(titleA);
-      });
-  }, [categoryTasks, searchText, sortOrder]);
+  }, [categoryTasks, updatedNote, refetch, filteredAndSortedNotes]);
 
   const getNotesByCategory = (categoryName: string) => {
-    return filteredNotes.filter((note: any) => (note.category || "My Note") === categoryName);
+    return categoryTasks.filter((note: any) => (note.category || "My Note") === categoryName);
   };
 
-  //share popover handlers
+  // Share popover handlers
   const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setShareAnchorEl(event.currentTarget);
   };
@@ -227,7 +241,11 @@ React.useEffect(() => {
     setShareAnchorEl(null);
   };
 
-  const handleOpenPermissionMenu = (event: React.MouseEvent<HTMLButtonElement>, id: string | null, currentRole: string) => {
+  const handleOpenPermissionMenu = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: string | null,
+    currentRole: string
+  ) => {
     setPermissionMenuAnchorEl(event.currentTarget);
     setActiveCollaboratorId(id);
     setActiveRole(currentRole || "full");
@@ -238,7 +256,6 @@ React.useEffect(() => {
     setActiveCollaboratorId(null);
   };
 
- 
   const handlePermissionChange = async (role: string) => {
     if (!activeCollaboratorId) {
       handleClosePermissionMenu();
@@ -254,7 +271,11 @@ React.useEffect(() => {
         body: JSON.stringify({ role }),
       });
       if (response.ok) {
-        setCollaborators((prev) => prev.map((person) => person._id === activeCollaboratorId ? { ...person, role } : person));
+        setCollaborators((prev) =>
+          prev.map((person) =>
+            person._id === activeCollaboratorId ? { ...person, role } : person
+          )
+        );
       }
     } catch (err) {
       console.error(err);
@@ -263,7 +284,6 @@ React.useEffect(() => {
     }
   };
 
- 
   const handleRemoveCollaborator = async () => {
     if (!activeCollaboratorId) return;
     try {
@@ -287,7 +307,21 @@ React.useEffect(() => {
     if (role === "commenter") return "Can comment";
     return "Can view";
   };
+
   const isShareOpen = Boolean(shareAnchorEl);
+
+  // ============ FIX: Handle search toggle ============
+  const handleSearchToggle = () => {
+    setSearchOpen((prev) => !prev);
+    if (searchOpen) {
+      setSearchText("");
+    }
+  };
+
+  // ============ FIX: Handle sort toggle ============
+  const handleSortToggle = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
 
   if (isLoading) {
     return (
@@ -299,9 +333,9 @@ React.useEffect(() => {
 
   if (isError) {
     return (
-      <Typography color="error" sx={{ textAlign: "center", mt: 5 }}>
-        Unable to load boards.
-      </Typography>
+      <Alert severity="error" sx={{ m: 2 }}>
+        Unable to load categories. Please try again.
+      </Alert>
     );
   }
 
@@ -312,10 +346,12 @@ React.useEffect(() => {
         width: "100%",
         maxWidth: 1200,
         mx: "auto",
-        py: 2
+        py: 2,
+        px: 2
       }}
     >
-      <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      {/* Header Section */}
+      <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb: 2, flexWrap: "wrap" }}>
         <Button
           startIcon={<CategoryOutlined />}
           sx={{
@@ -328,19 +364,20 @@ React.useEffect(() => {
             "& .MuiButton-startIcon": { color: "#973aa8" },
           }}
         >
-          Category Page 
+          Category Page
         </Button>
-        <IconButton 
-          size="small" 
-          onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
-          sx={{ 
-            color: sortOrder === 'desc' ? '#973aa8' : 'text.primary', 
+
+        <IconButton
+          size="small"
+          onClick={handleSortToggle}
+          sx={{
+            color: sortOrder === 'desc' ? '#973aa8' : 'text.primary',
             bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent',
             borderRadius: '4px',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '& .MuiSvgIcon-root': {
               transition: 'transform 0.3s ease',
-              transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)', 
+              transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
             },
             '&:hover': {
               bgcolor: sortOrder === 'desc' ? 'background.default' : 'transparent'
@@ -349,9 +386,15 @@ React.useEffect(() => {
         >
           <SwapVertOutlined fontSize="small" />
         </IconButton>
-        <IconButton size="small" sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px'}} onClick={() => setSearchOpen((prev) => !prev)}>
+
+        <IconButton
+          size="small"
+          sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px' }}
+          onClick={handleSearchToggle}
+        >
           <Search fontSize="small" />
         </IconButton>
+
         {searchOpen && (
           <TextField
             size="small"
@@ -375,7 +418,7 @@ React.useEffect(() => {
           />
         )}
 
-          <Button
+        <Button
           startIcon={<Share />}
           onClick={handleShareClick}
           sx={{
@@ -393,7 +436,7 @@ React.useEffect(() => {
         </Button>
       </Stack>
 
-      {/* to connect share category page */}
+      {/* Share Popover */}
       <Popover
         open={isShareOpen}
         anchorEl={shareAnchorEl}
@@ -423,7 +466,7 @@ React.useEffect(() => {
         />
       </Popover>
 
-      {/* --- Permission Settings Dropdown Menu --- */}
+      {/* Permission Menu */}
       <Menu
         anchorEl={permissionMenuAnchorEl}
         open={Boolean(permissionMenuAnchorEl)}
@@ -465,14 +508,16 @@ React.useEffect(() => {
           <>
             <Box sx={{ my: 0.5, borderTop: "1px solid #f0f0f0" }} />
             <MenuItem onClick={handleRemoveCollaborator} sx={{ py: 1, color: "error.main" }}>
-              <ListItemIcon sx={{ color: "error.main", minWidth: 30 }}><DeleteOutlined sx={{ fontSize: 18 }} /></ListItemIcon>
+              <ListItemIcon sx={{ color: "error.main", minWidth: 30 }}>
+                <DeleteOutlined sx={{ fontSize: 18 }} />
+              </ListItemIcon>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Remove</Typography>
             </MenuItem>
           </>
         )}
       </Menu>
 
-
+      {/* Drag and Drop Board */}
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {COLUMNS.map((column) => {
@@ -481,8 +526,7 @@ React.useEffect(() => {
             const notesInColumn = getNotesByCategory(columnId);
 
             return (
-              <Grid size={{xs:12,sm:16,lg:4}}  key={columnId}>
-               
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={columnId}>
                 <Droppable droppableId={columnId}>
                   {(provided) => (
                     <Card
@@ -504,13 +548,12 @@ React.useEffect(() => {
                         >
                           {column.label} ({notesInColumn.length})
                         </Typography>
-                        
+
                         <Stack spacing={1.5}>
                           {notesInColumn.map((note: Note, index: number) => {
                             const noteId = note._id || note.id || String(index);
 
                             return (
-                              // to input draggable
                               <Draggable key={noteId} draggableId={noteId} index={index}>
                                 {(dragProvided) => (
                                   <Box
@@ -526,15 +569,16 @@ React.useEffect(() => {
                                       borderLeft: `4px solid ${color}`,
                                       cursor: 'pointer',
                                       transition: "0.2s",
-                                      "&:hover": { 
-                                        transform: "translateY(-2px)", 
-                                        boxShadow: 2 
+                                      "&:hover": {
+                                        transform: "translateY(-2px)",
+                                        boxShadow: 2
                                       },
                                     }}
                                   >
                                     <Typography sx={{ fontSize: "16px", color: "#2F004F", fontWeight: "500" }}>
                                       {note.title || "No Title"}
                                     </Typography>
+
                                     <Typography
                                       variant="body2"
                                       color="textSecondary"
@@ -563,47 +607,36 @@ React.useEffect(() => {
                                       Open notes
                                     </Link>
 
-<Typography 
-  variant="caption" 
-  sx={{ 
-    mt: 1, 
-    color: "text.secondary", 
-    fontWeight: "500",
-    display: "block" 
-  }}
->
-  {(() => {
-    // ၁။ Backend က အောင်မြင်စွာ Populate လုပ်ပေးပြီး Object ဖြစ်နေလျှင်
-    if (note.user && typeof note.user === 'object') {
-      const u = note.user as any;
-      if (u.firstName) return `Created By: ${u.firstName} ${u.lastName || ''}`;
-    }
+                                    {/* ============ FIX: Display owner info ============ */}
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        mt: 1,
+                                        color: "text.secondary",
+                                        fontWeight: "500",
+                                        display: "block"
+                                      }}
+                                    >
+                                      Created By: {(() => {
+                                        // If user is populated from backend
+                                        if (note.user && typeof note.user === 'object') {
+                                          const u = note.user as any;
+                                          if (u.firstName) return `${u.firstName} ${u.lastName || ''}`.trim();
+                                        }
 
-    if (user) {
-      const noteUserIdStr = typeof note.user === 'string' ? note.user : (note.user as any)?._id;
-      const currentLoggedInUserId = (user as any)._id || user.email;
+                                        // If current user is the owner
+                                        const userId = (user as any)?._id;
+                                        const noteUserId = typeof note.user === 'string' ? note.user : (note.user as any)?._id;
+                                        
+                                        if (userId && noteUserId === userId) {
+                                          return `${user?.firstName || 'You'} ${user?.lastName || ''}`.trim() || 'You';
+                                        }
 
-     
-      if (
-        noteUserIdStr === (user as any)._id || 
-        noteUserIdStr === user.email ||
-        (note as any).userId === user.email ||
-        (note as any).authId === user.email
-      ) {
-        return `Created By: ${user.firstName || 'Zin Mar'} ${user.lastName || 'Khaing'}`;
-      }
-    }
-
-    const rawUserStr = typeof note.user === 'string' ? note.user : '';
-    if (rawUserStr === "6a08d3d23b4852cf0dd47330") {
-      return `Created By: Zin Mar Khaing`;
-    }
-
-    return `Created By: ${note.assignee}`;
-  })()}
-</Typography>
+                                        // Fallback to assignee or unknown
+                                        return note.assignee || 'Unknown User';
+                                      })()}
+                                    </Typography>
                                   </Box>
-                                  
                                 )}
                               </Draggable>
                             );
@@ -622,4 +655,3 @@ React.useEffect(() => {
     </Box>
   );
 };
-

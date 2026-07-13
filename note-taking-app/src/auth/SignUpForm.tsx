@@ -124,12 +124,14 @@ export const SignUpForm = () => {
         email,
         password,
       }).unwrap();
+      console.log('Signup Response',res);
+      
 
        if (res.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      
+        console.log('Signup successfull');
+        
         navigate("/login");
        
       } else {

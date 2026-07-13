@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "date-fns": "^4.4.0"
+    "date-fns": "^4.4.0",
+    "mongoose": "^9.7.4"
   }
 }

@@ -1,38 +1,91 @@
 
+
 import { 
   Box, Card, CardContent, Typography, Button, Stack, Chip, Divider, 
   Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText,
   TextField, Avatar
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined';
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import PersonIcon from "@mui/icons-material/Person";
-import { useState, useEffect } from "react";
-import { useDeleteNoteMutation, useGetNotesQuery, useGetCommentsQuery, useAddCommentMutation, useGetNoteByIdQuery } from "../services/noteApi";
+import ShareIcon from "@mui/icons-material/Share";
+import { useState, useEffect, useCallback } from "react";
+import { useDeleteNoteMutation, useGetCommentsQuery, useAddCommentMutation, useGetNoteByIdQuery } from "../services/noteApi";
+import { Popover, Menu, MenuItem, ListItemText, ListItemIcon } from "@mui/material";
+import { Check, DeleteOutlined } from '@mui/icons-material';
+import { ShareNoteDetailPage } from '../components/sharepages/ShareNoteDetailPage';
+
+interface CollaboratorItem {
+  _id?: string;
+  invitedEmail: string;
+  status: string;
+  role: string;
+  pageUrl?: string;
+  source?: string;
+  noteId?: string;
+}
+
+interface UserProfile {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  photo?: string;
+  _id?: string;
+}
 
 export const NoteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: notes = [] } = useGetNotesQuery();
-  const { data: fetchedNote } = useGetNoteByIdQuery(id || "", { skip: !id });
-  const note = fetchedNote || notes.find((n: any) => n._id === id);
-  
+  const { data: fetchedNote, isLoading, refetch: refetchNote } = useGetNoteByIdQuery(id || "", { skip: !id });
+  const note = fetchedNote;
+
   const [commentText, setCommentText] = useState("");
-  const { data: commentData } = useGetCommentsQuery(id || "", { skip: !id });
+  const { data: commentData, refetch: refetchComments } = useGetCommentsQuery(id || "", { skip: !id });
   const [addComment] = useAddCommentMutation();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [collaborators, setCollaborators] = useState<any[]>([]);
+
+  // Share states
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
+  const [shareAnchorEl, setShareAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [permissionMenuAnchorEl, setPermissionMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
+  const [activeRole, setActiveRole] = useState<string>("full");
 
   useEffect(() => {
-    const fetchCollaborators = async () => {
+    if (!isLoading) {
+      if (!note) {
+        navigate('/note-form');
+      }
+    }
+  }, [isLoading, note, navigate]);
+  
+
+  // Load user
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (e) {
+        console.error("Failed to parse user from localStorage", e);
+      }
+    }
+  }, []);
+
+  // Load collaborators for this note
+  useEffect(() => {
+    const loadCollaborators = async () => {
+      if (!id) return;
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const response = await fetch("http://localhost:5000/api/share/collaborators", {
+        const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
@@ -43,8 +96,8 @@ export const NoteDetailPage = () => {
         console.error("Failed to fetch collaborators", err);
       }
     };
-    fetchCollaborators();
-  }, []);
+    loadCollaborators();
+  }, [id]);
 
   // --- Role & Permissions Logic ---
   const normalizeId = (value: any) => {
@@ -74,28 +127,17 @@ export const NoteDetailPage = () => {
   const noteOwnerId = normalizeId(note?.authId || (note as any)?.user || (note as any)?.userId);
   const isOwner = note?.isOwned === true || (Boolean(note) && noteOwnerId && noteOwnerId === currentUserId);
 
-  // လက်ရှိ User ရဲ့ တကယ့် Role အမှန်ကို ယူခြင်း
   const rawRole = isOwner || note?.accessPermission === "owner" || note?.isOwned === true
     ? "owner"
     : (note?.accessPermission || (note as any)?.currentUserRole || "viewer");
 
-  // --- 🌟 သတ်မှတ်ချက်အလိုက် Permission စစ်ဆေးခြင်း 🌟 ---
-  
-  // 1. Full Access ရှိသူလား (အကုန်လုပ်ပိုင်ခွင့်ရှိ)
   const isFullAccess = isOwner || rawRole === "owner" || rawRole === "full";
-  
-  // 2. Content ကို ပြင်ခွင့်ရှိမရှိ (Full Access သို့မဟုတ် Editor ဖြစ်ရမည်)
   const canEditNote = isFullAccess || rawRole === "editor" || rawRole === "edit" || rawRole === "edit_content";
-
   const isCommentRole = rawRole === "comment" || rawRole === "commenter";
-  const hasCommentCollaborator = collaborators.some((c) => {
-    const role = String(c.role || "").toLowerCase();
-    return c.status === "accepted" && (role === "comment" || role === "commenter");
-  });
-
-  // `can edit` users should not get the comment box.
-  // `can comment` users get the comment box, and the owner sees it when there is an active comment collaborator.
-  const hasCommentPermission = isCommentRole || (isOwner && hasCommentCollaborator);
+  
+  // ============ FIX: Owner can always comment ============
+  const hasCommentPermission = isOwner || isCommentRole;
+  // ============ END FIX ============
 
   const accessLabel = isOwner || rawRole === "owner"
     ? "Owner"
@@ -104,6 +146,96 @@ export const NoteDetailPage = () => {
     : isCommentRole
     ? "Can comment"
     : "Can view";
+
+  // Share handlers
+  const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setShareAnchorEl(event.currentTarget);
+  };
+
+  const handleShareClose = () => {
+    setShareAnchorEl(null);
+  };
+
+  const handleOpenPermissionMenu = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: string | null,
+    currentRole: string
+  ) => {
+    event.stopPropagation();
+    setPermissionMenuAnchorEl(event.currentTarget);
+    setActiveCollaboratorId(id);
+    setActiveRole(currentRole || "full");
+  };
+
+  const handleClosePermissionMenu = () => {
+    setPermissionMenuAnchorEl(null);
+    setActiveCollaboratorId(null);
+  };
+
+  const handlePermissionChange = async (role: string) => {
+    if (!activeCollaboratorId) {
+      handleClosePermissionMenu();
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}/role`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify({ role }),
+      });
+      if (response.ok) {
+        setCollaborators((prev) =>
+          prev.map((person) =>
+            person._id === activeCollaboratorId ? { ...person, role } : person
+          )
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      handleClosePermissionMenu();
+    }
+  };
+
+  const handleRemoveCollaborator = async () => {
+    if (!activeCollaboratorId) return;
+    try {
+      const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      });
+      if (response.ok) {
+        setCollaborators((prev) => prev.filter((person) => person._id !== activeCollaboratorId));
+        // Refresh collaborators
+        if (id) {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setCollaborators(data.collaborators || []);
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      handleClosePermissionMenu();
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    if (role === "full") return "Full access";
+    if (role === "editor") return "Can edit";
+    if (role === "commenter") return "Can comment";
+    return "Can view";
+  };
+
+  const isShareOpen = Boolean(shareAnchorEl);
 
   const handleAddComment = async () => {
     const trimmed = commentText.trim();
@@ -121,8 +253,27 @@ export const NoteDetailPage = () => {
         userEmail: currentUserEmail 
       }).unwrap();
       setCommentText('');
+      refetchComments();
     } catch (err) {
       console.error('Failed to add comment', err);
+    }
+  };
+
+  const [deleteNote] = useDeleteNoteMutation();
+  
+  const handleDeleteClick = () => { setOpenDeleteDialog(true); };
+  const handleDeleteClose = () => { setOpenDeleteDialog(false); };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const noteId = note?._id || note?.id;
+      if (noteId && isOwner) {
+        await deleteNote(noteId).unwrap();
+        setOpenDeleteDialog(false);
+        navigate(-1);
+      }
+    } catch (err: any) {
+      console.log("Delete Failed:", err);
     }
   };
 
@@ -146,31 +297,93 @@ export const NoteDetailPage = () => {
     if (noteId && canEditNote) navigate(`/note-form/edit/${noteId}`);
   };
 
-  const [deleteNote] = useDeleteNoteMutation();
-  
-  const handleDeleteClick = () => { setOpenDeleteDialog(true); };
-  const handleDeleteClose = () => { setOpenDeleteDialog(false); };
-
-  const handleConfirmDelete = async () => {
-    try {
-      const noteId = note._id || note.id;
-      if (noteId && isOwner) {
-        await deleteNote(noteId).unwrap();
-        setOpenDeleteDialog(false);
-        navigate(-1); 
-      }
-    } catch (err: any) {
-      console.log("Delete Failed:", err);
-    }
-  };
-
   const filteredComments = commentData?.comments || [];
 
   return (
     <Box sx={{ bgcolor: "background.default", width: "100%", minHeight: "80vh", p: { xs: 2, md: 4 } }}>
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
         
-       
+        {/* Share Popover */}
+        <Popover
+          open={isShareOpen}
+          anchorEl={shareAnchorEl}
+          onClose={handleShareClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          slotProps={{
+            paper: {
+              sx: {
+                width: 420,
+                p: 2.5,
+                mt: 1,
+                borderRadius: 3,
+                boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
+                bgcolor: 'background.paper',
+                color: 'text.primary'
+              }
+            }
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+            Sharing: {note.title}
+          </Typography>
+          <ShareNoteDetailPage
+            user={user}
+            collaborators={collaborators}
+            setCollaborators={setCollaborators}
+            handleOpenPermissionMenu={handleOpenPermissionMenu}
+            getRoleLabel={getRoleLabel}
+            noteId={id || ''}
+          />
+        </Popover>
+
+        {/* Permission Menu */}
+        <Menu
+          anchorEl={permissionMenuAnchorEl}
+          open={Boolean(permissionMenuAnchorEl)}
+          onClose={handleClosePermissionMenu}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          slotProps={{
+            paper: {
+              sx: {
+                width: 340,
+                borderRadius: 3,
+                p: 0.5,
+                boxShadow: "0px 4px 16px rgba(0,0,0,0.12)"
+              }
+            }
+          }}
+        >
+          {[
+            { role: "full", label: "Full access", desc: "Edit, suggest, comment, and share" },
+            { role: "editor", label: "Can edit", desc: "Edit, suggest, and comment" },
+            { role: "commenter", label: "Can comment", desc: "Suggest and comment" },
+            { role: "viewer", label: "Can view", desc: "" },
+          ].map(({ role, label, desc }) => (
+            <MenuItem key={role} onClick={() => handlePermissionChange(role)} sx={{ py: 1 }}>
+              <ListItemText
+                primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{label}</Typography>}
+                secondary={desc && <Typography variant="caption" color="text.secondary">{desc}</Typography>}
+              />
+              {activeRole === role && <Check sx={{ fontSize: 16, ml: 1 }} />}
+            </MenuItem>
+          ))}
+
+          {activeCollaboratorId && (
+            <>
+              <Box sx={{ my: 0.5, borderTop: "1px solid #f0f0f0" }} />
+              <MenuItem onClick={handleRemoveCollaborator} sx={{ py: 1, color: "error.main" }}>
+                <ListItemIcon sx={{ color: "error.main", minWidth: 30 }}>
+                  <DeleteOutlined sx={{ fontSize: 18 }} />
+                </ListItemIcon>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Remove</Typography>
+              </MenuItem>
+            </>
+          )}
+        </Menu>
+
+        {/* Back Button */}
         {isOwner && (
           <Button 
             startIcon={<ArrowBackIosNewOutlinedIcon />} 
@@ -189,7 +402,23 @@ export const NoteDetailPage = () => {
               <Typography variant="h6" sx={{ fontWeight: "600", fontSize: { xs: "16px", md: "20px" }, color: "#2F004F" }}>
                 {note.title}
               </Typography>
-              <Chip label={`Priority: ${note.priority || "Normal"}`} color={getPriorityColor(note.priority)} size="medium" />
+              <Stack direction="row" spacing={1}>
+                <Chip label={`Priority: ${note.priority || "Normal"}`} color={getPriorityColor(note.priority)} size="medium" />
+                {isOwner && (
+                  <Button
+                    startIcon={<ShareIcon />}
+                    onClick={handleShareClick}
+                    size="small"
+                    sx={{
+                      textTransform: 'none',
+                      color: '#973aa8',
+                      '&:hover': { bgcolor: 'rgba(151, 58, 168, 0.08)' }
+                    }}
+                  >
+                    Share
+                  </Button>
+                )}
+              </Stack>
             </Stack>
 
             {/* Content Display */}
@@ -214,6 +443,7 @@ export const NoteDetailPage = () => {
 
             <Divider sx={{ mb: 3 }} />
 
+            {/* ============ FIX: Show comment section for both owner and commenter ============ */}
             {hasCommentPermission && (
               <Box sx={{ mb: 4, p: 2.5, border: "1px solid #e5e7eb", borderRadius: 3, bgcolor: "#fcfdff" }}>
                 <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, mb: 1.5 }}>
@@ -229,13 +459,13 @@ export const NoteDetailPage = () => {
                   minRows={3}
                   value={commentText}
                   onChange={(event) => setCommentText(event.target.value)}
-                  placeholder="Leave a note for the team..."
+                  placeholder={isOwner ? "Leave a note for the team..." : "Add your comment..."}
                   sx={{ mb: 1.5 }}
                 />
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {canEditNote ? "You can edit the note and leave thoughtful comments." : "You can leave comments but cannot edit the note content."}
+                    {isOwner ? "You can edit the note and leave thoughtful comments." : "You can leave comments but cannot edit the note content."}
                   </Typography>
                   <Button variant="contained" onClick={handleAddComment} sx={{ textTransform: "none" }}>
                     Add comment
@@ -272,6 +502,7 @@ export const NoteDetailPage = () => {
                 )}
               </Box>
             )}
+            {/* ============ END FIX ============ */}
 
             {/* Meta Data Area */}
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1.2fr 2fr 1.5fr" }, gap: 2, mt: 2 }}>
@@ -300,7 +531,6 @@ export const NoteDetailPage = () => {
               {/* Edit / Delete Buttons Control */}
               <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" } }}>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                  {/* Can Edit သို့မဟုတ် Full Access ဖြစ်မှသာ Edit Button အလုပ်လုပ်မည် */}
                   <Button 
                     disabled={!canEditNote}
                     onClick={() => handleEdit(note._id || note.id)} 
@@ -313,7 +543,6 @@ export const NoteDetailPage = () => {
                     Edit
                   </Button>
                   
-                  {/* Owner သီးသန့်မှသာ Delete လုပ်ခွင့်ရှိမည် */}
                   <Button 
                     disabled={!isOwner}
                     onClick={handleDeleteClick} 
@@ -338,7 +567,7 @@ export const NoteDetailPage = () => {
         <DialogTitle sx={{ fontWeight: "bold" }}>Confirm Delete</DialogTitle>
         <DialogContent>
           <DialogContentText>
-             Are you sure you want to delete this note? Once deleted, it cannot be recovered.
+            Are you sure you want to delete this note? Once deleted, it cannot be recovered.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

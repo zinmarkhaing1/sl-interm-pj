@@ -59,7 +59,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }); // Sunday မှစတင်
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }); 
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
     return eachDayOfInterval({ start: startDate, end: endDate });
@@ -73,7 +73,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
   return (
     <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' ,backgroundColor:"#f4f6f8",}}>
       
-      {/* Header Section */}
+    
       
 
       {/* Calendar Controller Month Year (Dynamic Header) */}
@@ -84,41 +84,6 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
         </Typography>
         
         <Stack direction="row" spacing={0.5} sx={{alignItems:"center"}}>
-          {/* <Button 
-            variant="outlined" 
-           component="label"
-            startIcon={<CalendarToday sx={{ width: 14, height: 14 }} />}
-            sx={{ 
-              position:'relative',
-              textTransform: 'none', 
-              color: '#37352f', 
-              borderColor: '#e0e0e0',
-              fontSize: '0.85rem',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              '&:hover': { borderColor: '#37352f', backgroundColor: 'transparent' }
-            }}
-          >
-            Manage in Calendar
-
-           <input
-    type="date"
-    onChange={(e) => {
-      if (e.target.value) {
-        setCurrentMonth(new Date(e.target.value));
-      }
-    }}
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      opacity: 0,
-      cursor: 'pointer'
-    }}
-  />
-          </Button> */}
 
           <Button 
   variant="outlined" 

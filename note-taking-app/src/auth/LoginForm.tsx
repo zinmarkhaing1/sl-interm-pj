@@ -48,13 +48,15 @@ export const LoginForm = () => {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
+        console.log(' Token saved:', response.data.token);
+        console.log('User saved:', response.data.user);
         
-        navigate("/");
+        navigate("/dashboard");
       } else {
         setErrorMessage(response.message || "Login Failed. Network Error");
       }
     } catch (error:any) {
-      console.log(error);
+      console.log('Login error',error);
       const errorMsg = error?.data?.message || error?.message || "Invalid Email or Password";
       setErrorMessage(errorMsg)
     }
@@ -92,7 +94,7 @@ export const LoginForm = () => {
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  {" "}
+                  
                   <Email />
                 </InputAdornment>
               ),

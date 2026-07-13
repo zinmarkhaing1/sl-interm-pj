@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Note from "../../models/Note";
 import { Request, Response} from "express";
 
+
+
 export const getNotes = async (
     req : Request,
      res: Response): Promise<void> => {
