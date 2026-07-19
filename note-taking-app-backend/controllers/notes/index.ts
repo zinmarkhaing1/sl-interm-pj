@@ -1948,6 +1948,7 @@ export const getNotes = async (
       const sharedAccess = await WorkspaceAccess.findOne({
         userId: userId,
         noteId: targetNoteId,
+        accessScope:"note"
       }).lean();
 
       if (!sharedAccess) {

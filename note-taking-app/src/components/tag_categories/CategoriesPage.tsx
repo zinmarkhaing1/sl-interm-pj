@@ -63,14 +63,14 @@ export const CategoriesPage = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
 
-  // ============ FIX: Remove shareScope parameter to get all notes ============
-  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery();
+  //  Remove shareScope parameter to get all notes
+  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery({shareScope:"category"});
   const [updatedNote] = useUpdateNoteMutation();
 
   // Local state for tasks
   const [categoryTasks, setCategoryTasks] = useState<Note[]>([]);
 
-  // ============ FIX: Use useRef to prevent infinite loop ============
+  
   const isUpdatingRef = useRef(false);
   const previousNotesRef = useRef<Note[]>([]);
 
@@ -82,7 +82,89 @@ export const CategoriesPage = () => {
   const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<string>("full");
 
-  // ============ FIX: Use useMemo for filtered and sorted notes ============
+
+
+
+  // In CategoriesPage.tsx - Add state for user permission
+
+// Add this state:
+const [userPermission, setUserPermission] = useState<"owner" | "full" | "editor" | "commenter" | "viewer">("owner");
+const [isViewOnly, setIsViewOnly] = useState(false);
+
+// Update the loadCollaborators function to also get user's permission
+const loadCollaboratorsAndPermission = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  
+  try {
+    // Get collaborators
+    const collaboratorsResponse = await fetch("http://localhost:5000/api/share/collaborators", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (collaboratorsResponse.ok) {
+      const data = await collaboratorsResponse.json();
+      setCollaborators(data.collaborators || []);
+    }
+
+    // Get user's permission for this page
+    // You might need to fetch this from a separate endpoint or derive it from the notes data
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    const permission = userData.categoryPermission || "owner"; // You'll need to store this
+    setUserPermission(permission);
+    setIsViewOnly(permission === "viewer" || permission === "commenter");
+    
+  } catch (err) {
+    console.error("Failed to load data", err);
+  }
+};
+
+// Update useEffect:
+useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    } catch (e) {
+      console.error("Failed to parse user from localStorage", e);
+    }
+  }
+
+  loadCollaboratorsAndPermission();
+}, []);
+
+// Add this helper in CategoriesPage.tsx
+
+const getUserPermissionFromNotes = (notes: Note[], userId: string): "owner" | "viewer" | "editor" | "commenter" => {
+  if (!notes || notes.length === 0) return "owner";
+  
+  // Check if user is owner of any note in the category
+  const isOwner = notes.some((note: any) => {
+    const noteUserId = typeof note.user === 'string' ? note.user : (note.user as any)?._id;
+    return noteUserId === userId;
+  });
+  
+  if (isOwner) return "owner";
+  
+  // Check access permission from the first note
+  const firstNote = notes[0] as any;
+  if (firstNote.accessPermission) {
+    return firstNote.accessPermission;
+  }
+  
+  return "viewer"; // Default to viewer
+};
+
+// Then update the useEffect that loads notes:
+useEffect(() => {
+  if (notes && notes.length > 0 && user) {
+    const permission = getUserPermissionFromNotes(notes, (user as any)._id);
+    setUserPermission(permission);
+    setIsViewOnly(permission === "viewer" || permission === "commenter");
+  }
+}, [notes, user]);
+
+  // FIX: Use useMemo for filtered and sorted notes 
   const filteredAndSortedNotes = useMemo(() => {
     if (!Array.isArray(notes)) return [];
 
@@ -418,7 +500,7 @@ export const CategoriesPage = () => {
           />
         )}
 
-        <Button
+        {/* <Button
           startIcon={<Share />}
           onClick={handleShareClick}
           sx={{
@@ -433,7 +515,7 @@ export const CategoriesPage = () => {
           }}
         >
           Share
-        </Button>
+        </Button> */}
       </Stack>
 
       {/* Share Popover */}
@@ -463,6 +545,7 @@ export const CategoriesPage = () => {
           setCollaborators={setCollaborators}
           handleOpenPermissionMenu={handleOpenPermissionMenu}
           getRoleLabel={getRoleLabel}
+          userPermission={userPermission}
         />
       </Popover>
 
@@ -554,13 +637,19 @@ export const CategoriesPage = () => {
                             const noteId = note._id || note.id || String(index);
 
                             return (
-                              <Draggable key={noteId} draggableId={noteId} index={index}>
+                              <Draggable key={noteId} draggableId={noteId} index={index} isDragDisabled={isViewOnly}>
                                 {(dragProvided) => (
                                   <Box
                                     ref={dragProvided.innerRef}
                                     {...dragProvided.draggableProps}
                                     {...dragProvided.dragHandleProps}
-                                    onClick={() => handleRowClick(note._id || note.id)}
+                                    onClick={() => {
+                                      if(isViewOnly) {
+                                        navigate(`/note-form/detail/${note.id || note.id}`);
+                                      }else{
+                                        handleRowClick(note._id || note.id);
+                                      }
+                                    }}
                                     sx={{
                                       p: 1.5,
                                       bgcolor: "#ffffff",

@@ -38,6 +38,7 @@ interface ShareCategryPageProps {
     currentRole: string
   ) => void;
   getRoleLabel: (role: string) => string;
+  userPermission? : "owner" | "full" | "editor" | "commenter" | "viewer";
 }
 
 export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
@@ -46,6 +47,7 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
   setCollaborators,
   handleOpenPermissionMenu,
   getRoleLabel,
+  userPermission = "owner",
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -60,6 +62,12 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
     }
   };
 
+
+  console.log({
+  email: inviteEmail.trim(),
+  pageUrl: window.location.href,
+  source:"category_page"
+});
   // to invite email
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
@@ -111,13 +119,15 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
       console.error("Error inviting collaborator:", error);
     }
   };
+  const canInvite = userPermission === "owner" || userPermission === "full" || userPermission === "editor";
+  const canChangePermissions = userPermission === "owner" || userPermission === "full"
 
   return (
     <Box>
       <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
         Share Category Page
       </Typography>
-
+      {canInvite &&(
       <Box sx={{ display: "flex", gap: 1, mb: 2.5 }}>
         <TextField
           fullWidth
@@ -147,6 +157,7 @@ export const ShareCategoryPage: React.FC<ShareCategryPageProps> = ({
           Invite
         </Button>
       </Box>
+      )}
 
       <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
         People with access

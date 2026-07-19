@@ -440,7 +440,7 @@ const handleInvite = async () => {
       body: JSON.stringify({
         email: inviteEmail.trim(),        // Add this - backend expects 'email' or 'invitedEmail'
         invitedEmail: inviteEmail.trim(), // Keep this too
-        role: "viewer",
+        role: "commenter",
         pageUrl: window.location.href,
         source: "note_form_page",
         noteId: noteId,
@@ -466,7 +466,7 @@ const handleInvite = async () => {
           _id: data._id || String(Date.now()),
           invitedEmail: inviteEmail.trim(),
           status: data.status || "pending",
-          role: "viewer",
+          role: "commenter",
           noteId: noteId,
         };
       }

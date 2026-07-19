@@ -1,6 +1,15 @@
 {
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hello-pangea/dnd": "^18.0.1",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
     "date-fns": "^4.4.0",
-    "mongoose": "^9.7.4"
+    "mongoose": "^9.7.4",
+    "mui": "^0.0.1",
+    "react": "^19.2.7",
+    "react-router": "^8.2.0",
+    "react-router-dom": "^7.18.1"
   }
 }

@@ -165,7 +165,7 @@ export const noteApi = createApi({
     },
   }),
 
-  tagTypes: ['Note'],
+  tagTypes: ['Note','Comment'],
 
   endpoints: (builder) => ({
 
@@ -255,17 +255,65 @@ export const noteApi = createApi({
 
     // COMMENTS
     getComments: builder.query<{ comments: Comment[] }, string>({
-      query: (id) => `/notes/${id}/comments`,
-      providesTags: (_result, _error, id) => [{ type: 'Note' as const, id }],
+      // query: (id) => `/notes/${id}/comments`,
+      query:(id) => `/comments/${id}`,
+      providesTags: (_result, _error, id) => [
+        { type: 'Comment', id },
+      ],
+      // Add transformResponse to handle response safely
+      transformResponse: (response: any) => {
+        console.log(' getComments response:', response);
+        
+        // If response is already the comments array
+        if (Array.isArray(response)) {
+          return { comments: response };
+        }
+        if (response && typeof response === 'object') {
+          if (response.comments && Array.isArray(response.comments)) {
+            return { comments: response.comments };
+          }
+          // If response is the comment object itself
+          if (response._id) {
+            return { comments: [response] };
+          }
+        }
+        
+        // Return empty array if nothing found
+        return { comments: [] };
+      },
+       
     }),
 
     addComment: builder.mutation<{ comment: Comment }, { id: string; text: string; userName?: string; userEmail?: string }>({
       query: ({ id, text, userName, userEmail }) => ({
-        url: `/notes/${id}/comments`,
+        
+        // url: `/notes/${id}/comments`,
+        url: `/comments/${id}`,
         method: 'POST',
-        body: { text, userName, userEmail },
+        body: { text, userName, userEmail : userEmail || '' },
       }),
-      invalidatesTags: (_result, _error, arg) => [{ type: 'Note' as const, id: arg.id }],
+
+      transformResponse: (response: any) => {
+    console.log("API Response - addComment:", response);
+    return response;
+  },
+  transformErrorResponse: (response: any) => {
+    console.log(" API Error - addComment:", response);
+    return response;
+  },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Note' as const, id: arg.id },
+        {type :'Comment' as const,id:arg.id}
+      ],
+    }),
+
+    // DELETE COMMENT - Add this if not already present
+    deleteComment: builder.mutation<{ message: string }, string>({
+      query: (commentId) => ({
+        url: `/comments/${commentId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Comment'],
     }),
 
     // NOTIFICATIONS - 
@@ -303,6 +351,7 @@ export const {
   useUpdateNoteMutation,
   useGetCommentsQuery,
   useAddCommentMutation,
+  useDeleteCommentMutation,
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
   useGetCollaboratorsQuery,

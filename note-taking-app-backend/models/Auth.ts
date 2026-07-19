@@ -13,9 +13,15 @@ export interface IAuth extends Document {
 
 const AuthSchema = new mongoose.Schema(
     {
-        firstName : { type: String, required:true,minlength:2,maxlength:50},
-        lastName : { type : String, required:true,minlength:2,maxlength:50},
-        email : {type : String , required:true,unique:true,maxlength:100},
+        firstName : { type: String,
+             required:true,minlength:2,maxlength:50},
+        lastName : { type : String,
+            required:true,minlength:2,maxlength:50},
+        email : {type : String ,
+             required:true,unique:true,
+             lowercase:true,
+             trim:true,
+             maxlength:100},
         password : {type:String,required:true,min:5},
        savedNotes:[
         {

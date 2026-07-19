@@ -51,10 +51,10 @@ import Auth from "../../models/Auth";
 import WorkspaceAccess from "../../models/WorkspaceAccess";
 
 // Role mapping function
-const mapRoleToPermission = (role: string): "view" | "comment" | "edit" => {
+const mapRoleToPermission = (role: string): "full" |"view" | "comment" | "edit" => {
   switch (role) {
     case "full":
-      return "edit";
+      return "full";
     case "editor":
       return "edit";
     case "commenter":
@@ -86,7 +86,7 @@ export const inviteCollaborator = async (req: Request, res: Response): Promise<v
     const existingInvitation = await ShareInvitation.findOne({
       invitedEmail: invitedEmail.toLowerCase().trim(),
       pageUrl,
-      status: "pending",
+      status: { $in: ["pending", "accepted"] },
     });
 
     if (existingInvitation) {
@@ -97,11 +97,12 @@ export const inviteCollaborator = async (req: Request, res: Response): Promise<v
     // carefully role check
     const validRole = ["editor", "viewer", "commenter", "full"].includes(role) ? role : "viewer";
 
+    const status = user ? "accepted" : "pending";
     const newInvitation = new ShareInvitation({
       invitedBy: userId,
       invitedEmail: invitedEmail.trim(),
       role: validRole,
-      status: "pending",
+      status: status,
       pageUrl: pageUrl || null,
       source: source || "default",
       noteId: noteId || null,
@@ -142,25 +143,88 @@ export const inviteCollaborator = async (req: Request, res: Response): Promise<v
 };
 
 // 2. Get All Collaborators
-export const getCollaborators = async (req: Request, res: Response): Promise<void> => {
+// export const getCollaborators = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const userId = (req as any).user?.id;
+
+//     if (!userId) {
+//       res.status(401).json({ message: "Unauthorized" });
+//       return;
+//     }
+
+//     const collaborators = await ShareInvitation.find({
+//       invitedBy: userId,
+//     })
+//     .populate('invitedBy', 'firstName lastName email')
+//     .sort({ createdAt: -1 });
+
+//     res.status(200).json({ collaborators });
+//   } catch (error: any) {
+//     console.error("Get Collaborators Error:", error);
+//     res.status(500).json({ message: error.message || "Internal Server Error." });
+//   }
+// };
+
+export const getCollaborators = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+
   try {
+
     const userId = (req as any).user?.id;
+    const { noteId, pageUrl, source } = req.query;
+
 
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({
+        message: "Unauthorized"
+      });
       return;
     }
 
-    const collaborators = await ShareInvitation.find({
-      invitedBy: userId,
-    })
-    .populate('invitedBy', 'firstName lastName email')
-    .sort({ createdAt: -1 });
 
-    res.status(200).json({ collaborators });
-  } catch (error: any) {
-    console.error("Get Collaborators Error:", error);
-    res.status(500).json({ message: error.message || "Internal Server Error." });
+    const filter: any = {
+      invitedBy: userId,
+      status: {
+        $in: ["pending", "accepted"]
+      }
+    };
+
+
+    if (noteId) {
+      filter.noteId = noteId;
+    }
+
+
+    if (pageUrl) {
+      filter.pageUrl = pageUrl;
+    }
+
+
+    if (source) {
+      filter.source = source;
+    }
+
+
+    const collaborators =
+      await ShareInvitation.find(filter)
+      .sort({
+        createdAt: -1
+      });
+
+
+    res.status(200).json({
+      collaborators
+    });
+
+
+  } catch(error:any){
+
+    res.status(500).json({
+      message:error.message
+    });
+
   }
 };
 
@@ -204,6 +268,7 @@ export const updateCollaboratorRole = async (req: Request, res: Response): Promi
         {
           userId: invitation.userId,
           noteId: invitation.noteId,
+          accessScope:"note"
         },
         {
           permission: permission,
@@ -241,6 +306,10 @@ export const removeCollaborator = async (req: Request, res: Response): Promise<v
       res.status(404).json({ message: "Collaborator not found or you don't have permission." });
       return;
     }
+    
+
+    
+
 
     if (invitation.userId && invitation.noteId) {
       await WorkspaceAccess.findOneAndDelete({

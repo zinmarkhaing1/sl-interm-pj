@@ -23,6 +23,24 @@ export const DashBoardPage: React.FC = () => {
 
    const navigate = useNavigate();
 
+
+   //DashboardPage
+   React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log('Dashboard - Token:', token ? 'Present' :'Missing');
+    if(!token) {
+      console.log('Dashboard - No token, redirecting to login' );
+      navigate('/login');
+    }
+   },[navigate]);
+
+   //Error state
+   React.useEffect(() => {
+    if(error) {
+      console.log('Error from API', error);
+    }
+   },[error])
+
   // --- STATS SUMMARY CALCULATION ---
   const stats = React.useMemo(() => {
     const total = notes.length;
@@ -135,25 +153,8 @@ export const DashBoardPage: React.FC = () => {
     );
   }
 
-  // DashBoardPage.tsx
-React.useEffect(() => {
-  const token = localStorage.getItem('token');
-  console.log(' Dashboard - Token:', token ? 'Present' : 'Missing');
-  
-  if (!token) {
-    console.log(' Dashboard - No token, redirecting to login');
-    navigate('/login');
-  }
-}, [navigate]);
 
-  //  ERROR STATE
 
-  React.useEffect(() => {
-    if(error) {
-      console.log('Error from API', error);
-      
-    }
-  },[error])
   if (isError) {
     // Error message 
     let errorMessage = "Please try again later";

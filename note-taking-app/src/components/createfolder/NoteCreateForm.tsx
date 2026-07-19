@@ -1059,7 +1059,8 @@ export const NoteCreateForm = () => {
     if (!token) return;
     try {
       const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`,
+      'Content-Type':'application/json' },
       });
       if (response.ok) {
         const data = await response.json();
@@ -1391,13 +1392,15 @@ export const NoteCreateForm = () => {
         body: JSON.stringify({ role }),
       });
       if (response.ok) {
-        setCollaborators((prev) => prev.map((person) => person._id === activeCollaboratorId ? { ...person, role } : person));
+        setCollaborators((prev) => prev.map((person) => 
+          person._id === activeCollaboratorId ? { ...person, role } : person));
         
         // Update in localStorage
         if (activeShareNoteId) {
           setSavedFiles(prev => prev.map(file => 
             file.id === activeShareNoteId 
-              ? { ...file, collaborators: file.collaborators?.map(c => c._id === activeCollaboratorId ? { ...c, role } : c) }
+              ? { ...file, collaborators: file.collaborators?.map(c =>
+                c._id === activeCollaboratorId ? { ...c, role } : c) }
               : file
           ));
         }
@@ -1415,7 +1418,9 @@ export const NoteCreateForm = () => {
     try {
       const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+        headers: {
+           Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          'Content-Type' : 'application/json' },
       });
       if (response.ok) {
         setCollaborators((prev) => prev.filter((person) => person._id !== activeCollaboratorId));

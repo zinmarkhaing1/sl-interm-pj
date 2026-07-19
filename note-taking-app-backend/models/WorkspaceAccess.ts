@@ -49,11 +49,10 @@
 
 
 import mongoose, { Document, Types } from "mongoose";
-
 export interface IWorkspaceAccess extends Document {
   userId: Types.ObjectId;
   noteId: Types.ObjectId;
-  permission: "view" | "comment" | "edit" | "full"; // "full" ထည့်ပါ
+  permission:  "comment" | "edit" | "full"|"view"; 
   accessScope: "global" | "category" | "note" | "board" | "note-form";
   grantedBy: Types.ObjectId;
   createdAt: Date;
@@ -74,7 +73,7 @@ const WorkspaceAccessSchema = new mongoose.Schema(
     },
     permission: {
       type: String,
-      enum: ["view", "comment", "edit", "full"], // "full" ထည့်ပါ
+      enum: ["view", "comment", "edit", "full"], 
       required: true,
     },
     accessScope: {

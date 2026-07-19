@@ -2111,7 +2111,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           </IconButton>
           <Box 
             sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }} 
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <Box component="img" src={notebook} alt="notebook" sx={{ width: 35, height: 35 }} />
             <Typography sx={{ 

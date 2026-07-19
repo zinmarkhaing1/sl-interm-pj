@@ -64,11 +64,10 @@
 
 
 import mongoose, { Document, Types } from "mongoose";
-
 export interface IShareInvitation extends Document {
   invitedBy: Types.ObjectId;
   invitedEmail: string;
-  role: "editor" | "viewer" | "commenter" | "full"; // "full" ထည့်ပါ
+  role: "editor" | "viewer" | "commenter" | "full"; 
   status: "pending" | "accepted" | "declined";
   pageUrl?: string;
   source?: "category_page" | "note_page" | "board_page" | "note_form_page" | "default";
@@ -93,8 +92,8 @@ const ShareInvitationSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["editor", "viewer", "commenter", "full"], // "full" ထည့်ပါ
-      default: "viewer", // default ကို viewer လို့ထားပါ
+      enum: ["editor", "viewer", "commenter", "full"], 
+      default: "viewer", 
     },
     status: {
       type: String,

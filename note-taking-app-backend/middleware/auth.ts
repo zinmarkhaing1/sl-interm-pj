@@ -1,36 +1,77 @@
+// import jwt, { JwtPayload } from "jsonwebtoken";
+// import { Request, Response, NextFunction } from "express";
+
+// interface AuthRequest extends Request {
+//   user?:  jwt.JwtPayload & {id : string};
+// }
+// export const verifyToken = async (
+//   req: AuthRequest,
+//   res: Response,
+//   next: NextFunction,
+// ): Promise<void> => {
+//   try {
+//     if (!process.env.JWT_SECRET) {
+//       res.status(500).json({ message: "JWT_SECRET is missing" });
+//       return;
+//     }
+
+//     let token = req.header("Authorization");
+//     if (!token) {
+//       res.status(403).json({ message: "Access denied" });
+//       return;
+//     }
+
+//     if (token.startsWith("Bearer ")) {
+//       token = token.slice(7, token.length).trim();
+//     }
+
+//     const verified = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload & {id : string};
+//     req.user = verified;
+//     next();
+//   } catch (err: unknown) {
+//     const message = err instanceof Error ? err.message : "Invalid token";
+//     res.status(401).json({ message });
+//   }
+// };
+
+// middleware/auth.ts
+// Make sure verifyToken is correctly extracting user info
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
 interface AuthRequest extends Request {
   user?:  jwt.JwtPayload & {id : string};
 }
-export const verifyToken = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+export const verifyToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    if (!process.env.JWT_SECRET) {
-      res.status(500).json({ message: "JWT_SECRET is missing" });
-      return;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: "No token provided" });
     }
 
-    let token = req.header("Authorization");
+    const token = authHeader.split(' ')[1];
     if (!token) {
-      res.status(403).json({ message: "Access denied" });
-      return;
+      return res.status(401).json({ message: "Invalid token format" });
     }
 
-    if (token.startsWith("Bearer ")) {
-      token = token.slice(7, token.length).trim();
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { id: string, email?: string };
+      
+      // Important: Attach user with id and email to request
+      (req as any).user = {
+        id: decoded.id,
+        email: decoded.email
+      };
+      
+      console.log(" User verified:", req.user);
+      next();
+    } catch (jwtError) {
+      console.error("JWT verification failed:", jwtError);
+      return res.status(401).json({ message: "Invalid or expired token" });
     }
-
-    const verified = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload & {id : string};
-    req.user = verified;
-    next();
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Invalid token";
-    res.status(401).json({ message });
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    return res.status(500).json({ message: "Authentication error" });
   }
 };
 

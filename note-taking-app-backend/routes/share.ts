@@ -815,296 +815,332 @@
 // // export default router;
 
 
-// import express from "express";
-// import mongoose from "mongoose";
-// import type { Request, Response } from "express";
-// import { verifyToken } from "../middleware/auth";
-// import ShareInvitation from "../models/ShareInvitation";
-// import Notification from "../models/Notification";
-// import Auth from "../models/Auth";
-// import Comment from "../models/Comment";
-// import Note from "../models/Note";
-// import WorkspaceAccess from "../models/WorkspaceAccess";
+import express from "express";
+import mongoose from "mongoose";
+import type { Request, Response } from "express";
+import { verifyToken } from "../middleware/auth";
+import ShareInvitation from "../models/ShareInvitation";
+import Notification from "../models/Notification";
+import Auth from "../models/Auth";
+import Comment from "../models/Comment";
+import Note from "../models/Note";
+import WorkspaceAccess from "../models/WorkspaceAccess";
+import PageAccess from "../models/PageAccess";
 
-// // Nodemailer setup
-// let nodemailer: any = null;
-// try {
-//   nodemailer = require('nodemailer');
-// } catch (err) {
-//   nodemailer = null;
-// }
+// Nodemailer setup
+let nodemailer: any = null;
+try {
+  nodemailer = require('nodemailer');
+} catch (err) {
+  nodemailer = null;
+}
 
-// interface AuthRequest extends Request {
-//   user?: { id: string };
-// }
+interface AuthRequest extends Request {
+  user?: { id: string };
+}
 
-// interface ShareRequestBody {
-//   emails?: string[];
-//   invitedEmail?: string; 
-//   email?: string;        
-//   pageUrl?: string;
-//   source?: string;
-//   role?: "editor" | "viewer" | "commenter";
-//   noteId : string;
-// }
+interface ShareRequestBody {
+  emails?: string[];
+  invitedEmail?: string;
+  email?: string;
+  pageUrl?: string;
+  source?: string;
+  role?: "editor" | "viewer" | "commenter" | "full";
+  noteId?: string;
+}
 
-// const router = express.Router();
+const router = express.Router();
 
-// // --- HELPER FUNCTIONS ---
+// --- HELPER FUNCTIONS ---
 
-// const extractNoteId = (url?: string): string | null => {
-//   if (!url) return null;
-//   const match = url.match(/note-form\/(?:detail|edit)\/([a-zA-Z0-9_-]{1,100})/);
-//   return match ? match[1] : null;
-// };
+const extractNoteId = (url?: string): string | null => {
+  if (!url) return null;
+  const match = url.match(/note-form\/(?:detail|edit)\/([a-zA-Z0-9_-]{1,100})/);
+  return match ? match[1] : null;
+};
 
-// const getAccessScope = (pageUrl?: string, source?: string) => {
-//   if (source === "category_page" || /\/category(?:[/?#]|$)/.test(pageUrl || "")) {
-//     return "category" as const;
-//   }
-//   if (source === "note_page" || /\/note(?:[/?#]|$)/.test(pageUrl || "")) {
-//     return "note" as const;
-//   } 
-//   if (source === "board_page" || /\/board(?:[/?#]|$)/.test(pageUrl || "")) {
-//     return "board" as const;
-//   }
-//    if (source === "note_form_page" || /\/note-form(?:[/?#]|$)/.test(pageUrl || "")) {
-//     return "note-form" as const;
-//   }
-//   return "global" as const;
-// };
-
-// const grantWorkspaceAccess = async ({
-//   userId,
-//   inviterId,
-//   pageNoteId,
-//   role,
-//   accessScope
-// }: {
-//   userId: string;
-//   inviterId: string;
-//   pageNoteId: string | null;
-//   role: "editor" | "viewer" | "commenter";
-//   accessScope: "category" | "note" | "board" |"note-form"|"global"; 
-// }) => {
-//   const userNotes = pageNoteId
-//     ? await Note.find({ _id: pageNoteId, user: inviterId }).select("_id")
-//     : await Note.find({ user: inviterId }).select("_id");
-
-//   const targetNoteIds = userNotes.map((note) => note._id);
-//   const permission = role === "editor" ? "edit" : role === "commenter" ? "comment" : "view";
-
-//   if (targetNoteIds.length > 0) {
-//     await WorkspaceAccess.deleteMany({
-//       userId,
-//       noteId: { $in: targetNoteIds },
-//       accessScope,
-//     });
-
-//     await WorkspaceAccess.insertMany(
-//       userNotes.map((note) => ({
-//         userId,
-//         noteId: note._id,
-//         permission,
-//         accessScope,
-//         grantedBy: inviterId,
-//       }))
-//     );
-//   }
-//   return targetNoteIds;
-// };
-
-// const sendInviteEmail = async (email: string, role: string, shareLink: string) => {
-//   try {
-//     const smtpUrl = process.env.SMTP_URL;
-//     if (nodemailer && smtpUrl) {
-//       const transporter = nodemailer.createTransport(smtpUrl, {
-//         auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined
-//       });
-//       await transporter.sendMail({
-//         from: process.env.SMTP_FROM || 'no-reply@example.com',
-//         to: email,
-//         subject: `You've been invited to collaborate`,
-//         text: `You were invited by a user to collaborate with role ${role}. Open: ${shareLink}`,
-//       });
-//     }
-//   } catch (err) {
-//     // ignore
-//   }
-// };
+const getAccessScope = (pageUrl?: string, source?: string) => {
+  if (source === "category_page" || /\/category(?:[/?#]|$)/.test(pageUrl || "")) {
+    return "category" as const;
+  }
+  if (source === "note_page" || /\/note(?:[/?#]|$)/.test(pageUrl || "")) {
+    return "note" as const;
+  } 
+  if (source === "board_page" || /\/board(?:[/?#]|$)/.test(pageUrl || "")) {
+    return "board" as const;
+  }
+   if (source === "note_form_page" || /\/note-form(?:[/?#]|$)/.test(pageUrl || "")) {
+    return "note-form" as const;
+  }
+  return "global" as const;
+};
 
 
-// // --- ROUTES ---
+const grantWorkspaceAccess = async ({
+  userId,
+  inviterId,
+  pageNoteId,
+  role,
+  accessScope
+}: {
+  userId:string;
+  inviterId:string;
+  pageNoteId:string|null;
+  role:"editor"|"viewer"|"commenter" |"full";
+  accessScope:"category"|"note"|"board"|"note-form"|"global";
+}) => {
 
-// // 1. MULTIPLE INVITATIONS
-// router.post("/multiple", verifyToken, async (req: AuthRequest, res: Response) => {
-//   try {
-//     const { emails = [], pageUrl, source, role = "editor" } = req.body as ShareRequestBody;
-//     const inviterId = req.user?.id;
 
-//     if (!inviterId) {
-//       res.status(401).json({ message: "You must be signed in to invite collaborators." });
-//       return;
-//     }
+  
+  if(
+    accessScope === "category" ||
+    accessScope === "board" ||
+    accessScope === "global"
+  ){
+    return [];
+  }
 
-//     const normalizedEmails = Array.isArray(emails)
-//       ? emails.map((e) => e.trim().toLowerCase()).filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
-//       : [];
 
-//     if (normalizedEmails.length === 0) {
-//       res.status(400).json({ message: "Please provide at least one valid email address." });
-//       return;
-//     }
+  if(!pageNoteId){
+    return [];
+  }
 
-//     const shareLink = pageUrl || `${req.protocol}://${req.get("host")}/`;
-//     const accessScope = getAccessScope(shareLink, source);
-//     const pageNoteId = extractNoteId(shareLink);
-//     const pageNoteObjectId = pageNoteId && mongoose.Types.ObjectId.isValid(pageNoteId) ? new mongoose.Types.ObjectId(pageNoteId) : null;
 
-//     const createdInvitations = [];
+  const note = await Note.findOne({
+    _id: pageNoteId,
+    user: inviterId
+  }).select("_id");
 
-//     for (const email of normalizedEmails) {
-//       const existingUser = await Auth.findOne({ email });
-//       const status = existingUser ? "accepted" : "pending";
+
+  
+  if(!note){
+    return [];
+  }
+
+
+  const permission =
+    role==="editor"
+      ? "edit"
+      : role==="commenter"
+      ? "comment"
+      : role === "full"
+      ? "full"
+      : "view";
+
+
+
+      console.log("GRANT ACCESS DEBUG!!!!!!", {
+  role,
+  permission,
+  userId,
+  inviterId,
+  pageNoteId,
+  accessScope
+});
+
+
+  await WorkspaceAccess.findOneAndUpdate(
+    {
+      userId,
+      noteId:note._id,
+      accessScope
+    },
+    {
+      userId,
+      noteId:note._id,
+      permission,
+      accessScope,
+      grantedBy:inviterId
+    },
+    {
+      upsert:true,
+      new:true
+    }
+  );
+
+  
+
+
+  return [note._id];
+
+};
+
+const grantPageAccess = async({
+ userId,
+ ownerId,
+ pageType,
+ pageUrl,
+ role
+}:{
+ userId:string;
+ ownerId:string;
+ pageType:"category"|"board"|"note-form";
+ pageUrl:string;
+ role:"editor"|"viewer"|"commenter" | "full";
+})=>{
+
+
+const permission =
+ role==="editor"
+ ? "edit"
+ : role==="commenter"
+ ? "comment"
+ : role === "full"
+ ?"full"
+ :"view";
+
+
+await PageAccess.findOneAndUpdate(
+ {
+  userId,
+  ownerId,
+  pageUrl
+ },
+ {
+  userId,
+  ownerId,
+  pageType,
+  pageUrl,
+  permission
+ },
+ {
+  upsert:true,
+  new:true
+ }
+);
+
+
+};
+
+const sendInviteEmail = async (email: string, role: string, shareLink: string) => {
+  try {
+    const smtpUrl = process.env.SMTP_URL;
+    if (nodemailer && smtpUrl) {
+      const transporter = nodemailer.createTransport(smtpUrl, {
+        auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined
+      });
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'no-reply@example.com',
+        to: email,
+        subject: `You've been invited to collaborate`,
+        text: `You were invited by a user to collaborate with role ${role}. Open: ${shareLink}`,
+      });
+    }
+  } catch (err) {
+    // ignore
+  }
+};
+
+
+// --- ROUTES ---
+
+// 1. MULTIPLE INVITATIONS
+router.post("/multiple", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { emails = [], pageUrl, source, role = "editor" } = req.body as ShareRequestBody;
+    const inviterId = req.user?.id;
+
+    if (!inviterId) {
+      res.status(401).json({ message: "You must be signed in to invite collaborators." });
+      return;
+    }
+
+    const normalizedEmails = Array.isArray(emails)
+      ? emails.map((e) => e.trim().toLowerCase()).filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
+      : [];
+
+    if (normalizedEmails.length === 0) {
+      res.status(400).json({ message: "Please provide at least one valid email address." });
+      return;
+    }
+
+    const shareLink = pageUrl || `${req.protocol}://${req.get("host")}/`;
+    const accessScope = getAccessScope(shareLink, source);
+    const pageNoteId = extractNoteId(shareLink);
+    const pageNoteObjectId = pageNoteId && mongoose.Types.ObjectId.isValid(pageNoteId) ? new mongoose.Types.ObjectId(pageNoteId) : null;
+
+    const createdInvitations = [];
+
+    for (const email of normalizedEmails) {
+      const existingUser = await Auth.findOne({ email });
+      const status = existingUser ? "accepted" : "pending";
       
-//       // invitation source 
-//       const invitationSource = accessScope === "category" ? "category_page" : accessScope === "note" ? "note_page" : accessScope === "board" ? "board_page" :accessScope === "note-form" ? "note_form_page" :"default";
-//       const invitation = await ShareInvitation.create({
-//         invitedBy: inviterId,
-//         invitedEmail: email,
-//         role,
-//         status,
-//         pageUrl: shareLink,
-//         source: invitationSource,
-//         noteId: pageNoteObjectId || undefined,
-//         userId: existingUser?._id,
-//       } as any);
+      // invitation source 
+      const invitationSource = accessScope === "category" ? "category_page" : accessScope === "note" ? "note_page" : accessScope === "board" ? "board_page" :accessScope === "note-form" ? "note_form_page" :"default";
+      const invitation = await ShareInvitation.create({
+        invitedBy: inviterId,
+        invitedEmail: email,
+        role,
+        status,
+        pageUrl: shareLink,
+        source: invitationSource,
+        noteId: pageNoteObjectId || undefined,
+        userId: existingUser?._id,
+      } as any);
 
-//       if (existingUser) {
-//         await grantWorkspaceAccess({
-//           userId: existingUser._id.toString(),
-//           inviterId,
-//           pageNoteId,
-//           role,
-//           accessScope
-//         });
+      if (existingUser) {
+       if(
+ accessScope==="category" ||
+ accessScope==="board"
+){
 
-//         await Notification.create({
-//           fromUser: inviterId,
-//           toUser: existingUser._id,
-//           type: "invite",
-//           message: `You were invited to collaborate (role: ${role}) by the user.`,
-//         }).catch(() => null);
-//       }
+ await grantPageAccess({
 
-//       createdInvitations.push({
-//         id: invitation._id.toString(),
-//         email: invitation.invitedEmail,
-//         status: invitation.status,
-//         role: invitation.role,
-//         pageUrl: invitation.pageUrl || shareLink,
-//       });
+  userId: existingUser._id.toString(),
 
-//       sendInviteEmail(email, role, shareLink);
-//     }
+  ownerId: inviterId,
 
-//     res.status(200).json({
-//       message: "Invitations processed successfully.",
-//       shareLink,
-//       invitations: createdInvitations,
-//     });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : "Unable to process invite";
-//     res.status(500).json({ message });
-//   }
-// });
+  pageType:accessScope,
 
-// // 2. SINGLE INVITE
-// // router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
-// //   try {
-// //     const { invitedEmail, email, pageUrl, role = "viewer", source } = req.body as ShareRequestBody;
-// //     const targetEmail = String(invitedEmail || email || "").trim().toLowerCase();
-// //     const inviterId = req.user?.id;
+  pageUrl:shareLink,
 
-// //     if (!inviterId) {
-// //       res.status(401).json({ message: "You must be signed in to invite collaborators." });
-// //       return;
-// //     }
+  role
 
-// //     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
-// //       res.status(400).json({ message: "Please provide a valid email address." });
-// //       return;
-// //     }
+ });
 
-// //     const shareLink = pageUrl || `${req.protocol}://${req.get("host")}/`;
-// //     const accessScope = getAccessScope(shareLink, source);
+}
+else{
 
-// //     const existingInvitation = await ShareInvitation.findOne({
-// //       invitedBy: inviterId,
-// //       invitedEmail: targetEmail,
-// //       pageUrl: shareLink,
-// //       status: { $in: ["pending", "accepted"] },
-// //     });
+ await grantWorkspaceAccess({
+  userId: existingUser._id.toString(),
+  inviterId,
+  pageNoteId,
+  role,
+  accessScope
+ });
 
-// //     if (existingInvitation) {
-// //       res.status(400).json({ message: "This email has already been invited to this page." });
-// //       return;
-// //     }
+}
 
-// //     const existingUser = await Auth.findOne({ email: targetEmail });
-// //     const pageNoteId = extractNoteId(shareLink);
-// //     const pageNoteObjectId = pageNoteId && mongoose.Types.ObjectId.isValid(pageNoteId) ? new mongoose.Types.ObjectId(pageNoteId) : undefined;
-// //     // const invitationSource = accessScope === "category" ? "category_page" : accessScope === "note" ? "note_page" : accessScope === "board" ? "board_page" : "default";
+        await Notification.create({
+          fromUser: inviterId,
+          toUser: existingUser._id,
+          type: "invite",
+          message: `You were invited to collaborate (role: ${role}) by the user.`,
+        }).catch(() => null);
+      }
 
-// //     const invitationSource = accessScope === "category" 
-// //   ? "category_page" 
-// //   : accessScope === "note" 
-// //     ? "note_page" 
-// //     : accessScope === "board" 
-// //       ? "board_page"
-// //     : accessScope == "note-form"
-// //     ? "note_form_page"
-// //      :  "default" as const; 
+      createdInvitations.push({
+        id: invitation._id.toString(),
+        email: invitation.invitedEmail,
+        status: invitation.status,
+        role: invitation.role,
+        pageUrl: invitation.pageUrl || shareLink,
+      });
 
-// //     const invitation = await ShareInvitation.create({
-// //       invitedBy: inviterId,
-// //       invitedEmail: targetEmail,
-// //       role,
-// //       status: existingUser ? "accepted" : "pending",
-// //       pageUrl: shareLink,
-// //       source:invitationSource as any,
-// //       noteId: pageNoteObjectId,
-// //       userId: existingUser?._id
-// //     });
+      sendInviteEmail(email, role, shareLink);
+    }
 
-// //     if (existingUser) {
-// //       await grantWorkspaceAccess({
-// //         userId: existingUser._id.toString(),
-// //         inviterId,
-// //         pageNoteId,
-// //         role,
-// //         accessScope
-// //       });
+    res.status(200).json({
+      message: "Invitations processed successfully.",
+      shareLink,
+      invitations: createdInvitations,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to process invite";
+    res.status(500).json({ message });
+  }
+});
 
-// //       await Notification.create({
-// //         fromUser: inviterId,
-// //         toUser: existingUser._id,
-// //         type: "invite",
-// //         message: `You were invited to collaborate (role: ${role}) by the user.`,
-// //       }).catch(() => null);
-// //     }
-
-// //     sendInviteEmail(targetEmail, role, shareLink);
-
-// //     res.status(201).json({
-// //       message: "Collaborator invited successfully.",
-// //       collaborator: invitation,
-// //     });
-// //   } catch (error) {
-// //     const message = error instanceof Error ? error.message : "Unable to process invite";
-// //     res.status(500).json({ message });
-// //   }
-// // });
 
 // router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
 //   try {
@@ -1154,6 +1190,8 @@
 //             ? "note_form_page"
 //             : "default" as const; 
 
+            
+
 //     const invitation = await ShareInvitation.create({
 //       invitedBy: inviterId,
 //       invitedEmail: targetEmail,
@@ -1164,15 +1202,53 @@
 //       noteId: pageNoteObjectId, // Save noteId
 //       userId: existingUser?._id
 //     });
-
+// console.log("CREATE PAGE ACCESS",{
+//  existingUser: existingUser?._id,
+//  accessScope,
+//  shareLink
+// });
 //     if (existingUser) {
-//       await grantWorkspaceAccess({
-//         userId: existingUser._id.toString(),
-//         inviterId,
-//         pageNoteId,
-//         role,
-//         accessScope
-//       });
+//        await grantWorkspaceAccess({
+//     userId: existingUser._id.toString(),
+//     inviterId,
+//     pageNoteId,
+//     role,
+//     accessScope
+//   });
+
+//   console.log("PAGE ACCESS DATA",{
+//  userId:existingUser._id,
+//  ownerId:inviterId,
+//  pageType:accessScope,
+//  pageUrl:shareLink,
+//  role
+// });
+// // page level access
+//   if(
+//     accessScope === "category" ||
+//     accessScope === "board"
+//   ){
+
+//     await PageAccess.create({
+
+//       userId: existingUser._id,
+
+//       ownerId: inviterId,
+
+//       pageType: accessScope,
+
+//       pageUrl: shareLink,
+
+//       permission:
+//         role === "editor"
+//           ? "edit"
+//           : role === "commenter"
+//           ? "comment"
+//           : "view"
+
+//     });
+
+//   }
 
 //       await Notification.create({
 //         fromUser: inviterId,
@@ -1194,159 +1270,162 @@
 //   }
 // });
 
-// // 3. UPDATE ROLE
-// router.put("/:id/role", verifyToken, async (req: AuthRequest, res: Response) => {
-//   try {
-//     const { role } = req.body as ShareRequestBody;
-//     const inviterId = req.user?.id;
 
-//     if (!inviterId) {
-//       res.status(401).json({ message: "Unauthorized" });
-//       return;
-//     }
+router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { invitedEmail, email, pageUrl, role = "viewer", source, noteId } = req.body as ShareRequestBody;
+    const targetEmail = String(invitedEmail || email || "").trim().toLowerCase();
+    const inviterId = req.user?.id;
 
-//     if (!role || !["editor", "viewer", "commenter"].includes(role)) {
-//       res.status(400).json({ message: "Please provide a valid role." });
-//       return;
-//     }
+    if (!inviterId) {
+      res.status(401).json({ message: "You must be signed in to invite collaborators." });
+      return;
+    }
 
-//     const invitation = await ShareInvitation.findOne({
-//       _id: req.params.id,
-//       invitedBy: inviterId,
-//     });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+      res.status(400).json({ message: "Please provide a valid email address." });
+      return;
+    }
 
-//     if (!invitation) {
-//       res.status(404).json({ message: "Invitation not found." });
-//       return;
-//     }
+    const shareLink = pageUrl || `${req.protocol}://${req.get("host")}/`;
+    const accessScope = getAccessScope(shareLink, source);
 
-//     invitation.role = role;
-//     await invitation.save();
+    // Check for existing invitation
+    const existingInvitation = await ShareInvitation.findOne({
+      invitedBy: inviterId,
+      invitedEmail: targetEmail,
+      pageUrl: shareLink,
+      status: { $in: ["pending", "accepted"] },
+    });
 
-//     if (invitation.userId) {
-//       const pageNoteId = extractNoteId(invitation.pageUrl);
-//       const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
+    if (existingInvitation) {
+      res.status(400).json({ message: "This email has already been invited to this page." });
+      return;
+    }
 
-//       await grantWorkspaceAccess({
-//         userId: invitation.userId.toString(),
-//         inviterId,
-//         pageNoteId,
-//         role,
-//         accessScope
-//       });
-//     }
+    const existingUser = await Auth.findOne({ email: targetEmail });
+    const pageNoteId = noteId || extractNoteId(shareLink);
+    const pageNoteObjectId = pageNoteId && mongoose.Types.ObjectId.isValid(pageNoteId) 
+      ? new mongoose.Types.ObjectId(pageNoteId) 
+      : undefined;
 
-//     res.status(200).json({ message: "Permission updated.", collaborator: invitation });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : "Unable to update permission";
-//     res.status(500).json({ message });
-//   }
-// });
+    const invitationSource = accessScope === "category" 
+      ? "category_page" 
+      : accessScope === "note" 
+        ? "note_page" 
+        : accessScope === "board" 
+          ? "board_page"
+          : accessScope === "note-form"
+            ? "note_form_page"
+            : "default" as const;
 
-// // 4. GET COLLABORATORS
-// // router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
-// //   try {
-// //     const currentUserId = req.user?.id;
-// //     if (!currentUserId) {
-// //       res.status(401).json({ message: "You must be signed in to view collaborators." });
-// //       return;
-// //     }
+    const invitation = await ShareInvitation.create({
+      invitedBy: inviterId,
+      invitedEmail: targetEmail,
+      role,
+      status: existingUser ? "accepted" : "pending",
+      pageUrl: shareLink,
+      source: invitationSource as any,
+      noteId: pageNoteObjectId,
+      userId: existingUser?._id
+    });
 
-// //     const collaborators = await ShareInvitation.find({
-// //       invitedBy: currentUserId,
-// //       status: { $in: ["pending", "accepted"] },
-// //     }).sort({ createdAt: -1 }).lean();
+    if (existingUser) {
+      // Grant workspace access with proper permission
+      const permissionMap: Record<string, string> = {
+        "viewer": "view",
+        "commenter": "comment",
+        "editor": "edit",
+        "full": "full"
+      };
+      
+      await grantWorkspaceAccess({
+        userId: existingUser._id.toString(),
+        inviterId,
+        pageNoteId: pageNoteId || null,
+        role,
+        accessScope
+      });
 
-// //     res.status(200).json({ collaborators });
-// //   } catch (error) {
-// //     const message = error instanceof Error ? error.message : "Unable to load collaborators";
-// //     res.status(500).json({ message });
-// //   }
-// // });
+      // Create notification
+      await Notification.create({
+        fromUser: inviterId,
+        toUser: existingUser._id,
+        type: "invite",
+        message: `You were invited to collaborate (role: ${role}) by the user.`,
+      }).catch(() => null);
+    }
 
-// // 4. GET COLLABORATORS
-// // router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
-// //   try {
-// //     const currentUserId = req.user?.id;
+    sendInviteEmail(targetEmail, role, shareLink);
 
-// //     if (!currentUserId) {
-// //       res.status(401).json({ message: "Unauthorized" });
-// //       return;
-// //     }
+    res.status(201).json({
+      message: "Collaborator invited successfully.",
+      collaborator: invitation,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to process invite";
+    res.status(500).json({ message });
+  }
+});
 
-// //     const { pageUrl, source } = req.query;
-
-// //     const filter: any = {
-// //       invitedBy: currentUserId,
-// //       status: { $in: ["pending", "accepted"] }
-// //     };
-
-// //     // 
-// //     if (pageUrl) {
-// //       filter.pageUrl = pageUrl; 
-// //     }
-
-// //     if (source) {
-// //       filter.source = source;
-// //     }
-
-// //     const collaborators = await ShareInvitation.find(filter)
-// //       .sort({ createdAt: -1 })
-// //       .lean();
-
-// //     res.json({ collaborators });
-
-// //   } catch (error) {
-// //     res.status(500).json({
-// //       message: "Unable to load collaborators"
-// //     });
-// //   }
-// // });
-
-
-// // router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
-// //   try {
-// //     const currentUserId = req.user?.id;
-
-// //     if (!currentUserId) {
-// //       res.status(401).json({ message: "Unauthorized" });
-// //       return;
-// //     }
-
-// //     const currentUser = await Auth.findById(currentUserId).select("email");
-// //     const currentUserEmail = currentUser?.email?.toLowerCase();
-
-// //     const filter: any = {
-// //       $or: [
-// //         { invitedBy: currentUserId },
-// //         { invitedEmail: currentUserEmail },
-// //         { userId: currentUserId }
-// //       ],
-// //       status: { $in: ["pending", "accepted"] }
-// //     };
+// 3. UPDATE ROLE
+router.put("/:id/role", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { role } = req.body as ShareRequestBody;
+    const inviterId = req.user?.id;
 
    
+    if (!inviterId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
 
-// //     const { source } = req.query;
-// //     if (source) {
-// //       filter.source = source;
-// //     }
+    if (!role || !["editor", "viewer", "commenter","full"].includes(role)) {
+      res.status(400).json({ message: "Please provide a valid role." });
+      return;
+    }
 
-// //     const collaborators = await ShareInvitation.find(filter)
-// //       .sort({ createdAt: -1 })
-// //       .lean();
+    const invitation = await ShareInvitation.findOne({
+      _id: req.params.id,
+      invitedBy: inviterId,
+    });
 
-// //     res.json({ collaborators });
+    if (!invitation) {
+      res.status(404).json({ message: "Invitation not found." });
+      return;
+    }
 
-// //   } catch (error) {
-// //     res.status(500).json({
-// //       message: "Unable to load collaborators"
-// //     });
-// //   }
-// // });
+    invitation.role = role;
+    await invitation.save();
 
+    if (invitation.userId) {
 
-// // GET /api/share/collaborators
+      const permissionMap = {
+        "viewer" : "view",
+        "commenter" : "comment",
+        "editor" : "edit",
+        "full" : "full"
+      }
+      const pageNoteId = extractNoteId(invitation.pageUrl);
+      const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
+
+      await grantWorkspaceAccess({
+        userId: invitation.userId.toString(),
+        inviterId,
+        pageNoteId,
+        role,
+        accessScope
+      });
+    }
+
+    res.status(200).json({ message: "Permission updated.", collaborator: invitation });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to update permission";
+    res.status(500).json({ message });
+  }
+});
+
+// GET /api/share/collaborators
 // router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
 //   try {
 //     const currentUserId = req.user?.id;
@@ -1387,92 +1466,165 @@
 //   }
 // });
 
-// // 5. GET INVITATIONS
-// router.get("/invitations", verifyToken, async (req: AuthRequest, res: Response) => {
-//   try {
-//     const currentUserId = req.user?.id;
-//     if (!currentUserId) {
-//       res.status(401).json({ message: "You must be signed in to view invitations." });
-//       return;
-//     }
+router.get("/collaborators", verifyToken, async (req: AuthRequest,res:Response)=>{
+try{
 
-//     const currentUser = await Auth.findById(currentUserId).select("email");
-//     const invitations = await ShareInvitation.find({
-//       $or: [
-//         { invitedEmail: currentUser?.email?.toLowerCase() },
-//         { userId: currentUserId },
-//       ],
-//       status: { $in: ["pending", "accepted"] },
-//     }).sort({ createdAt: -1 }).lean();
+ const currentUserId=req.user?.id;
+ const {noteId} = req.query;
 
-//     res.status(200).json({ invitations });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : "Unable to load invitations";
-//     res.status(500).json({ message });
-//   }
-// });
+ if(!currentUserId){
+   return res.status(401).json({
+     message:"Unauthorized"
+   });
+ }
 
-// // 6. DELETE COLLABORATOR
-// router.delete("/:id", verifyToken, async (req: AuthRequest, res: Response) => {
-//   try {
-//     const inviterId = req.user?.id;
-//     const invitation = await ShareInvitation.findOne({
-//       _id: req.params.id,
-//       invitedBy: inviterId,
-//     });
 
-//     if (!invitation) {
-//       res.status(404).json({ message: "Invitation not found." });
-//       return;
-//     }
+ const currentUser=await Auth.findById(currentUserId)
+ .select("email");
 
-//     if (invitation.userId && inviterId) {
-//       const pageNoteId = extractNoteId(invitation.pageUrl);
-//       const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
+
+ const {pageUrl, source}=req.query;
+
+
+ const filter:any={
+   status:{
+     $in:["pending","accepted"]
+   },
+   $or:[
+     {
+       invitedBy:currentUserId
+     },
+     {
+       userId:currentUserId
+     },
+     {
+       invitedEmail:currentUser?.email?.toLowerCase()
+     }
+   ]
+ };
+
+  if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
+      filter.noteId = new mongoose.Types.ObjectId(noteId as string);
+    }
+
+
+ if(pageUrl){
+   filter.pageUrl=pageUrl;
+ }
+
+
+ if(source){
+   filter.source=source;
+ }
+
+
+ const collaborators=await ShareInvitation.find(filter)
+ .populate("userId","name email")
+ .lean();
+
+console.log(`Found ${collaborators.length} collaborators for note ${noteId || 'all'}`);
+
+ res.json({
+   collaborators
+ });
+
+
+}catch(error){
+
+res.status(500).json({
+ message:"Unable to load collaborators"
+});
+
+}
+
+});
+
+// 5. GET INVITATIONS
+router.get("/invitations", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const currentUserId = req.user?.id;
+    if (!currentUserId) {
+      res.status(401).json({ message: "You must be signed in to view invitations." });
+      return;
+    }
+
+    const currentUser = await Auth.findById(currentUserId).select("email");
+    const invitations = await ShareInvitation.find({
+      $or: [
+        { invitedEmail: currentUser?.email?.toLowerCase() },
+        { userId: currentUserId },
+      ],
+      status: { $in: ["pending", "accepted"] },
+    }).sort({ createdAt: -1 }).lean();
+
+    res.status(200).json({ invitations });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to load invitations";
+    res.status(500).json({ message });
+  }
+});
+
+// 6. DELETE COLLABORATOR
+router.delete("/:id", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const inviterId = req.user?.id;
+    const invitation = await ShareInvitation.findOne({
+      _id: req.params.id,
+      invitedBy: inviterId,
+    });
+
+    if (!invitation) {
+      res.status(404).json({ message: "Invitation not found." });
+      return;
+    }
+
+    if (invitation.userId && inviterId) {
+      const pageNoteId = extractNoteId(invitation.pageUrl);
+      const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
       
-//       const userNotes = pageNoteId
-//         ? await Note.find({ _id: pageNoteId, user: inviterId }).select("_id")
-//         : await Note.find({ user: inviterId }).select("_id");
-//       const noteIds = userNotes.map((note) => note._id);
+      const userNotes = pageNoteId
+        ? await Note.find({ _id: pageNoteId, user: inviterId }).select("_id")
+        : await Note.find({ user: inviterId }).select("_id");
+      const noteIds = userNotes.map((note) => note._id);
 
-//       await WorkspaceAccess.deleteMany({ userId: invitation.userId, noteId: { $in: noteIds }, accessScope });
-//       await Comment.deleteMany({ userId: invitation.userId, noteId: { $in: noteIds } });
-//     }
+      await WorkspaceAccess.deleteMany({ userId: invitation.userId, noteId: { $in: noteIds }, accessScope });
+      await Comment.deleteMany({ userId: invitation.userId, noteId: { $in: noteIds } });
+    }
     
-//     await invitation.deleteOne();
-//     res.status(200).json({ message: "Collaborator removed." });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : "Unable to remove collaborator";
-//     res.status(500).json({ message });
-//   }
-// });
-
-// export default router;
-
-import express from "express";
-import { 
-  inviteCollaborator, 
-  getCollaborators, 
-  updateCollaboratorRole, 
-  removeCollaborator,
-  getInvitations,
-  respondToInvitation,
-  getWorkspaceAccess
-} from "../controllers/share/index";
-import { verifyToken } from "../middleware/auth";
-
-const router = express.Router();
-
-// All share routes require authentication
-router.use(verifyToken);
-
-// Share routes
-router.post("/invite", inviteCollaborator);
-router.get("/collaborators", getCollaborators);
-router.put("/:id/role", updateCollaboratorRole);
-router.delete("/:id", removeCollaborator);
-router.get("/invitations", getInvitations);
-router.put("/invitations/:id/respond", respondToInvitation);
-router.get("/workspace/:noteId", getWorkspaceAccess);
+    await invitation.deleteOne();
+    res.status(200).json({ message: "Collaborator removed." });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to remove collaborator";
+    res.status(500).json({ message });
+  }
+});
 
 export default router;
+
+// import express from "express";
+// import { 
+//   inviteCollaborator, 
+//   getCollaborators, 
+//   updateCollaboratorRole, 
+//   removeCollaborator,
+//   getInvitations,
+//   respondToInvitation,
+//   getWorkspaceAccess
+// } from "../controllers/share/index";
+// import { verifyToken } from "../middleware/auth";
+
+// const router = express.Router();
+
+// // All share routes require authentication
+// router.use(verifyToken);
+
+// // Share routes
+// router.post("/invite", inviteCollaborator);
+// router.get("/collaborators", getCollaborators);
+// router.put("/:id/role", updateCollaboratorRole);
+// router.delete("/:id", removeCollaborator);
+// router.get("/invitations", getInvitations);
+// router.put("/invitations/:id/respond", respondToInvitation);
+// router.get("/workspace/:noteId", getWorkspaceAccess);
+
+// export default router;

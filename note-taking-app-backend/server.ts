@@ -63,6 +63,12 @@ import authRoutes from "./routes/auth/auth";
 import noteRoutes from "./routes/note";
 import shareRoutes from "./routes/share";
 import notificationRoutes from "./routes/notifications";
+import pageAccessRoutes from './routes/pageAccess';
+import commentRoutes from './routes/comment';
+
+
+
+
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 const app = express();
@@ -72,7 +78,8 @@ app.use(cors({
   origin: 'http://localhost:5173', 
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization',"Accept"],
+  exposedHeaders:['Authorization']
 }));
 
 app.use(helmet());
@@ -89,6 +96,9 @@ app.use('/api/notes', noteRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/share', shareRoutes);
+app.use('/api/pageaccess',pageAccessRoutes)
+app.use('/api/comments',commentRoutes)
+
 
 // Backward compatibility (optional)
 app.use('/notes', noteRoutes);

@@ -48,7 +48,7 @@ export const NoteStatusPage: React.FC = () => {
   const navigate = useNavigate();
 
   // ============ FIX: Remove refetchOnMountOrArgChange ============
-  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery();
+  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery({shareScope:'board'});
   const [updatedNote] = useUpdateNoteMutation();
 
   // For sharing state
@@ -385,7 +385,7 @@ export const NoteStatusPage: React.FC = () => {
           />
         )}
 
-        <Button
+        {/* <Button
           startIcon={<Share />}
           onClick={handleShareClick}
           sx={{
@@ -400,7 +400,7 @@ export const NoteStatusPage: React.FC = () => {
           }}
         >
           Share
-        </Button>
+        </Button> */}
       </Stack>
 
       {/* Share Popover */}

@@ -816,7 +816,7 @@ export const NoteFrom = () => {
   },[location.pathname]);
 
   // Load collaborators for specific note
-  const loadCollaboratorsForNote = async (noteId: string) => {
+  const loadCollaboratorsForNote = async (noteId: string,pageUrl:string,source:string) => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
@@ -831,6 +831,7 @@ export const NoteFrom = () => {
       console.error("Failed to load collaborators", err);
     }
   };
+  
 
   const filteredNotes = useMemo<Note[]>(() => {
     if (!Array.isArray(notes)) return [];
@@ -956,7 +957,7 @@ export const NoteFrom = () => {
     setShareAnchorEl(event.currentTarget);
     setSelectedNoteId(noteId);
     setSelectedNoteTitle(noteTitle);
-    await loadCollaboratorsForNote(noteId);
+    await loadCollaboratorsForNote(noteId,window.location.pathname,"note_form_page");
   };
 
   const handleShareClose = () => {
@@ -1019,7 +1020,7 @@ export const NoteFrom = () => {
       if (response.ok) {
         setCollaborators((prev) => prev.filter((person) => person._id !== activeCollaboratorId));
         if (selectedNoteId) {
-          await loadCollaboratorsForNote(selectedNoteId);
+          await loadCollaboratorsForNote(selectedNoteId,window.location.pathname,"note_form_page");
         }
       }
     } catch (err) {
