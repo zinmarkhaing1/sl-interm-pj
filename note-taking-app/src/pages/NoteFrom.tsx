@@ -816,21 +816,66 @@ export const NoteFrom = () => {
   },[location.pathname]);
 
   // Load collaborators for specific note
-  const loadCollaboratorsForNote = async (noteId: string,pageUrl:string,source:string) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCollaborators(data.collaborators || []);
-      }
-    } catch (err) {
-      console.error("Failed to load collaborators", err);
+  // const loadCollaboratorsForNote = async (noteId: string,pageUrl:string,source:string) => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) return;
+  //   try {
+  //     const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setCollaborators(data.collaborators || []);
+  //     }
+  //   } catch (err) {
+  //     console.error("Failed to load collaborators", err);
+  //   }
+  // };
+
+  // NoteFrom.tsx
+
+// ✅ FIXED: Load collaborators with proper filtering
+const loadCollaboratorsForNote = async (noteId: string, pageUrl: string, source: string) => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      // ✅ Filter by noteId to be safe
+      const filtered = (data.collaborators || []).filter(
+        (c: CollaboratorItem) => c.noteId === noteId
+      );
+      setCollaborators(filtered);
+      console.log(`📋 Loaded ${filtered.length} collaborators for note ${noteId}`);
     }
-  };
+  } catch (err) {
+    console.error("Failed to load collaborators", err);
+  }
+};
+
+// ✅ FIXED: Refresh collaborators after invite
+const refreshCollaboratorsForNote = async (noteId: string) => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const filtered = (data.collaborators || []).filter(
+        (c: CollaboratorItem) => c.noteId === noteId
+      );
+      setCollaborators(filtered);
+      console.log(`📋 Refreshed ${filtered.length} collaborators for note ${noteId}`);
+    }
+  } catch (err) {
+    console.error("Failed to refresh collaborators", err);
+  }
+};
   
 
   const filteredNotes = useMemo<Note[]>(() => {
@@ -1040,40 +1085,80 @@ export const NoteFrom = () => {
   const isShareOpen = Boolean(shareAnchorEl);
 
   // Render Share Popover component
-  const renderSharePopover = () => (
-    <Popover
-      open={isShareOpen}
-      anchorEl={shareAnchorEl}
-      onClose={handleShareClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-      transformOrigin={{ vertical: "top", horizontal: "left" }}
-      slotProps={{
-        paper: {
-          sx: {
-            width: 420,
-            p: 2.5,
-            mt: 1,
-            borderRadius: 3,
-            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
-            bgcolor: 'background.paper',
-            color: 'text.primary'
-          }
+  // const renderSharePopover = () => (
+  //   <Popover
+  //     open={isShareOpen}
+  //     anchorEl={shareAnchorEl}
+  //     onClose={handleShareClose}
+  //     anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+  //     transformOrigin={{ vertical: "top", horizontal: "left" }}
+  //     slotProps={{
+  //       paper: {
+  //         sx: {
+  //           width: 420,
+  //           p: 2.5,
+  //           mt: 1,
+  //           borderRadius: 3,
+  //           boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
+  //           bgcolor: 'background.paper',
+  //           color: 'text.primary'
+  //         }
+  //       }
+  //     }}
+  //   >
+  //     <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+  //       Sharing: {selectedNoteTitle}
+  //     </Typography>
+  //     <ShareNoteDetailPage
+  //       user={user}
+  //       collaborators={collaborators}
+  //       setCollaborators={setCollaborators}
+  //       handleOpenPermissionMenu={handleOpenPermissionMenu}
+  //       getRoleLabel={getRoleLabel}
+  //       noteId={selectedNoteId || ''}
+  //     />
+  //   </Popover>
+  // );
+
+
+
+  // NoteFrom.tsx - renderSharePopover function
+
+const renderSharePopover = () => (
+  <Popover
+    open={isShareOpen}
+    anchorEl={shareAnchorEl}
+    onClose={handleShareClose}
+    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+    transformOrigin={{ vertical: "top", horizontal: "left" }}
+    slotProps={{
+      paper: {
+        sx: {
+          width: 420,
+          p: 2.5,
+          mt: 1,
+          borderRadius: 3,
+          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
+          bgcolor: 'background.paper',
+          color: 'text.primary'
         }
-      }}
-    >
-      <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
-        Sharing: {selectedNoteTitle}
-      </Typography>
-      <ShareNoteDetailPage
-        user={user}
-        collaborators={collaborators}
-        setCollaborators={setCollaborators}
-        handleOpenPermissionMenu={handleOpenPermissionMenu}
-        getRoleLabel={getRoleLabel}
-        noteId={selectedNoteId || ''}
-      />
-    </Popover>
-  );
+      }
+    }}
+  >
+    <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+      Sharing: {selectedNoteTitle}
+    </Typography>
+    <ShareNoteDetailPage
+      user={user}
+      collaborators={collaborators}
+      setCollaborators={setCollaborators}
+      handleOpenPermissionMenu={handleOpenPermissionMenu}
+      getRoleLabel={getRoleLabel}
+      noteId={selectedNoteId || ''}
+      onRefresh={() => selectedNoteId && loadCollaboratorsForNote(selectedNoteId, window.location.pathname, "note_form_page")}
+    />
+  </Popover>
+);
 
   // Render Permission Menu
   const renderPermissionMenu = () => (
