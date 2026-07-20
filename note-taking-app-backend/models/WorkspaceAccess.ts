@@ -53,7 +53,7 @@ export interface IWorkspaceAccess extends Document {
   userId: Types.ObjectId;
   noteId: Types.ObjectId;
   permission:  "comment" | "edit" | "full"|"view"; 
-  accessScope: "global" | "category" | "note" | "board" | "note-form";
+  accessScope: "global" | "note" | "note-form";
   grantedBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -78,7 +78,7 @@ const WorkspaceAccessSchema = new mongoose.Schema(
     },
     accessScope: {
       type: String,
-      enum: ["global", "category", "note", "board", "note-form"],
+      enum: [ "note", "note-form", "global"],
       default: "global",
     },
     grantedBy: {

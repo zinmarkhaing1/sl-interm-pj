@@ -36,6 +36,7 @@
 
 // middleware/auth.ts
 // Make sure verifyToken is correctly extracting user info
+
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 

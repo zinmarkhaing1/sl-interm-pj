@@ -15,10 +15,13 @@ import {
   ListItemText,
   ListItemIcon,
   Popover,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select
 } from "@mui/material";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { SwapVertOutlined, Search, CategoryOutlined, Share, DeleteOutlined, Check } from "@mui/icons-material";
+import { SwapVertOutlined, Search, CategoryOutlined, Share, DeleteOutlined, Check, } from "@mui/icons-material";
 import { useGetNotesQuery, useUpdateNoteMutation } from "../../services/noteApi";
 import { useNavigate } from "react-router-dom";
 import type { Note } from "../../types/Note";
@@ -64,8 +67,10 @@ export const CategoriesPage = () => {
   const navigate = useNavigate();
 
   //  Remove shareScope parameter to get all notes
-  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery({shareScope:"category"});
+  const { data: notes = [], isLoading, isError, refetch,status, isSuccess,isUninitialized,isFetching } = useGetNotesQuery({});
   const [updatedNote] = useUpdateNoteMutation();
+
+   const [currentCategoryName, setCurrentCategoryName] = useState<string>("");
 
   // Local state for tasks
   const [categoryTasks, setCategoryTasks] = useState<Note[]>([]);
@@ -82,13 +87,15 @@ export const CategoriesPage = () => {
   const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<string>("full");
 
+  const [selectedShareCategory, setSelectedShareCategory] = useState<string>(COLUMNS[0].id);
+  const [isCategorySelectorOpen, setIsCategorySelectorOpen] = useState<boolean>(false);
 
 
 
   // In CategoriesPage.tsx - Add state for user permission
 
 // Add this state:
-const [userPermission, setUserPermission] = useState<"owner" | "full" | "editor" | "commenter" | "viewer">("owner");
+const [userPermission, setUserPermission] = useState<"owner" | "full" | "viewer">("owner");
 const [isViewOnly, setIsViewOnly] = useState(false);
 
 // Update the loadCollaborators function to also get user's permission
@@ -117,10 +124,24 @@ const loadCollaboratorsAndPermission = async () => {
     console.error("Failed to load data", err);
   }
 };
-
+//debug all states
+  useEffect(() => {
+    console.log('🔄 RTK Query States:', {
+      isUninitialized,
+      isLoading,
+      isFetching,
+      isSuccess,
+      isError,
+      status,
+      notesLength: notes.length,
+      notes: notes
+    });
+  }, [isUninitialized, isLoading, isFetching, isSuccess, isError, status, notes]);
 // Update useEffect:
 useEffect(() => {
+  const token = localStorage.getItem('token');
   const storedUser = localStorage.getItem("user");
+  console.log('Auth Check:', {hasToken:  !!token, hasUser: !!user, tokenPreview : token ? token.substring(0, 30) + '...' : null, user: user ? JSON.parse(user as any):null});
   if (storedUser) {
     try {
       const parsedUser = JSON.parse(storedUser);
@@ -130,12 +151,23 @@ useEffect(() => {
     }
   }
 
+
   loadCollaboratorsAndPermission();
 }, []);
 
-// Add this helper in CategoriesPage.tsx
+useEffect(() => {
+  const url = window.location.href;
+  const match = url.match(/\/category\/([^\/?#]+)/);
+  if (match) {
+    const name = decodeURIComponent(match[1]);
+    console.log("📂 Current category name:", name);
+    setCurrentCategoryName(name);
+  }
+}, [window.location.pathname])
 
-const getUserPermissionFromNotes = (notes: Note[], userId: string): "owner" | "viewer" | "editor" | "commenter" => {
+
+
+const getUserPermissionFromNotes = (notes: Note[], userId: string): "owner" | "viewer"  => {
   if (!notes || notes.length === 0) return "owner";
   
   // Check if user is owner of any note in the category
@@ -145,22 +177,19 @@ const getUserPermissionFromNotes = (notes: Note[], userId: string): "owner" | "v
   });
   
   if (isOwner) return "owner";
-  
-  // Check access permission from the first note
-  const firstNote = notes[0] as any;
-  if (firstNote.accessPermission) {
-    return firstNote.accessPermission;
-  }
-  
-  return "viewer"; // Default to viewer
-};
 
-// Then update the useEffect that loads notes:
+  const pageAccess = (notes[0] as any)?.pageAccess;
+  if (pageAccess === "view") return "viewer";
+
+  return "viewer";
+}
+  
+
 useEffect(() => {
   if (notes && notes.length > 0 && user) {
     const permission = getUserPermissionFromNotes(notes, (user as any)._id);
     setUserPermission(permission);
-    setIsViewOnly(permission === "viewer" || permission === "commenter");
+    setIsViewOnly(permission === "viewer" );
   }
 }, [notes, user]);
 
@@ -317,10 +346,17 @@ useEffect(() => {
   // Share popover handlers
   const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setShareAnchorEl(event.currentTarget);
+     const url = window.location.href;
+  const categoryMatch = url.match(/\/category\/([^\/?#]+)/);
+  if (categoryMatch) {
+    setCurrentCategoryName(decodeURIComponent(categoryMatch[1]));
+  }
+  setIsCategorySelectorOpen(true);
   };
 
   const handleShareClose = () => {
     setShareAnchorEl(null);
+    setIsCategorySelectorOpen(false);
   };
 
   const handleOpenPermissionMenu = (
@@ -336,6 +372,10 @@ useEffect(() => {
   const handleClosePermissionMenu = () => {
     setPermissionMenuAnchorEl(null);
     setActiveCollaboratorId(null);
+  };
+
+   const handleCategoryChange = (event: any) => {
+    setSelectedShareCategory(event.target.value);
   };
 
   const handlePermissionChange = async (role: string) => {
@@ -500,7 +540,7 @@ useEffect(() => {
           />
         )}
 
-        {/* <Button
+         <Button
           startIcon={<Share />}
           onClick={handleShareClick}
           sx={{
@@ -515,7 +555,7 @@ useEffect(() => {
           }}
         >
           Share
-        </Button> */}
+        </Button> 
       </Stack>
 
       {/* Share Popover */}
@@ -539,6 +579,32 @@ useEffect(() => {
           }
         }}
       >
+      <Box sx={{ mb: 2 }}>
+      <FormControl fullWidth size="small">
+        <InputLabel>Select Category to Share</InputLabel>
+        <Select
+          value={selectedShareCategory}
+          label="Select Category to Share"
+          onChange={handleCategoryChange}
+        >
+          {COLUMNS.map((col) => (
+            <MenuItem key={col.id} value={col.id}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    idth: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    bgcolor: col.color,
+                  }}
+                />
+                {col.label}
+              </Box>
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
         <ShareCategoryPage
           user={user}
           collaborators={collaborators}
@@ -546,6 +612,7 @@ useEffect(() => {
           handleOpenPermissionMenu={handleOpenPermissionMenu}
           getRoleLabel={getRoleLabel}
           userPermission={userPermission}
+          categoryName = {currentCategoryName}
         />
       </Popover>
 

@@ -2128,8 +2128,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         <Box sx={{ flexGrow: 1 }} />
 
         <IconButton 
-          sx={{ 
-            bgcolor: "background.paper", 
+          sx={{  
             color: "text.primary", 
             mr: 1 
           }} 

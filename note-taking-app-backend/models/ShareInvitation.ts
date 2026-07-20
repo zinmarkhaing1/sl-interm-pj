@@ -69,10 +69,12 @@ export interface IShareInvitation extends Document {
   invitedEmail: string;
   role: "editor" | "viewer" | "commenter" | "full"; 
   status: "pending" | "accepted" | "declined";
-  pageUrl?: string;
+  pageUrl: string;
   source?: "category_page" | "note_page" | "board_page" | "note_form_page" | "default";
   noteId?: Types.ObjectId;
   userId?: Types.ObjectId;
+  pageType? : "category" | "board";
+  pageName? : string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -119,6 +121,15 @@ const ShareInvitationSchema = new mongoose.Schema(
       ref: "Auth",
       required: false,
     },
+    pageType: {
+    type: String,
+    enum: ["category", "board"],
+    required: false,
+  },
+  pageName: {
+    type: String,
+    required: false,
+  },
   },
   { timestamps: true },
 );

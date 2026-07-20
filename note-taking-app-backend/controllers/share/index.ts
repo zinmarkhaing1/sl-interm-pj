@@ -1,54 +1,10 @@
-// import { Request, Response } from "express";
-// import ShareInvitation from "../../models/ShareInvitation";
-
-// export const inviteCollaborator = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const { invitedEmail, role, pageUrl } = req.body;
-
-    
-//     if (!invitedEmail) {
-//       res.status(400).json({ message: "Email is required." });
-//       return;
-//     }
-
-    
-//     const existingInvitation = await ShareInvitation.findOne({
-//       invitedEmail: invitedEmail.toLowerCase().trim(),
-//       pageUrl,
-//       status: "pending",
-//     });
-
-//     if (existingInvitation) {
-//       res.status(400).json({ message: "This email has already been invited to this page." });
-//       return;
-//     }
-
-//     const newInvitation = new ShareInvitation({
-//       invitedBy: (req as any).user?.id || null, 
-//       invitedEmail: invitedEmail.trim(),     
-//       role: role || "viewer",                
-//       status: "pending",
-//       pageUrl,
-//     });
-
-//     await newInvitation.save();
-
-
-//     res.status(201).json({
-//       message: "Collaborator invited successfully.",
-//       collaborator: newInvitation,
-//     });
-
-//   } catch (error: any) {
-//     console.error("Invite Error:", error);
-//     res.status(500).json({ message: error.message || "Internal Server Error." });
-//   }
-// };
 
 import { Request, Response } from "express";
 import ShareInvitation from "../../models/ShareInvitation";
 import Auth from "../../models/Auth";
 import WorkspaceAccess from "../../models/WorkspaceAccess";
+import PageAccess from "../../models/PageAccess";
+
 
 // Role mapping function
 const mapRoleToPermission = (role: string): "full" |"view" | "comment" | "edit" => {
@@ -68,7 +24,7 @@ const mapRoleToPermission = (role: string): "full" |"view" | "comment" | "edit" 
 // 1. Invite Collaborator
 export const inviteCollaborator = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { invitedEmail, role, pageUrl, noteId, source } = req.body;
+    const { invitedEmail, role, pageUrl, noteId, source ,pageType,pageName} = req.body;
     const userId = (req as any).user?.id;
 
     if (!userId) {
@@ -98,6 +54,7 @@ export const inviteCollaborator = async (req: Request, res: Response): Promise<v
     const validRole = ["editor", "viewer", "commenter", "full"].includes(role) ? role : "viewer";
 
     const status = user ? "accepted" : "pending";
+
     const newInvitation = new ShareInvitation({
       invitedBy: userId,
       invitedEmail: invitedEmail.trim(),
@@ -107,9 +64,32 @@ export const inviteCollaborator = async (req: Request, res: Response): Promise<v
       source: source || "default",
       noteId: noteId || null,
       userId: user?._id || null,
+      pageType : pageType || null,
+      pageName : pageName || null,
     });
 
     await newInvitation.save();
+
+     if (user && (pageType === "category" || pageType === "board") && pageName) {
+      await PageAccess.findOneAndUpdate(
+        {
+          userId: user._id,
+          ownerId: userId,
+          pageType: pageType,
+          pageName: pageName,
+        },
+        {
+          userId: user._id,
+          ownerId: userId,
+          pageType: pageType,
+          pageName: pageName,
+          pageUrl: pageUrl || "",
+          permission: "view",
+        },
+        { upsert: true, new: true }
+      );
+      console.log(`✅ PageAccess created for ${pageType}: ${pageName}`);
+    }
 
     if (user && noteId) {
       const permission = mapRoleToPermission(validRole);
@@ -445,3 +425,4 @@ export const getWorkspaceAccess = async (req: Request, res: Response): Promise<v
     res.status(500).json({ message: error.message || "Internal Server Error." });
   }
 };
+
