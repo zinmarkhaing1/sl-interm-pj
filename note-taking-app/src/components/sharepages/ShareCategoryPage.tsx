@@ -554,7 +554,6 @@ const handleInvite = async () => {
       pageUrl: window.location.href,
       source: "category_page",
       pageType: "category",
-      pageName: categoryNameToUse,
     };
 
     console.log("📨 Sending invite request:", requestBody);
@@ -568,7 +567,7 @@ const handleInvite = async () => {
       body: JSON.stringify(requestBody),
     });
 
-    console.log("📨 Response status:", response.status);
+    console.log(" Response status:", response.status);
 
   
     if (!response.ok) {

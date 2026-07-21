@@ -765,7 +765,7 @@ interface ShareStatusPageProps {
     currentRole: string
   ) => void;
   getRoleLabel: (role: string) => string;
-  boardName: string; // 🔥 board name prop ထည့်ပါ
+  boardName:string; 
 }
 
 export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
@@ -774,7 +774,7 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
   setCollaborators,
   handleOpenPermissionMenu,
   getRoleLabel,
-  boardName, // 🔥 လက်ခံပါ
+  boardName, 
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -806,8 +806,8 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
           role: "viewer",
           pageUrl: window.location.href,
           source: "board_page",
-          pageType: "board",          // 🔥 board type ထည့်ပါ
-          pageName: boardName,        // 🔥 board name ထည့်ပါ
+          pageType: "board",          
+      
         }),
       });
 

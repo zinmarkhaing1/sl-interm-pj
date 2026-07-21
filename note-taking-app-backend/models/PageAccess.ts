@@ -89,7 +89,6 @@ export interface IPageAccess extends Document {
   ownerId: Types.ObjectId;
   pageType: "category" | "board";
   pageUrl: string;
-  pageName: string;
   permission: "view";
   createdAt: Date;
   updatedAt: Date;
@@ -102,7 +101,6 @@ export type PageAccessResponse = {
   ownerId: string;
   pageType: "category" | "board";
   pageUrl: string;
-  pageName: string;
   permission: "view";
   createdAt: string;
   updatedAt: string;
@@ -145,10 +143,7 @@ const PageAccessSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    pageName: {
-      type: String,
-      required: true,
-    },
+
     permission: {
       type: String,
       enum: ["view"],
@@ -161,7 +156,7 @@ const PageAccessSchema = new mongoose.Schema(
 );
 
 // Indexes
-PageAccessSchema.index({ userId: 1, pageType: 1, pageName: 1 });
+PageAccessSchema.index({ userId: 1, pageType: 1 });
 PageAccessSchema.index({ userId: 1, pageUrl: 1 });
 PageAccessSchema.index({ ownerId: 1, pageType: 1 });
 

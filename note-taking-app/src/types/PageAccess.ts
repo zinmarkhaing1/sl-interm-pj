@@ -5,7 +5,6 @@ export interface PageAccess {
   ownerId: string;
   pageType: "category" | "board";
   pageUrl: string;
-  pageName: string;
   permission: "view";
   createdAt: string;
   updatedAt: string;
@@ -28,7 +27,6 @@ export interface PageAccessWithPopulatedUsers {
   };
   pageType: "category" | "board";
   pageUrl: string;
-  pageName: string;
   permission: "view";
   createdAt: string;
   updatedAt: string;

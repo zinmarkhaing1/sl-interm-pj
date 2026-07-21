@@ -67,10 +67,10 @@ export const CategoriesPage = () => {
   const navigate = useNavigate();
 
   //  Remove shareScope parameter to get all notes
-  const { data: notes = [], isLoading, isError, refetch,status, isSuccess,isUninitialized,isFetching } = useGetNotesQuery({});
+  const { data: notes = [], isLoading, isError, refetch,status, isSuccess,isUninitialized,isFetching } = useGetNotesQuery({shareScope:'category'});
   const [updatedNote] = useUpdateNoteMutation();
 
-   const [currentCategoryName, setCurrentCategoryName] = useState<string>("");
+  //  const [currentCategoryName, setCurrentCategoryName] = useState<string>("");
 
   // Local state for tasks
   const [categoryTasks, setCategoryTasks] = useState<Note[]>([]);
@@ -155,15 +155,15 @@ useEffect(() => {
   loadCollaboratorsAndPermission();
 }, []);
 
-useEffect(() => {
-  const url = window.location.href;
-  const match = url.match(/\/category\/([^\/?#]+)/);
-  if (match) {
-    const name = decodeURIComponent(match[1]);
-    console.log("📂 Current category name:", name);
-    setCurrentCategoryName(name);
-  }
-}, [window.location.pathname])
+// useEffect(() => {
+//   const url = window.location.href;
+//   const match = url.match(/\/category\/([^\/?#]+)/);
+//   if (match) {
+//     const name = decodeURIComponent(match[1]);
+//     console.log(" Current category name:", name);
+//     setCurrentCategoryName(name);
+//   }
+// }, [window.location.pathname])
 
 
 
@@ -233,22 +233,44 @@ useEffect(() => {
   }, [filteredAndSortedNotes]);
 
   // ============ FIX: Load user and collaborators once ============
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
-      }
-    }
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem("user");
+  //   if (storedUser) {
+  //     try {
+  //       const parsedUser = JSON.parse(storedUser);
+  //       setUser(parsedUser);
+  //     } catch (e) {
+  //       console.error("Failed to parse user from localStorage", e);
+  //     }
+  //   }
 
-    const loadCollaborators = async () => {
+  //   const loadCollaborators = async () => {
+  //     const token = localStorage.getItem("token");
+  //     if (!token) return;
+  //     try {
+  //       const response = await fetch("http://localhost:5000/api/share/collaborators", {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
+  //       if (response.ok) {
+  //         const data = await response.json();
+  //         setCollaborators(data.collaborators || []);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to load collaborators", err);
+  //     }
+  //   };
+
+  //   loadCollaborators();
+  // }, []); // Empty dependency array - runs once
+
+
+  const loadCollaborators = useCallback(async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const response = await fetch("http://localhost:5000/api/share/collaborators", {
+        // const url = `http://localhost:5000/api/share/collaborators?pageType=board&pageName=${encodeURIComponent(BOARD_NAME)}`;
+        const url = `http://localhost:5000/api/share/collaborators?pageType=board`;
+        const response = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
@@ -258,10 +280,23 @@ useEffect(() => {
       } catch (err) {
         console.error("Failed to load collaborators", err);
       }
-    };
+    }, []);
 
-    loadCollaborators();
-  }, []); // Empty dependency array - runs once
+     //  User and Collaborator  Load 
+      useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          } catch (e) {
+            console.error("Failed to parse user from localStorage", e);
+          }
+        }
+        loadCollaborators();
+      }, [loadCollaborators]);
+
+  
 
   const handleRowClick = (id: any) => {
     navigate(`/note-form/detail/${id}`);
@@ -346,17 +381,17 @@ useEffect(() => {
   // Share popover handlers
   const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setShareAnchorEl(event.currentTarget);
-     const url = window.location.href;
-  const categoryMatch = url.match(/\/category\/([^\/?#]+)/);
-  if (categoryMatch) {
-    setCurrentCategoryName(decodeURIComponent(categoryMatch[1]));
-  }
-  setIsCategorySelectorOpen(true);
+  //    const url = window.location.href;
+  // const categoryMatch = url.match(/\/category\/([^\/?#]+)/);
+  // if (categoryMatch) {
+  //   setCurrentCategoryName(decodeURIComponent(categoryMatch[1]));
+  // }
+  // setIsCategorySelectorOpen(true);
   };
 
   const handleShareClose = () => {
     setShareAnchorEl(null);
-    setIsCategorySelectorOpen(false);
+    // setIsCategorySelectorOpen(false);
   };
 
   const handleOpenPermissionMenu = (
@@ -432,7 +467,7 @@ useEffect(() => {
 
   const isShareOpen = Boolean(shareAnchorEl);
 
-  // ============ FIX: Handle search toggle ============
+  //  FIX: Handle search toggle
   const handleSearchToggle = () => {
     setSearchOpen((prev) => !prev);
     if (searchOpen) {
@@ -440,7 +475,7 @@ useEffect(() => {
     }
   };
 
-  // ============ FIX: Handle sort toggle ============
+  //FIX: Handle sort toggle
   const handleSortToggle = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
@@ -579,7 +614,7 @@ useEffect(() => {
           }
         }}
       >
-      <Box sx={{ mb: 2 }}>
+      {/* <Box sx={{ mb: 2 }}>
       <FormControl fullWidth size="small">
         <InputLabel>Select Category to Share</InputLabel>
         <Select
@@ -604,7 +639,7 @@ useEffect(() => {
           ))}
         </Select>
       </FormControl>
-    </Box>
+    </Box> */}
         <ShareCategoryPage
           user={user}
           collaborators={collaborators}
@@ -612,7 +647,7 @@ useEffect(() => {
           handleOpenPermissionMenu={handleOpenPermissionMenu}
           getRoleLabel={getRoleLabel}
           userPermission={userPermission}
-          categoryName = {currentCategoryName}
+          categoryName = "all"
         />
       </Popover>
 
@@ -625,29 +660,29 @@ useEffect(() => {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         slotProps={{ paper: { sx: { width: 340, borderRadius: 3, p: 0.5, boxShadow: "0px 4px 16px rgba(0,0,0,0.12)" } } }}
       >
-        <MenuItem onClick={() => handlePermissionChange("full")} sx={{ py: 1 }}>
+        {/* <MenuItem onClick={() => handlePermissionChange("full")} sx={{ py: 1 }}>
           <ListItemText
             primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Full access</Typography>}
             secondary={<Typography variant="caption" color="text.secondary">Edit, suggest, comment, and share</Typography>}
           />
           {activeRole === "full" && <Check sx={{ fontSize: 16, ml: 1 }} />}
-        </MenuItem>
+        </MenuItem> */}
 
-        <MenuItem onClick={() => handlePermissionChange("editor")} sx={{ py: 1 }}>
+        {/* <MenuItem onClick={() => handlePermissionChange("editor")} sx={{ py: 1 }}>
           <ListItemText
             primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can edit</Typography>}
             secondary={<Typography variant="caption" color="text.secondary">Edit, suggest, and comment</Typography>}
           />
           {activeRole === "editor" && <Check sx={{ fontSize: 16, ml: 1 }} />}
-        </MenuItem>
+        </MenuItem> */}
 
-        <MenuItem onClick={() => handlePermissionChange("commenter")} sx={{ py: 1 }}>
+        {/* <MenuItem onClick={() => handlePermissionChange("commenter")} sx={{ py: 1 }}>
           <ListItemText
             primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can comment</Typography>}
             secondary={<Typography variant="caption" color="text.secondary">Suggest and comment</Typography>}
           />
           {activeRole === "commenter" && <Check sx={{ fontSize: 16, ml: 1 }} />}
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem onClick={() => handlePermissionChange("viewer")} sx={{ py: 1 }}>
           <ListItemText primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can view</Typography>} />
