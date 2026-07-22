@@ -135,7 +135,6 @@ export const MyProjectPages = () => {
               }
               onClick={handleTabClick}/>
           <Tab label="All Projects"  />
-          <Tab label="Grant "  />
           <Tab label = "My Projects" />
 
         </Tabs>
@@ -240,7 +239,7 @@ export const MyProjectPages = () => {
           // </Box>
           
         }
-        {currentTab ===2 && <GranttView filteredNotes={filteredNotes}/>}
+        {/* {currentTab ===2 && <GranttView filteredNotes={filteredNotes}/>} */}
         {currentTab ===3 && <MyProject  filteredNotes={filteredNotes}/>}
           </Box>
   </Box>

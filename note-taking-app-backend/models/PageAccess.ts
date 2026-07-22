@@ -82,8 +82,6 @@
 // );
 
 import mongoose, { Document, Types } from "mongoose";
-
-
 export interface IPageAccess extends Document {
   userId: Types.ObjectId;
   ownerId: Types.ObjectId;

@@ -142,56 +142,28 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
           }}
 />
         </ListItemButton>
-       
 
-        {/* <Divider sx={{ my: 1 }} /> */}
-
-        <ListItemButton
-          onClick={() => navigate("/note")}
-           sx={menuStyle("/note")}
-         
+         <ListItemButton
+          onClick={() => navigate("/my-project")}
+         sx={menuStyle("/my-project")}
         >
           <ListItemIcon
-            sx={{
+           sx={{
               minWidth: isDesktop && !open ? 0 : 40,
               justifyContent: "center",
               
+              
             }}
           >
-            <NoteAltOutlinedIcon />
+            <BusinessCenterOutlinedIcon/>
           </ListItemIcon>
           <ListItemText
-            primary="New Notes"
+          primary="Projects"
           sx={{
             display: isDesktop && !open ? "none" : "block",
             ml: isDesktop && !open ? 0 : 1,
           }}
 />
-          
-        </ListItemButton>
-
-        <ListItemButton
-          onClick={() => navigate("/note-form")}
-           sx={menuStyle("/note-form")}
-         
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-            }}
-          >
-            <EventNoteIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="Note Form"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-          
         </ListItemButton>
 
         <ListItemButton
@@ -217,6 +189,83 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
 />
           
         </ListItemButton>
+
+
+         <ListItemButton
+          onClick={() => navigate("/my-tasks")}
+         sx={menuStyle("/my-tasks")}
+        >
+          <ListItemIcon
+           sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+              
+            }}
+          >
+            <AssignmentIndOutlinedIcon/>
+          </ListItemIcon>
+          <ListItemText
+          primary="My Tasks"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+        </ListItemButton>
+       
+
+        {/* <Divider sx={{ my: 1 }} /> */}
+
+        {/* <ListItemButton
+          onClick={() => navigate("/note")}
+           sx={menuStyle("/note")}
+         
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+            }}
+          >
+            <NoteAltOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="New Notes"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+          
+        </ListItemButton> */}
+
+        <ListItemButton
+          onClick={() => navigate("/note-form")}
+           sx={menuStyle("/note-form")}
+         
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: isDesktop && !open ? 0 : 40,
+              justifyContent: "center",
+              
+            }}
+          >
+            <EventNoteIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Note Form"
+          sx={{
+            display: isDesktop && !open ? "none" : "block",
+            ml: isDesktop && !open ? 0 : 1,
+          }}
+/>
+          
+        </ListItemButton>
+
+        
 
         <ListItemButton onClick={() => navigate("/category")}
          sx={menuStyle("/category")}>
@@ -261,50 +310,8 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
 />
         </ListItemButton>
 
-        <ListItemButton
-          onClick={() => navigate("/my-tasks")}
-         sx={menuStyle("/my-tasks")}
-        >
-          <ListItemIcon
-           sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-              
-            }}
-          >
-            <AssignmentIndOutlinedIcon/>
-          </ListItemIcon>
-          <ListItemText
-          primary="My Tasks"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
-         <ListItemButton
-          onClick={() => navigate("/my-project")}
-         sx={menuStyle("/my-project")}
-        >
-          <ListItemIcon
-           sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-              
-            }}
-          >
-            <BusinessCenterOutlinedIcon/>
-          </ListItemIcon>
-          <ListItemText
-          primary="Projects"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
+       
+        
 
 
        
