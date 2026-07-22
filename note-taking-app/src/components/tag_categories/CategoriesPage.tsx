@@ -194,32 +194,112 @@ useEffect(() => {
 }, [notes, user]);
 
   // FIX: Use useMemo for filtered and sorted notes 
-  const filteredAndSortedNotes = useMemo(() => {
-    if (!Array.isArray(notes)) return [];
+  // const filteredAndSortedNotes = useMemo(() => {
+  //   if (!Array.isArray(notes)) return [];
 
-    let result = [...notes];
+  //   let result = [...notes];
 
-    // Filter by search text
-    if (searchText.trim() !== "") {
-      const searchLower = searchText.toLowerCase();
-      result = result.filter((note: Note) => {
-        const titleText = (note.title || "").toLowerCase();
-        const contentText = (note.content || note.description || "").toLowerCase();
-        return titleText.includes(searchLower) || contentText.includes(searchLower);
-      });
+  //   // Filter by search text
+  //   if (searchText.trim() !== "") {
+  //     const searchLower = searchText.toLowerCase();
+  //     result = result.filter((note: Note) => {
+  //       const titleText = (note.title || "").toLowerCase();
+  //       const contentText = (note.content || note.description || "").toLowerCase();
+  //       return titleText.includes(searchLower) || contentText.includes(searchLower);
+  //     });
+  //   }
+
+  //   // Sort by title
+  //   result.sort((a, b) => {
+  //     const titleA = (a.title || "").toLowerCase();
+  //     const titleB = (b.title || "").toLowerCase();
+  //     return sortOrder === "asc"
+  //       ? titleA.localeCompare(titleB)
+  //       : titleB.localeCompare(titleA);
+  //   });
+
+  //   return result;
+  // }, [notes, searchText, sortOrder]);
+
+  //  searchText က category name နဲ့ပဲ partial match စစ်မယ်
+// const filteredAndSortedNotes = useMemo(() => {
+//   if (!Array.isArray(notes)) return [];
+
+//   let result = [...notes];
+//   const searchLower = searchText.trim().toLowerCase();
+
+//   if (searchLower !== "") {
+//     result = result.filter((note: Note) => {
+//       const currentCategory = (note.category || "").trim().toLowerCase();
+//       return currentCategory.includes(searchLower);
+//     });
+//   }
+
+//   // Sort by title
+//   result.sort((a, b) => {
+//     const titleA = (a.title || "").toLowerCase();
+//     const titleB = (b.title || "").toLowerCase();
+//     return sortOrder === "asc"
+//       ? titleA.localeCompare(titleB)
+//       : titleB.localeCompare(titleA);
+//   });
+
+//   return result;
+// }, [notes, searchText, sortOrder]);
+
+// 🔥 searchText က status (todo, in progress, complete, not started) ဖြစ်ရင် exact match,
+// မဟုတ်ရင် assignee, priority, category, title, content ကို OR (partial match) စစ်မယ်
+const filteredAndSortedNotes = useMemo(() => {
+  if (!Array.isArray(notes)) return [];
+
+  let result = [...notes];
+  const searchLower = searchText.trim().toLowerCase();
+
+  if (searchLower !== "") {
+    const statusKeywords = ["todo", "in progress", "complete", "not started"];
+    const matchedStatus = statusKeywords.find(keyword => keyword === searchLower);
+    let statusFilter: string | null = null;
+
+    if (matchedStatus) {
+      if (matchedStatus === "todo") statusFilter = "Todo";
+      else if (matchedStatus === "in progress") statusFilter = "In Progress";
+      else if (matchedStatus === "complete") statusFilter = "Complete";
+      else if (matchedStatus === "not started") statusFilter = "Not Started";
     }
 
-    // Sort by title
-    result.sort((a, b) => {
-      const titleA = (a.title || "").toLowerCase();
-      const titleB = (b.title || "").toLowerCase();
-      return sortOrder === "asc"
-        ? titleA.localeCompare(titleB)
-        : titleB.localeCompare(titleA);
-    });
+    result = result.filter((note: Note) => {
+      // ၁။ status filter (exact match)
+      if (statusFilter !== null) {
+        const currentStatus = (note.task || note.category || "").trim().toLowerCase();
+        return currentStatus === statusFilter.toLowerCase();
+      }
 
-    return result;
-  }, [notes, searchText, sortOrder]);
+      // ၂။ status မဟုတ်ရင် category, assignee, priority, title, content ကို partial match (OR)
+      const currentCategory = (note.category || "").trim().toLowerCase();
+      const currentAssignee = (note.assignee || "").trim().toLowerCase();
+      const currentPriority = (note.priority || "").trim().toLowerCase();
+      const titleText = (note.title || "").toLowerCase();
+      const contentText = (note.content || note.description || "").toLowerCase();
+
+      return currentCategory.includes(searchLower) ||
+             currentAssignee.includes(searchLower) ||
+             currentPriority.includes(searchLower) ||
+             titleText.includes(searchLower) ||
+             contentText.includes(searchLower);
+    });
+  }
+
+  // Sort by title
+  result.sort((a, b) => {
+    const titleA = (a.title || "").toLowerCase();
+    const titleB = (b.title || "").toLowerCase();
+    return sortOrder === "asc"
+      ? titleA.localeCompare(titleB)
+      : titleB.localeCompare(titleA);
+  });
+
+  return result;
+}, [notes, searchText, sortOrder]);
 
   // ============ FIX: Update tasks only when data actually changes ============
   useEffect(() => {
@@ -556,7 +636,7 @@ useEffect(() => {
           <TextField
             size="small"
             autoFocus
-            placeholder="Search text"
+            placeholder="Search by category, status, or priority..."
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
             sx={{

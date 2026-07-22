@@ -878,17 +878,63 @@ const refreshCollaboratorsForNote = async (noteId: string) => {
 };
   
 
-  const filteredNotes = useMemo<Note[]>(() => {
-    if (!Array.isArray(notes)) return [];
-    return notes.filter((note: Note) => {
-      if (searchText.trim() !== "") {
-        const titleText = (note.title || "").toLowerCase();
-        const searchTarget = searchText.toLowerCase();
-        if (!titleText.includes(searchTarget)) return false;
-      }
-      return true;
-    });
-  }, [notes, searchText]);
+  // const filteredNotes = useMemo<Note[]>(() => {
+  //   if (!Array.isArray(notes)) return [];
+  //   return notes.filter((note: Note) => {
+  //     if (searchText.trim() !== "") {
+  //       const titleText = (note.title || "").toLowerCase();
+  //       const searchTarget = searchText.toLowerCase();
+  //       if (!titleText.includes(searchTarget)) return false;
+  //     }
+  //     return true;
+  //   });
+  // }, [notes, searchText]);
+
+  // 🔥 searchText က status (todo, in progress, complete, not started) ဖြစ်ရင် exact match,
+// မဟုတ်ရင် assignee, priority, category သုံးခုထဲက တစ်ခုခုနဲ့ partial match (OR) စစ်မယ်
+const filteredNotes = useMemo<Note[]>(() => {
+  if (!Array.isArray(notes)) return [];
+
+  const statusKeywords = ["todo", "in progress", "complete", "not started"];
+  const searchLower = searchText.trim().toLowerCase();
+
+  // status keyword နဲ့ ကိုက်ညီရင် statusFilter သုံးမယ်၊ မဟုတ်ရင် null
+  let statusFilter: string | null = null;
+  if (searchLower !== "") {
+    const matchedStatus = statusKeywords.find(keyword => keyword === searchLower);
+    if (matchedStatus) {
+      if (matchedStatus === "todo") statusFilter = "Todo";
+      else if (matchedStatus === "in progress") statusFilter = "In Progress";
+      else if (matchedStatus === "complete") statusFilter = "Complete";
+      else if (matchedStatus === "not started") statusFilter = "Not Started";
+    }
+  }
+
+  return notes.filter((note: Note) => {
+    // ၁။ status filter (exact match)
+    if (statusFilter !== null) {
+      const currentStatus = (note.task || note.category || "").trim().toLowerCase();
+      return currentStatus === statusFilter.toLowerCase();
+    }
+
+    // ၂။ status keyword မဟုတ်ရင် assignee, priority, category ကို OR စစ်
+    if (searchLower !== "") {
+      const currentAssignee = (note.assignee || "").trim().toLowerCase();
+      const currentPriority = (note.priority || "").trim().toLowerCase();
+      const currentCategory = (note.category || "").trim().toLowerCase();
+
+      const matchAssignee = currentAssignee.includes(searchLower);
+      const matchPriority = currentPriority.includes(searchLower);
+      const matchCategory = currentCategory.includes(searchLower);
+
+      // သုံးခုထဲက တစ်ခုခုနဲ့ ကိုက်ညီရင် ပြမယ်
+      return matchAssignee || matchPriority || matchCategory;
+    }
+
+    // searchText ဗလာဆိုရင် အကုန်ပြမယ်
+    return true;
+  });
+}, [notes, searchText]);
 
   const handleCreate = (): void => {
     navigate("/note-form/create");
@@ -1261,11 +1307,11 @@ const renderSharePopover = () => (
             <TextField
               size="small"
               autoFocus
-              placeholder="Search text"
+              placeholder="Search by status, priority, or category"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               sx={{
-                width: 180,
+                width: 220,
                 '& .MuiOutlinedInput-root': { height: 30, fontSize: '0.85rem', borderRadius: '4px' },
                 '& .MuiOutlinedInput-input': { py: 0.5, px: 1 },
               }}
