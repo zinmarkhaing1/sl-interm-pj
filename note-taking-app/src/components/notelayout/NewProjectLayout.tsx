@@ -463,7 +463,7 @@ export const NewProjectLayout = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    isPrivate: false,
+    isPrivate: true,
     members: '',
     owners: '',
   });
@@ -507,20 +507,33 @@ export const NewProjectLayout = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    // Build payload: split comma-separated strings into arrays
+    // Always include the current user as owner so the project is scoped to them
+    let currentUserId = '';
+    let currentUserEmail = '';
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      currentUserId = storedUser?._id || storedUser?.id || '';
+      currentUserEmail = (storedUser?.email || '').toLowerCase().trim();
+    } catch {
+      // ignore parse errors; backend still attaches req.user.id
+    }
+
     const payload = {
       name: formData.name.trim(),
       description: formData.description.trim(),
       isPrivate: formData.isPrivate,
       members: formData.members.split(',').map((s) => s.trim()).filter(Boolean),
-      owners: formData.owners.split(',').map((s) => s.trim()).filter(Boolean),
+      owners: [
+        ...formData.owners.split(',').map((s) => s.trim()).filter(Boolean),
+        currentUserId,
+        currentUserEmail,
+      ].filter(Boolean),
     };
 
     try {
       await createProject(payload).unwrap();
-      navigate('/my-project'); // Redirect to project list on success
+      navigate('/my-project');
     } catch (err) {
-      // Error is already in the `error` variable from the mutation hook
       console.error('Creation failed', err);
     }
   };

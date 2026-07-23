@@ -6,10 +6,12 @@ import {
   updateProject,
   deleteProject,
 } from '../controllers/project';
+import { verifyToken } from '../middleware/auth';
 
 const router = Router();
 
-// Base path: /api/projects
+// Base path: /api/projects — all routes require auth
+router.use(verifyToken);
 
 router.post('/', createProject);          // POST  /api/projects
 router.get('/', getProjects);             // GET   /api/projects

@@ -96,6 +96,16 @@ export const EditProjectLayout = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    let currentUserId = "";
+    let currentUserEmail = "";
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      currentUserId = storedUser?._id || storedUser?.id || "";
+      currentUserEmail = (storedUser?.email || "").toLowerCase().trim();
+    } catch {
+      // backend still keeps the authenticated owner
+    }
+
     const payload = {
       name: formData.name.trim(),
       description: formData.description.trim(),
@@ -104,10 +114,14 @@ export const EditProjectLayout = () => {
         .split(",")
         .map((x) => x.trim())
         .filter(Boolean),
-      owners: formData.owners
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean),
+      owners: [
+        ...formData.owners
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+        currentUserId,
+        currentUserEmail,
+      ].filter(Boolean),
     };
 
     try {
