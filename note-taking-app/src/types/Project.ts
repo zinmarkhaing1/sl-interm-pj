@@ -9,6 +9,8 @@ export interface Project {
   owners: string[];
   /** Resolved email for display */
   ownerEmail?: string | null;
+  isOwner?: boolean;
+  isMember?: boolean;
   createdAt: string;
   updatedAt: string;
 }

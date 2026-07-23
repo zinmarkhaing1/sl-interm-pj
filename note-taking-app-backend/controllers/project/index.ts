@@ -48,6 +48,16 @@ const userHasAccess = (project: IProject | null | undefined, identifiers: string
   });
 };
 
+/** Private → owner/member only. Public → any authenticated user. */
+const canViewProject = (
+  project: IProject | null | undefined,
+  identifiers: string[],
+) => {
+  if (!project || identifiers.length === 0) return false;
+  if (userHasAccess(project, identifiers)) return true;
+  return project.isPrivate === false;
+};
+
 const userIsOwner = (project: IProject | null | undefined, identifiers: string[]) => {
   if (!project || identifiers.length === 0) return false;
   const owners = (project.owners || []).map((v) => v.toLowerCase());
@@ -71,7 +81,10 @@ const resolveEmail = async (value: string | undefined): Promise<string | null> =
   return trimmed.toLowerCase();
 };
 
-const enrichProject = async (project: IProject | Record<string, any>) => {
+const enrichProject = async (
+  project: IProject | Record<string, any>,
+  identifiers: string[] = [],
+) => {
   const plain =
     typeof (project as any).toObject === 'function'
       ? (project as any).toObject()
@@ -84,6 +97,8 @@ const enrichProject = async (project: IProject | Record<string, any>) => {
     ...plain,
     owners: ownerId ? [ownerId] : [],
     ownerEmail,
+    isOwner: userIsOwner(plain as IProject, identifiers),
+    isMember: userHasAccess(plain as IProject, identifiers),
   };
 };
 
@@ -116,7 +131,8 @@ export const createProject = async (req: AuthRequest, res: Response) => {
     });
 
     await project.save();
-    res.status(201).json(await enrichProject(project));
+    const identifiers = await getUserIdentifiers(req);
+    res.status(201).json(await enrichProject(project, identifiers));
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
@@ -138,7 +154,9 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
       ],
     }).sort({ createdAt: -1 });
 
-    const enriched = await Promise.all(projects.map((p) => enrichProject(p)));
+    const enriched = await Promise.all(
+      projects.map((p) => enrichProject(p, identifiers)),
+    );
     res.json(enriched);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -158,11 +176,15 @@ export const getProjectById = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (!userHasAccess(project, identifiers)) {
-      return res.status(403).json({ error: 'You do not have access to this project' });
+    // Private projects: owner/members only. Public: any signed-in user with the link.
+    if (!canViewProject(project, identifiers)) {
+      return res.status(403).json({
+        error: 'You do not have access to this private project',
+        code: 'FORBIDDEN',
+      });
     }
 
-    res.json(await enrichProject(project));
+    res.json(await enrichProject(project, identifiers));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -211,7 +233,7 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
     }
 
     await project.save();
-    res.json(await enrichProject(project));
+    res.json(await enrichProject(project, identifiers));
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }

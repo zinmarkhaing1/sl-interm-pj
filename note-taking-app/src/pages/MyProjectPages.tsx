@@ -746,7 +746,7 @@ export const MyProjectPages = () => {
           <DialogContentText sx={{ mb: 2 }}>
             {projectToShare?.isPrivate
               ? 'This project is private. Only the owner and members can open this link.'
-              : 'This project is public. Anyone with the link can open it (if they are signed in).'}
+              : 'This project is public. Anyone signed in with the link can view it.'}
           </DialogContentText>
           <TextField
             fullWidth

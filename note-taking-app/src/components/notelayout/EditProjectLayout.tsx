@@ -21,6 +21,7 @@ import {
   Clear as ClearIcon,
   People as PeopleIcon,
   SupervisorAccount as OwnerIcon,
+  ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import { useNavigate, useParams } from "react-router-dom";
@@ -92,6 +93,7 @@ export const EditProjectLayout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!project?.isOwner) return;
     if (!validate()) return;
 
     // Backend keeps the single owner; only members are editable here
@@ -124,6 +126,53 @@ export const EditProjectLayout = () => {
     );
   }
 
+  const errorStatus =
+    projectError && "status" in projectError ? Number(projectError.status) : undefined;
+
+  if (errorStatus === 403) {
+    return (
+      <Box sx={{ maxWidth: 480, mx: "auto", mt: 6, textAlign: "center", px: 2 }}>
+        <LockIcon color="warning" sx={{ fontSize: 48, mb: 1.5 }} />
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+          Access denied
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          This project is private. Only the owner and members can view it.
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/my-project")}
+          sx={{ textTransform: "none" }}
+        >
+          Back to projects
+        </Button>
+      </Box>
+    );
+  }
+
+  if (errorStatus === 404) {
+    return (
+      <Box sx={{ maxWidth: 480, mx: "auto", mt: 6, textAlign: "center", px: 2 }}>
+        <FolderOutlinedIcon color="disabled" sx={{ fontSize: 48, mb: 1.5 }} />
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+          Project not found
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          This project does not exist or may have been deleted.
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/my-project")}
+          sx={{ textTransform: "none" }}
+        >
+          Back to projects
+        </Button>
+      </Box>
+    );
+  }
+
   if (projectError) {
     return (
       <Alert severity="error" sx={{ maxWidth: 640, mx: "auto", mt: 4 }}>
@@ -132,9 +181,23 @@ export const EditProjectLayout = () => {
     );
   }
 
+  const canEdit = Boolean(project?.isOwner);
+
 
   return (
     <Box sx={{ maxWidth: 640, mx: "auto", width: "100%", py: 1 }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/my-project")}
+        sx={{
+          mb: 1.5,
+          textTransform: "none",
+          color: "text.secondary",
+          "&:hover": { bgcolor: "action.hover", color: "text.primary" },
+        }}
+      >
+        Back to projects
+      </Button>
       <Paper
         elevation={0}
         sx={{
@@ -148,12 +211,20 @@ export const EditProjectLayout = () => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <FolderOutlinedIcon color="primary" sx={{ fontSize: 28 }} />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Edit project
+            {canEdit ? "Edit project" : "Project details"}
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Update project details, visibility, and members.
+          {canEdit
+            ? "Update project details, visibility, and members."
+            : "You can view this project, but only the owner can edit it."}
         </Typography>
+
+        {!canEdit && (
+          <Alert severity="info" sx={{ mb: 2.5 }}>
+            Read-only access. Contact the owner to request edit permission.
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={2.5}>
@@ -163,6 +234,7 @@ export const EditProjectLayout = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              disabled={!canEdit}
               error={!!fieldErrors.name}
               helperText={fieldErrors.name || "Update your project name"}
               slotProps={{
@@ -172,16 +244,17 @@ export const EditProjectLayout = () => {
                       <PeopleIcon color="action" />
                     </InputAdornment>
                   ),
-                  endAdornment: formData.name ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleClearField("name")}
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : undefined,
+                  endAdornment:
+                    canEdit && formData.name ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleClearField("name")}
+                        >
+                          <ClearIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : undefined,
                 },
               }}
             />
@@ -191,6 +264,7 @@ export const EditProjectLayout = () => {
               name="description"
               value={formData.description}
               onChange={handleChange}
+              disabled={!canEdit}
               multiline
               rows={3}
             />
@@ -210,6 +284,7 @@ export const EditProjectLayout = () => {
                     onChange={handleChange}
                     name="isPrivate"
                     color="primary"
+                    disabled={!canEdit}
                   />
                 }
                 label={
@@ -228,8 +303,8 @@ export const EditProjectLayout = () => {
               <Chip
                 label={
                   formData.isPrivate
-                    ? "Only members can see"
-                    : "Anyone can see"
+                    ? "Only owner & members"
+                    : "Anyone signed in with the link"
                 }
                 color={formData.isPrivate ? "warning" : "success"}
                 variant="outlined"
@@ -260,6 +335,7 @@ export const EditProjectLayout = () => {
                 name="members"
                 value={formData.members}
                 onChange={handleChange}
+                disabled={!canEdit}
                 helperText="Comma-separated emails of additional members"
                 placeholder="teammate@email.com"
                 slotProps={{
@@ -284,21 +360,23 @@ export const EditProjectLayout = () => {
                 onClick={() => navigate("/my-project")}
                 disabled={isLoading}
               >
-                Cancel
+                {canEdit ? "Cancel" : "Close"}
               </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={isLoading}
-                startIcon={
-                  isLoading ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : undefined
-                }
-                sx={{ px: 3 }}
-              >
-                {isLoading ? "Updating..." : "Save changes"}
-              </Button>
+              {canEdit && (
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={isLoading}
+                  startIcon={
+                    isLoading ? (
+                      <CircularProgress size={18} color="inherit" />
+                    ) : undefined
+                  }
+                  sx={{ px: 3 }}
+                >
+                  {isLoading ? "Updating..." : "Save changes"}
+                </Button>
+              )}
             </Box>
           </Stack>
         </form>
