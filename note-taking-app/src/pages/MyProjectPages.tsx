@@ -494,72 +494,227 @@
 // };
 
 
-// import React from 'react';
-import { Box, Grid, Card, CardContent, Typography, Button, Chip, Avatar, Stack, CircularProgress, IconButton, Alert } from '@mui/material';
+import { useState } from 'react';
+import {
+  Box,
+  Grid,
+  Card,
+  CardActionArea,
+  CardContent,
+  Typography,
+  Button,
+  Chip,
+  Avatar,
+  Stack,
+  CircularProgress,
+  IconButton,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useGetProjectsQuery, useDeleteProjectMutation, useUpdateProjectMutation, } from '../services/projectApi';
+import { useGetProjectsQuery, useDeleteProjectMutation } from '../services/projectApi';
 import { Folder, Lock, Public, People, Delete, Edit } from '@mui/icons-material';
 
 export const MyProjectPages = () => {
   const navigate = useNavigate();
   const { data: projects, isLoading, isError } = useGetProjectsQuery();
-  const [deleteProject] = useDeleteProjectMutation();
+  const [deleteProject, { isLoading: isDeleting }] = useDeleteProjectMutation();
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Box>;
-  if (isError) return <Alert severity="error" sx={{ mt: 5 }}>Failed to load projects</Alert>;
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const handleDelete = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
-      await deleteProject(id).unwrap();
+  if (isError) {
+    return (
+      <Alert severity="error" sx={{ mt: 5 }}>
+        Failed to load projects
+      </Alert>
+    );
+  }
+
+  const openDeleteDialog = (id: string, name: string) => {
+    setProjectToDelete({ id, name });
+  };
+
+  const closeDeleteDialog = () => {
+    if (!isDeleting) setProjectToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!projectToDelete) return;
+    try {
+      await deleteProject(projectToDelete.id).unwrap();
+      setProjectToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete project', err);
     }
   };
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" >My Projects</Typography>
-        <Button variant="contained" onClick={() => navigate('/my-project/new-project')} sx={{ textTransform: 'none', borderRadius: 2 }}>
+        <Typography variant="h5">My Projects</Typography>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/my-project/new-project')}
+          sx={{ textTransform: 'none', borderRadius: 2 }}
+        >
           + New Project
         </Button>
       </Box>
 
       <Grid container spacing={3}>
         {projects?.map((project) => (
-          <Grid  size={{xs:12,md:4}} key={project._id}>
-            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.1)' } }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Folder color="primary" />
-                  <Typography variant="h6" noWrap>{project.name}</Typography>
-                  <Chip size="small" icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />} label={project.isPrivate ? 'Private' : 'Public'} variant="outlined" />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, height: 40, overflow: 'hidden' }}>
-                  {project.description || 'No description'}
-                </Typography>
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-                  <People fontSize="small" color="action" />
-                  <Typography variant="caption">Members: {project.members?.length || 0}</Typography>
-                </Stack>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                  Owner: {project.ownerEmail || 'Unknown'}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
-                  {project.members?.slice(0, 3).map((m, i) => <Avatar key={i} sx={{ width: 24, height: 24, fontSize: 10 }}>{m[0]}</Avatar>)}
-                  {(project.members?.length || 0) > 3 && <Avatar sx={{ width: 24, height: 24, fontSize: 10 }}>+{project.members!.length - 3}</Avatar>}
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button size="small" variant="contained" sx={{ textTransform: 'none', flex: 1 }} onClick={() => navigate(`/my-tasks?project=${project._id}`)}>
-                    View Tasks
-                  </Button>
-                  <IconButton size="small" onClick={() => navigate(`/my-project/edit-project/${project._id}`)}><Edit fontSize="small" /></IconButton> 
-                  {/* `/my-project/edit/${project._id}` */}
-                  <IconButton size="small" color="error" onClick={() => handleDelete(project._id, project.name)}><Delete fontSize="small" /></IconButton>
-                </Box>
-              </CardContent>
+          <Grid size={{ xs: 12, md: 4 }} key={project._id}>
+            <Card
+              sx={{
+                borderRadius: 3,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.1)' },
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <CardActionArea
+                onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
+                sx={{ flex: 1, alignItems: 'stretch' }}
+              >
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Folder color="primary" />
+                    <Typography variant="h6" noWrap>
+                      {project.name}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />}
+                      label={project.isPrivate ? 'Private' : 'Public'}
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2, height: 40, overflow: 'hidden' }}
+                  >
+                    {project.description || 'No description'}
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+                    <People fontSize="small" color="action" />
+                    <Typography variant="caption">
+                      Members: {project.members?.length || 0}
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1.5 }}
+                  >
+                    Owner: {project.ownerEmail || 'Unknown'}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    {project.members?.slice(0, 3).map((m, i) => (
+                      <Avatar key={i} sx={{ width: 24, height: 24, fontSize: 10 }}>
+                        {m[0]}
+                      </Avatar>
+                    ))}
+                    {(project.members?.length || 0) > 3 && (
+                      <Avatar sx={{ width: 24, height: 24, fontSize: 10 }}>
+                        +{project.members!.length - 3}
+                      </Avatar>
+                    )}
+                  </Box>
+                </CardContent>
+              </CardActionArea>
+              <Box sx={{ display: 'flex', gap: 1, px: 2, pb: 2 }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  sx={{ textTransform: 'none', flex: 1 }}
+                  onClick={() => navigate(`/my-tasks?project=${project._id}`)}
+                >
+                  View Tasks
+                </Button>
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
+                >
+                  <Edit fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => openDeleteDialog(project._id, project.name)}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Box>
             </Card>
           </Grid>
         ))}
       </Grid>
+
+      <Dialog
+        open={Boolean(projectToDelete)}
+        onClose={closeDeleteDialog}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: { maxWidth: 360, borderRadius: 2 },
+          },
+        }}
+      >
+        <DialogTitle>Delete project permanently?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {projectToDelete
+              ? `Are you sure you want to permanently delete "${projectToDelete.name}"? This action cannot be undone.`
+              : ''}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button
+            onClick={closeDeleteDialog}
+            disabled={isDeleting}
+            fullWidth
+            variant="contained"
+            disableElevation
+            sx={{
+              flex: 1,
+              textTransform: 'none',
+              bgcolor: 'grey.300',
+              color: 'text.primary',
+              '&:hover': {
+                bgcolor: 'grey.400',
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDelete}
+            color="error"
+            variant="contained"
+            fullWidth
+            disabled={isDeleting}
+            startIcon={isDeleting ? <CircularProgress size={16} color="inherit" /> : undefined}
+            sx={{ flex: 1, textTransform: 'none' }}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
