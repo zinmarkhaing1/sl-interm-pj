@@ -190,6 +190,9 @@ import { UpdateProfilePage } from '../components/myprofile/UpdateProfilePage';
 import { SharedTaskPage } from '../components/status-page/SharedTaskPage';
 import { NoteCreateForm } from "../components/createfolder/NoteCreateForm";
 import { DashBoardPage } from '../pages/DashBoardPage';
+import { NewTaskLayout } from '../components/taskcreated/NewTaskLayout';
+import { EditProjectLayout } from '../components/notelayout/EditProjectLayout';
+import { TaskDetailPage } from '../pages/TaskDetailPage';
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -222,10 +225,15 @@ export const Router = () => {
                 <Route path='/tasks-note/task-layout' element={<MainLayout><TaskLayout/></MainLayout>}/>
                 
                 <Route path='/my-tasks' element={<MainLayout><MyTaskNote/></MainLayout>}/>
+                <Route path='/my-tasks/task-create-note' element={<MainLayout><NewTaskLayout/></MainLayout>}/>
                 <Route path='/my-tasks/shared-task' element={<MainLayout><SharedTaskPage/></MainLayout>}/>
+                <Route path='/my-tasks/task-detail/:id' element={<MainLayout><TaskDetailPage/></MainLayout>}/>
+
                 
                 <Route path='/my-project' element={<MainLayout><MyProjectPages/></MainLayout>}/>
                 <Route path='/my-project/new-project' element={<MainLayout><NewProjectLayout/></MainLayout>}/>
+                <Route path='/my-project/edit-project/:id' element={<MainLayout><EditProjectLayout/></MainLayout>}/>
+
                 
                 <Route path='/note' element={<MainLayout><NoteCreateForm/></MainLayout>}/>
             </Route>

@@ -46,3 +46,38 @@ export interface Notification {
   isRead?: boolean;
   createdAt?: string;
 }
+
+
+//project
+export interface Project {
+  _id: string;
+  name: string;
+  description?: string;
+  isPrivate: boolean;
+  members: string[];      
+  owners: string[];      
+  createdAt: string;
+}
+
+// Task
+export interface Task {
+  _id: string;
+  title: string;          
+  description?: string;
+  project: string | Project; 
+  assignee: string;     
+  status: 'Todo' | 'In Progress' | 'Complete' | 'Not Started';
+  priority: 'Low' | 'Medium' | 'High';
+  startDate?: string;
+  dueDate?: string;
+  createdAt: string;
+}
+
+
+export interface TaskNote {
+  _id: string;
+  task: string | Task;     
+  content: string;         
+  createdBy: string;       
+  createdAt: string;
+}

@@ -44,7 +44,8 @@ export const noteApi = createApi({
       status?: string; 
       assignee?: string; 
       shareScope?: "category" | "note" | "board" | "note-form"; 
-      noteId?: string 
+      noteId?: string ;
+      populate?:string;
     } | void>({
       query: (params) => {
         if (!params) return '/notes'; 

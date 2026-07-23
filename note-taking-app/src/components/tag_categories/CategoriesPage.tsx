@@ -67,7 +67,7 @@ export const CategoriesPage = () => {
   const navigate = useNavigate();
 
   //  Remove shareScope parameter to get all notes
-  const { data: notes = [], isLoading, isError, refetch,status, isSuccess,isUninitialized,isFetching } = useGetNotesQuery({shareScope:'category'});
+  const { data: notes = [], isLoading, isError, refetch,status, isSuccess,isUninitialized,isFetching } = useGetNotesQuery({shareScope:'category', populate: 'user firstName lastName'});
   const [updatedNote] = useUpdateNoteMutation();
 
   //  const [currentCategoryName, setCurrentCategoryName] = useState<string>("");
@@ -97,6 +97,58 @@ export const CategoriesPage = () => {
 // Add this state:
 const [userPermission, setUserPermission] = useState<"owner" | "full" | "viewer">("owner");
 const [isViewOnly, setIsViewOnly] = useState(false);
+
+const [usersMap, setUsersMap] = useState<Record<string, { firstName: string; lastName: string }>>({});
+
+useEffect(() => {
+  const fetchUsers = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('http://localhost:5000/api/users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const users = await res.json();
+        const map: Record<string, { firstName: string; lastName: string }> = {};
+        users.forEach((u: any) => {
+          map[u._id] = { firstName: u.firstName, lastName: u.lastName || '' };
+        });
+        setUsersMap(map);
+      }
+    } catch (err) {
+      console.error('Failed to fetch users', err);
+    }
+  };
+  fetchUsers();
+}, []);
+
+
+const getCreatorName = useCallback((note: Note): string => {
+  //
+  if (note.user && typeof note.user === 'object') {
+    const u = note.user as any;
+    if (u.firstName) return `${u.firstName} ${u.lastName || ''}`.trim();
+  }
+
+
+  if (typeof note.user === 'string') {
+    const userObj = usersMap[note.user];
+    if (userObj) {
+      return `${userObj.firstName} ${userObj.lastName}`.trim();
+    }
+  }
+
+ 
+  const userId = (user as any)?._id;
+  const noteUserId = typeof note.user === 'string' ? note.user : (note.user as any)?._id;
+  if (userId && noteUserId === userId) {
+    return `${user?.firstName || 'You'} ${user?.lastName || ''}`.trim() || 'You';
+  }
+
+
+  return note.assignee || 'Unknown User';
+}, [usersMap, user]);
 
 // Update the loadCollaborators function to also get user's permission
 const loadCollaboratorsAndPermission = async () => {
@@ -859,7 +911,8 @@ const filteredAndSortedNotes = useMemo(() => {
                                         WebkitBoxOrient: "vertical",
                                         overflow: "hidden",
                                         textOverflow: "ellipsis",
-                                        mt: 0.5
+                                        mt: 0.5,
+                                        color:"#2F004F"
                                       }}
                                     >
                                       {note.content || note.description || "No Content"}
@@ -883,19 +936,20 @@ const filteredAndSortedNotes = useMemo(() => {
                                       variant="caption"
                                       sx={{
                                         mt: 1,
-                                        color: "text.secondary",
+                                        color: "#2F004F",
                                         fontWeight: "500",
-                                        display: "block"
+                                        display: "block",
                                       }}
                                     >
-                                      Created By: {(() => {
+                                      Created By: {getCreatorName(note)}
+                                      {/* {(() => {
                                         // If user is populated from backend
                                         if (note.user && typeof note.user === 'object') {
                                           const u = note.user as any;
                                           if (u.firstName) return `${u.firstName} ${u.lastName || ''}`.trim();
-                                        }
+                                        } */}
 
-                                        // If current user is the owner
+                                        {/* // If current user is the owner
                                         const userId = (user as any)?._id;
                                         const noteUserId = typeof note.user === 'string' ? note.user : (note.user as any)?._id;
                                         
@@ -905,7 +959,7 @@ const filteredAndSortedNotes = useMemo(() => {
 
                                         // Fallback to assignee or unknown
                                         return note.assignee || 'Unknown User';
-                                      })()}
+                                      })()} */}
                                     </Typography>
                                   </Box>
                                 )}

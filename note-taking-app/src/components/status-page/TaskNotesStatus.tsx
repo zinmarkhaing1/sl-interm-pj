@@ -429,10 +429,10 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
 
     updatedTasks.splice(globalDestIndex, 0, updatedMovedTask);
 
-    // ၅။ local state ကို update လုပ်
+    // 
     setTasks(updatedTasks);
 
-    // ၆။ backend ကို update လုပ်
+    //
     try {
       const taskId = targetTask._id || targetTask.id;
       if (taskId) {
