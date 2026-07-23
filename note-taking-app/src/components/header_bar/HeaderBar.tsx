@@ -2094,8 +2094,10 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         right: 0,
         zIndex: (theme) => theme.zIndex.drawer + 1,
         boxShadow: "none",
-        backgroundColor: "background.default",
-        color: "text.primary"     
+        backgroundColor: "background.paper",
+        color: "text.primary",
+        borderBottom: "1px solid",
+        borderColor: "divider",
       }}
     >
       <Toolbar sx={{ 
@@ -2152,7 +2154,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
             sx={{ 
               width: 36, 
               height: 36, 
-              bgcolor: "#6596c6", 
+              bgcolor: "primary.main", 
               fontSize: "15px", 
               fontWeight: 600 
             }}

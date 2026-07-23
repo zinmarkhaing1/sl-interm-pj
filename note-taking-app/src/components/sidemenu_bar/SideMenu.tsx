@@ -1,28 +1,22 @@
-
-
 import {
   Drawer,
   List,
+  ListSubheader,
   Toolbar,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Box,
-
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-// import NoteIcon from "@mui/icons-material/Note";
-import EventNoteIcon from '@mui/icons-material/EventNote';
 import CategoryIcon from "@mui/icons-material/Category";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
-import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
-import NoteAltOutlinedIcon from '@mui/icons-material/NoteAltOutlined';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-
-
-import { useNavigate,useLocation } from "react-router-dom";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import AssignmentIndOutlinedIcon from "@mui/icons-material/AssignmentIndOutlined";
+import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { useNavigate, useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
 
 const drawerWidth = 240;
 const collapsedWidth = 72;
@@ -33,48 +27,100 @@ interface SideMenuProps {
   onClose: () => void;
 }
 
+interface NavItem {
+  label: string;
+  path: string;
+  icon: ReactNode;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    title: "Overview",
+    items: [
+      { label: "Home", path: "/", icon: <HomeOutlinedIcon /> },
+      { label: "Dashboard", path: "/dashboard", icon: <DashboardIcon /> },
+    ],
+  },
+  {
+    title: "Work",
+    items: [
+      {
+        label: "Projects",
+        path: "/my-project",
+        icon: <BusinessCenterOutlinedIcon />,
+      },
+      { label: "Board", path: "/board", icon: <LeaderboardIcon /> },
+    ],
+  },
+  {
+    title: "Tasks",
+    items: [
+      { label: "Task Notes", path: "/tasks-note", icon: <TaskAltIcon /> },
+      {
+        label: "My Tasks",
+        path: "/my-tasks",
+        icon: <AssignmentIndOutlinedIcon />,
+      },
+    ],
+  },
+  {
+    title: "Organize",
+    items: [
+      { label: "Categories", path: "/category", icon: <CategoryIcon /> },
+    ],
+  },
+];
+
 export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
- 
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const menuStyle = (path:string) => ({
-     flexDirection: isDesktop && !open ? "column" : "row",
-  py: 1,
-  px: isDesktop && !open ? 1 : 2,
-  justifyContent: isDesktop && !open ? "center" : "flex-start",
-  alignItems: "center",
-  mx:2.5,
-  my:0.5,
-  borderRadius : "12px",
+  const collapsed = isDesktop && !open;
 
-  color: location.pathname === path ? "#973aa8" : "text.primary",
- 
+  const isActive = (path: string) => {
+    if (path === "/") return location.pathname === "/";
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
-  "& .MuiListItemIcon-root": {
-    color: location.pathname === path ? "#973aa8" : "text.primary",
-  },
+  const menuStyle = (path: string) => {
+    const active = isActive(path);
 
-  "&:hover": {
-    
-    color: "#973aa8",
-
-    "& .MuiListItemIcon-root": {
-      color: "#973aa8",
-    },
-  },
-  })
+    return {
+      flexDirection: collapsed ? "column" : "row",
+      py: 1,
+      px: collapsed ? 1 : 2,
+      justifyContent: collapsed ? "center" : "flex-start",
+      alignItems: "center",
+      mx: 1.5,
+      my: 0.5,
+      borderRadius: "12px",
+      color: active ? "primary.main" : "text.primary",
+      bgcolor: active ? "secondary.main" : "transparent",
+      "& .MuiListItemIcon-root": {
+        color: active ? "primary.main" : "text.primary",
+      },
+      "&:hover": {
+        bgcolor: active ? "secondary.main" : "rgba(151, 58, 168, 0.06)",
+        color: "primary.main",
+        "& .MuiListItemIcon-root": {
+          color: "primary.main",
+        },
+      },
+    };
+  };
 
   const DraweList = (
     <Box
       role="presentation"
       sx={{
-       
-        width: isDesktop && !open ? collapsedWidth : drawerWidth,
+        width: collapsed ? collapsedWidth : drawerWidth,
         height: "100%",
-        
-       bgcolor: "background.default",
-        color:"text.primary",
+        bgcolor: "background.paper",
+        color: "text.primary",
         overflowX: "hidden",
         transition: "width 0.3s ease",
         "&::-webkit-scrollbar": {
@@ -84,240 +130,71 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
           background: "transparent",
         },
         "&::-webkit-scrollbar-thumb": {
-          background: "#b0bec5", 
+          background: "#cfc4d8",
           borderRadius: "10px",
         },
         "&::-webkit-scrollbar-thumb:hover": {
-          background: "#90a4ae",
+          background: "#b5a5c0",
         },
       }}
       onClick={isDesktop ? undefined : onClose}
     >
       <Toolbar />
-      <List sx={{ color:"text.primary",}}>
-        {/* dashboard  */}
-          <ListItemButton
-          onClick={() => navigate("/dashboard")}
-           sx={menuStyle("/dashboard")}
-         
+      {navGroups.map((group) => (
+        <List
+          key={group.title}
+          dense
+          subheader={
+            !collapsed ? (
+              <ListSubheader
+                component="div"
+                disableSticky
+                sx={{
+                  bgcolor: "transparent",
+                  color: "text.secondary",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  lineHeight: "28px",
+                  px: 3,
+                  mt: 1,
+                }}
+              >
+                {group.title}
+              </ListSubheader>
+            ) : undefined
+          }
+          sx={{ color: "text.primary", py: 0 }}
         >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-            }}
-          >
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="Dashboard"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-          
-        </ListItemButton>
-        {/* Home Page  */}
-        <ListItemButton
-          onClick={() => navigate("/")}
-         sx={menuStyle("/")}
-        >
-          <ListItemIcon
-           sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-              
-            }}
-          >
-            <HomeOutlinedIcon sx={{fontSize:28}} />
-          </ListItemIcon>
-          <ListItemText
-          primary="Home"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
-
-         <ListItemButton
-          onClick={() => navigate("/my-project")}
-         sx={menuStyle("/my-project")}
-        >
-          <ListItemIcon
-           sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-              
-            }}
-          >
-            <BusinessCenterOutlinedIcon/>
-          </ListItemIcon>
-          <ListItemText
-          primary="Projects"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
-
-        <ListItemButton
-          onClick={() => navigate("/tasks-note")}
-          sx={menuStyle("/tasks-note")}
-         
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-            }}
-          >
-            <TaskAltIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="Task Notes"
-          sx={{
-            display: isDesktop && !open ? "none" : "block", 
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-          
-        </ListItemButton>
-
-
-         <ListItemButton
-          onClick={() => navigate("/my-tasks")}
-         sx={menuStyle("/my-tasks")}
-        >
-          <ListItemIcon
-           sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-              
-            }}
-          >
-            <AssignmentIndOutlinedIcon/>
-          </ListItemIcon>
-          <ListItemText
-          primary="My Tasks"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
-       
-
-        {/* <Divider sx={{ my: 1 }} /> */}
-
-        {/* <ListItemButton
-          onClick={() => navigate("/note")}
-           sx={menuStyle("/note")}
-         
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-            }}
-          >
-            <NoteAltOutlinedIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="New Notes"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-          
-        </ListItemButton> */}
-
-        <ListItemButton
-          onClick={() => navigate("/note-form")}
-           sx={menuStyle("/note-form")}
-         
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-              
-            }}
-          >
-            <EventNoteIcon />
-          </ListItemIcon>
-          <ListItemText
-            primary="Note Form"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-          
-        </ListItemButton>
-
-        
-
-        <ListItemButton onClick={() => navigate("/category")}
-         sx={menuStyle("/category")}>
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-             
-            }}
-          >
-            <CategoryIcon />
-          </ListItemIcon>
-          <ListItemText
-             primary="Categories"
-          sx={{
-            display: isDesktop && !open ? "none" : "block", 
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
-
-        <ListItemButton
-          onClick={() => navigate("/board")}
-          sx={menuStyle("/board")}
-        
-        >
-          <ListItemIcon
-            sx={{
-              minWidth: isDesktop && !open ? 0 : 40,
-              justifyContent: "center",
-             
-            }}
-          >
-            <LeaderboardIcon />
-          </ListItemIcon>
-          <ListItemText
-           primary="Board"
-          sx={{
-            display: isDesktop && !open ? "none" : "block",
-            ml: isDesktop && !open ? 0 : 1,
-          }}
-/>
-        </ListItemButton>
-
-       
-        
-
-
-       
-      </List>
+          {group.items.map((item) => (
+            <ListItemButton
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              sx={menuStyle(item.path)}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: collapsed ? 0 : 40,
+                  justifyContent: "center",
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                sx={{
+                  display: collapsed ? "none" : "block",
+                  ml: collapsed ? 0 : 1,
+                }}
+              />
+            </ListItemButton>
+          ))}
+        </List>
+      ))}
     </Box>
   );
+
   return (
     <Box
       component="nav"
@@ -325,32 +202,30 @@ export const SideMenu = ({ open, isDesktop, onClose }: SideMenuProps) => {
         width: isDesktop ? (open ? drawerWidth : collapsedWidth) : 0,
         flexShrink: 0,
         transition: "width 0.3s ease",
-
       }}
     >
-      
       <Drawer
         variant={isDesktop ? "permanent" : "temporary"}
         open={isDesktop ? true : open}
-        onClose={isDesktop ? undefined :onClose}
+        onClose={isDesktop ? undefined : onClose}
         sx={{
-         
           zIndex: (theme) => theme.zIndex.appBar - 1,
           "& .MuiDrawer-paper": {
-            width:isDesktop ? (open ? drawerWidth : collapsedWidth) : drawerWidth,
+            width: isDesktop
+              ? open
+                ? drawerWidth
+                : collapsedWidth
+              : drawerWidth,
             maxWidth: "82vw",
             boxSizing: "border-box",
-            borderRight: "1px solid #ccc",
-            bgcolor: "#dee4ea",
+            borderRight: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
             transition: "width 0.3s ease",
             overflowX: "hidden",
           },
-        
         }}
       >
-    
-        
-         <Box sx={{ height: "10px", minHeight: 0 }} />
         {DraweList}
       </Drawer>
     </Box>
