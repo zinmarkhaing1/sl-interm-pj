@@ -221,14 +221,14 @@ export const TasksNotes = () => {
   const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("asc");
   const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery();
 
-  // 🔥 search box က status keyword ကို ဖမ်းဆီးပြီး filter လုပ်တယ်
+ 
   const filteredNotes = React.useMemo<Note[]>(() => {
     if (!Array.isArray(notes)) return [];
 
     const statusKeywords = ["todo", "in progress", "complete", "not started"];
     const searchLower = searchText.trim().toLowerCase();
 
-    // search box ထဲက စာသားက status keyword နဲ့ ကိုက်ညီရင် အဲဒီ status ကိုသုံးမယ်
+    
     let effectiveStatus: string | null = null;
     if (searchLower !== "") {
       const matched = statusKeywords.find(keyword => keyword === searchLower);
@@ -247,7 +247,7 @@ export const TasksNotes = () => {
           const currentStatus = (note.task || note.category || "").trim().toLowerCase();
           if (currentStatus !== effectiveStatus.toLowerCase()) return false;
         }
-        // title search ကို ဖယ်ရှားထားတယ် (သင်လိုချင်တဲ့အတိုင်း)
+       
         return true;
       })
       .sort((a, b) => {
@@ -373,7 +373,7 @@ export const TasksNotes = () => {
                 borderRadius: '4px',
                 '&:hover': { backgroundColor: '#973aa8', color: "#ffffff" }
               }}
-              onClick={() => navigate("/note-form/create")}
+              onClick={() => navigate("/my-tasks/task-create-note")}
             >
               New
               <KeyboardArrowDown sx={{ fontSize: 12, m: 0.2 }} />
