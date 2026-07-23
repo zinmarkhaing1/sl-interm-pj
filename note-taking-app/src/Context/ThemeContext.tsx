@@ -58,12 +58,16 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
             secondary: darkMode ? "#cac9cd" : "#5c5666",
           },
         },
+        shape: {
+          borderRadius: 12,
+        },
         components: {
           MuiButton: {
             styleOverrides: {
               root: {
                 textTransform: "none",
                 borderRadius: 8,
+                fontWeight: 600,
               },
             },
           },
@@ -71,6 +75,42 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
             styleOverrides: {
               root: {
                 backgroundImage: "none",
+              },
+            },
+          },
+          MuiTextField: {
+            defaultProps: {
+              variant: "outlined",
+              fullWidth: true,
+              size: "medium",
+            },
+          },
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                borderRadius: 12,
+                backgroundColor: darkMode ? "#241c2c" : "#ffffff",
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#dec9e9",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#973aa8",
+                  borderWidth: 1.5,
+                },
+              },
+            },
+          },
+          MuiFormHelperText: {
+            styleOverrides: {
+              root: {
+                marginLeft: 4,
+              },
+            },
+          },
+          MuiAlert: {
+            styleOverrides: {
+              root: {
+                borderRadius: 12,
               },
             },
           },

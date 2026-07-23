@@ -8,6 +8,7 @@ import {
   IconButton,
   InputAdornment,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
@@ -30,6 +31,7 @@ export const SignUpForm = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -45,35 +47,44 @@ export const SignUpForm = () => {
       ...form,
       [e.target.name]: e.target.value,
     });
+    setFieldErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
-  const handleSubmit = async () => {
-    const { firstName, lastName, email, password } = form;
-    setErrorMessage(null);
+  const validate = () => {
+    const errors: Record<string, string> = {};
+    if (!form.firstName.trim()) errors.firstName = "First name is required";
+    if (!form.lastName.trim()) errors.lastName = "Last name is required";
+    if (!form.email.trim()) errors.email = "Email is required";
+    if (!form.password.trim()) errors.password = "Password is required";
+    else if (form.password.length < 8)
+      errors.password = "Use at least 8 characters";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-    if (!firstName || !lastName || !email || !password) {
-      setErrorMessage("Please fill all fields");
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    if (!validate()) return;
 
     try {
       const res = await signup({
-        firstName,
-        lastName,
-        email,
-        password,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
       }).unwrap();
 
       if (res.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        navigate("/login");
+        navigate("/dashboard");
       } else {
         setErrorMessage(res.message || "Signup failed. Please try again.");
       }
     } catch (err: any) {
       const errorMsg =
-        err?.data?.message || err?.message || "Signup Failed. Network error.";
+        err?.data?.message || err?.message || "Signup failed. Network error.";
       setErrorMessage(errorMsg);
     }
   };
@@ -94,21 +105,21 @@ export const SignUpForm = () => {
       <Paper
         elevation={0}
         sx={{
-          width: 500,
+          width: 440,
           maxWidth: "100%",
-          p: 4,
+          p: { xs: 3, sm: 4 },
           borderRadius: 3,
           border: "1px solid",
           borderColor: "divider",
           bgcolor: "background.paper",
         }}
       >
-        <Stack alignItems="center" spacing={1} sx={{ mb: 3 }}>
+        <Stack alignItems="center" spacing={0.5} sx={{ mb: 3 }}>
           <Box
             component="img"
             src={notebook}
             alt="Note Book"
-            sx={{ width: 44, height: 44 }}
+            sx={{ width: 44, height: 44, mb: 0.5 }}
           />
           <Typography
             variant="subtitle1"
@@ -118,108 +129,125 @@ export const SignUpForm = () => {
           </Typography>
           <Typography
             variant="h5"
-            sx={{ fontWeight: "bold", color: "text.primary" }}
+            sx={{ fontWeight: 700, color: "text.primary" }}
           >
             Create account
           </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Start organizing your notes and tasks.
+          </Typography>
         </Stack>
 
-        {errorMessage && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-            {errorMessage}
-          </Alert>
-        )}
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={2.5}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField
+                name="firstName"
+                label="First name"
+                value={form.firstName}
+                onChange={handleChange}
+                error={!!fieldErrors.firstName}
+                helperText={fieldErrors.firstName}
+                disabled={isLoading}
+                required
+              />
+              <TextField
+                name="lastName"
+                label="Last name"
+                value={form.lastName}
+                onChange={handleChange}
+                error={!!fieldErrors.lastName}
+                helperText={fieldErrors.lastName}
+                disabled={isLoading}
+                required
+              />
+            </Stack>
 
-        <Stack spacing={2} direction="row" sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            name="firstName"
-            label="First Name"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            fullWidth
-            variant="outlined"
-            name="lastName"
-            label="Last Name"
-            value={form.lastName}
-            onChange={handleChange}
-            required
-          />
-        </Stack>
+            <TextField
+              name="email"
+              type="email"
+              label="Email"
+              value={form.email}
+              onChange={handleChange}
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
+              disabled={isLoading}
+              required
+              autoComplete="email"
+            />
 
-        <Stack spacing={2} sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            name="email"
-            label="Email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            fullWidth
-            variant="outlined"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            label="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                      disabled={isLoading}
-                    >
-                      {showPassword ? (
-                        <VisibilityOff sx={{ fontSize: 20 }} />
-                      ) : (
-                        <Visibility sx={{ fontSize: 20 }} />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </Stack>
+            <TextField
+              name="password"
+              type={showPassword ? "text" : "password"}
+              label="Password"
+              value={form.password}
+              onChange={handleChange}
+              error={!!fieldErrors.password}
+              helperText={fieldErrors.password || "At least 8 characters"}
+              disabled={isLoading}
+              required
+              autoComplete="new-password"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                        disabled={isLoading}
+                        size="small"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{
-            py: 1.2,
-            borderRadius: 2,
-            fontWeight: "bold",
-          }}
-          onClick={handleSubmit}
-          disabled={isLoading}
+            {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isLoading}
+              startIcon={
+                isLoading ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : undefined
+              }
+              sx={{ py: 1.25 }}
+            >
+              {isLoading ? "Creating account..." : "Create account"}
+            </Button>
+          </Stack>
+        </Box>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          sx={{ mt: 3 }}
         >
-          {isLoading ? "Creating account..." : "Register"}
-        </Button>
-
-        <Stack alignItems="center" sx={{ mt: 3 }}>
+          Already have an account?{" "}
           <MuiLink
             component={RouterLink}
             to="/login"
             color="primary"
-            sx={{ cursor: "pointer" }}
+            underline="hover"
+            fontWeight={600}
           >
-            Already have an account? Sign in here.
+            Sign in
           </MuiLink>
-        </Stack>
+        </Typography>
       </Paper>
     </Box>
   );

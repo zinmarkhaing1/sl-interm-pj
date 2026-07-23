@@ -8,6 +8,7 @@ import {
   Button,
   IconButton,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
@@ -25,6 +26,10 @@ export const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -34,11 +39,19 @@ export const LoginForm = () => {
     event.preventDefault();
   };
 
-  const handleLogin = async () => {
-    if (email.trim() === "" || password.trim() === "") {
-      setErrorMessage("Fill Email and Password");
-      return;
-    }
+  const validate = () => {
+    const errors: { email?: string; password?: string } = {};
+    if (!email.trim()) errors.email = "Email is required";
+    if (!password.trim()) errors.password = "Password is required";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    if (!validate()) return;
+
     try {
       const response = await login({ email, password }).unwrap();
 
@@ -47,13 +60,13 @@ export const LoginForm = () => {
         localStorage.setItem("user", JSON.stringify(response.data.user));
         navigate("/dashboard");
       } else {
-        setErrorMessage(response.message || "Login Failed. Network Error");
+        setErrorMessage(response.message || "Login failed. Please try again.");
       }
     } catch (error: any) {
       const errorMsg =
         error?.data?.message ||
         error?.message ||
-        "Invalid Email or Password";
+        "Invalid email or password";
       setErrorMessage(errorMsg);
     }
   };
@@ -75,19 +88,19 @@ export const LoginForm = () => {
         sx={{
           width: 420,
           maxWidth: "100%",
-          p: 4,
+          p: { xs: 3, sm: 4 },
           borderRadius: 3,
           border: "1px solid",
           borderColor: "divider",
           bgcolor: "background.paper",
         }}
       >
-        <Stack alignItems="center" spacing={1} sx={{ mb: 3 }}>
+        <Stack alignItems="center" spacing={0.5} sx={{ mb: 3 }}>
           <Box
             component="img"
             src={notebook}
             alt="Note Book"
-            sx={{ width: 44, height: 44 }}
+            sx={{ width: 44, height: 44, mb: 0.5 }}
           />
           <Typography
             variant="subtitle1"
@@ -97,96 +110,113 @@ export const LoginForm = () => {
           </Typography>
           <Typography
             variant="h5"
-            sx={{ fontWeight: "bold", color: "text.primary" }}
+            sx={{ fontWeight: 700, color: "text.primary" }}
           >
             Sign in
           </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Welcome back to your workspace.
+          </Typography>
         </Stack>
 
-        <TextField
-          fullWidth
-          margin="normal"
-          variant="standard"
-          label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email color="action" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          variant="standard"
-          label="Password"
-          type={showPassword ? "text" : "password"}
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    edge="end"
-                    disabled={isLoading}
-                  >
-                    {showPassword ? (
-                      <VisibilityOff sx={{ fontSize: 20 }} />
-                    ) : (
-                      <Visibility sx={{ fontSize: 20 }} />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <Box component="form" onSubmit={handleLogin} noValidate>
+          <Stack spacing={2.5}>
+            <TextField
+              label="Email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors((prev) => ({ ...prev, email: undefined }));
+              }}
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
+              disabled={isLoading}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email color="action" fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
 
-        {errorMessage && (
-          <Alert severity="error" sx={{ mt: 2, mb: 1, borderRadius: 2 }}>
-            {errorMessage}
-          </Alert>
-        )}
+            <TextField
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              }}
+              error={!!fieldErrors.password}
+              helperText={fieldErrors.password}
+              disabled={isLoading}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                        disabled={isLoading}
+                        size="small"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{
-            mt: 3,
-            py: 1.2,
-            borderRadius: 2,
-            fontWeight: "bold",
-          }}
-          onClick={handleLogin}
-          disabled={isLoading}
+            {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isLoading}
+              startIcon={
+                isLoading ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : undefined
+              }
+              sx={{ py: 1.25, mt: 0.5 }}
+            >
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
+          </Stack>
+        </Box>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          sx={{ mt: 3 }}
         >
-          {isLoading ? "Signing in..." : "Sign in"}
-        </Button>
-
-        <Stack
-          spacing={2}
-          sx={{ mt: 3, justifyContent: "center", alignItems: "center" }}
-        >
+          Don&apos;t have an account?{" "}
           <MuiLink
             component={RouterLink}
             to="/signup"
             color="primary"
-            sx={{ cursor: "pointer" }}
+            underline="hover"
+            fontWeight={600}
           >
-            Don&apos;t have an account? Sign up here.
+            Sign up
           </MuiLink>
-        </Stack>
+        </Typography>
       </Paper>
     </Box>
   );

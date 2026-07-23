@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   MenuItem,
@@ -7,11 +7,11 @@ import {
   TextField,
   Typography,
   Button,
-  IconButton,
+  Alert,
+  CircularProgress,
+  Divider,
 } from "@mui/material";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import WorkIcon from "@mui/icons-material/Work";
 import TaskIcon from "@mui/icons-material/Task";
@@ -19,14 +19,27 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import SchoolIcon from "@mui/icons-material/School";
 import { useCreateNoteMutation } from "../services/noteApi";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import dayjs, { type Dayjs } from "dayjs";
 
+const CATEGORIES = [
+  { value: "My Note", icon: <TaskIcon fontSize="small" color="action" /> },
+  { value: "Company Note", icon: <WorkIcon fontSize="small" color="action" /> },
+  { value: "Study", icon: <SchoolIcon fontSize="small" color="action" /> },
+  {
+    value: "Family & Friends",
+    icon: <FavoriteIcon fontSize="small" color="action" />,
+  },
+  {
+    value: "Fitness & Health",
+    icon: <FitnessCenterIcon fontSize="small" color="action" />,
+  },
+];
 
-import DateTimePicker from "react-datetime-picker";
-import "react-datetime-picker/dist/DateTimePicker.css";
-import "react-calendar/dist/Calendar.css";
-
-
-type DateTimeValue = Date | null;
+const PRIORITIES = ["Low", "Medium", "High"];
+const STATUSES = ["Todo", "In Progress", "Complete", "Not Started"];
 
 export const CreateNotePage = () => {
   const [note, setNote] = useState({
@@ -35,382 +48,229 @@ export const CreateNotePage = () => {
     category: "",
     priority: "",
     assignee: "",
-    task:"",
-    startDate: "",
-    endDate: "",
+    task: "",
   });
 
-  const [startDate, setStartDate] = useState<DateTimeValue>(new Date());
-  const [endDate, setEndDate] = useState<DateTimeValue>(new Date());
-
+  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
+  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
   const [createNote, { isLoading }] = useCreateNoteMutation();
   const navigate = useNavigate();
-  const [taskError, setTaskError] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return "";
-    const pad = (num: number) => String(num).padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  const formatDate = (date: Dayjs | null) => {
+    if (!date || !date.isValid()) return "";
+    return date.format("YYYY-MM-DD HH:mm:ss");
   };
 
-  const handleSubmit = async () => {
-    if (!note.task){
-      setTaskError(true);
-      alert("Please select a Task Action!");
-      return;
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNote({ ...note, [e.target.name]: e.target.value });
+    setFieldErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+  };
+
+  const validate = () => {
+    const errors: Record<string, string> = {};
+    if (!note.title.trim()) errors.title = "Title is required";
+    if (!note.task) errors.task = "Please select a status";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitError(null);
+    if (!validate()) return;
+
     try {
-      const newNote = {
-        // ...note,
-        // content: note.description,
-        // task : note.task,
-        // startDate: startDate ? startDate.format("YYYY-MM-DD") : "",
-        // endDate: endDate ? endDate.format("YYYY-MM-DD") : "",
+      await createNote({
         title: note.title,
         category: note.category,
         priority: note.priority,
         assignee: note.assignee,
-        content: note.description, 
-        task: note.task, 
-        startDate: formatDate(startDate), 
-        endDate:formatDate(endDate),
-      };
-      console.log("Submitting Payload Data:", newNote);
-      await createNote(newNote).unwrap();
-
+        content: note.description,
+        task: note.task,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+      }).unwrap();
       navigate("/note-form");
     } catch (err: any) {
-      console.log(err);
+      setSubmitError(
+        err?.data?.message || err?.message || "Failed to create note"
+      );
     }
   };
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNote({ ...note, [e.target.name]: e.target.value });
-  };
-
-  const handleClear = () => {
-    setNote({
-      title: "",
-      description: "",
-      category: "",
-      priority: "",
-      assignee: "",
-      task:"",
-      startDate: "",
-      endDate: "",
-    });
-    setStartDate(new Date());
-    setEndDate(new Date());
-    setTaskError(false);
-    navigate(-1);
-  };
-
-  const handleTaskChange = (e: React.ChangeEvent<{ value: unknown }>) => {
-  setNote({ ...note, task: e.target.value as string });
-  setTaskError(false);
-};
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: { xs: "auto", md: "calc(100vh - 112px)" },
-        width: "100%",
-        bgcolor: "background.default",
-        color:"text.primary"
-        // backgroundColor:"#f4f6f8"
-      }}
-    >
-      <Paper
-        elevation={3}
-        sx={{
-          width: "100%",
-          maxWidth: 550,
-          minHeight: { xs: "auto", sm: 500 },
-          p: { xs: 2, sm: 4 },
-          borderRadius: 4,
-          m: { xs: 0, sm: 3 },
-          bgcolor: "background.default",
-          color:"text.primary"
-        }}
-      >
-        <Stack
-          direction="row"
-          sx={{ justifyContent: "center", alignItems: "center", mb: 2 }}
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Box sx={{ maxWidth: 640, mx: "auto", width: "100%", py: 1 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, sm: 4 },
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+          }}
         >
-          <IconButton
-            sx={{
-              color: "#973aa8",
-              ml: 2,
-              alignItems: "center",
-              fontWeight: "bold",
-            }}
-          >
-            <NoteAddIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            sx={{
-              // fontWeight: "bold",
-              mb: 1,
-              mt: 2,
-              textAlign: "center",
-              color: "#293a4b",
-              // fontSize: { xs: "1.75rem", sm: "2.125rem" },
-              fontSize:"18px"
-            }}
-          >
-            Create Note Form
+          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
+            <NoteAddIcon color="primary" />
+            <Typography variant="h5" fontWeight={700}>
+              Create note
+            </Typography>
+          </Stack>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Capture the basics, then set status, people, and schedule.
           </Typography>
-        </Stack>
-        <Stack spacing={3}>
-          <Stack spacing={2} direction="row">
-            <TextField
-              label="Title"
-              name="title"
-              fullWidth
-              placeholder="Note Title..."
-              sx={{
-                "&.MuiOtilinedInput-root": {
-                  bgcolor: "background.default",
-                  borderRadius: "18px",
 
-                },
-                fontSize:"16px"
-              }}
-              value={note.title}
-              onChange={handleChange}
-            />
-            <TextField
-              select
-              label="Priority"
-              name="priority"
-              fullWidth
-              value={note.priority}
-              onChange={handleChange}
-              sx={{
-                "&.MuiOtilinedInput-root": {
-                  bgcolor: "background.default",
-                  borderRadius: "20px",
-                },
-                fontSize:"16px",
-                bgcolor:"background.default",
-                color:'text.primary'
-              }}
-            >
-              <MenuItem value="Low">Low</MenuItem>
-              <MenuItem value="Medium">Medium</MenuItem>
-              <MenuItem value="High">High</MenuItem>
-            </TextField>
-          </Stack>
-          <Stack spacing={2} direction="row">
-            <TextField
-              label="Description"
-              name="description"
-              multiline
-              rows={3}
-              placeholder="Write your notes..."
-              value={note.description}
-              onChange={handleChange}
-              sx={{
-                "&.MuiOutlinedInput-root": {
-                  bgcolor: "background.default",
-                  borderRadius: "24px",
-                },
-                width: "500px",
-                height: "auto",
-                fontSize:"16px",
-                  bgcolor: "background.default",
-                  color:"text.primary",
-              }}
-            />
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Stack spacing={2.5}>
               <TextField
-                select
-                label="Category"
-                name="category"
-                fullWidth
-                value={note.category}
+                label="Title"
+                name="title"
+                placeholder="Note title"
+                value={note.title}
                 onChange={handleChange}
-                sx={{
-                  "&.MuiOtilinedInput-root": {
-                    bgcolor: "background.default",
-                    borderRadius: "20px",
-                  },
-                  fontSize:"16px",
-                  bgcolor: "background.default",
-                  color:"text.primary"
-                }}
-              >
-                <MenuItem value="My Note">
-                  <TaskIcon sx={{ color: "gray" }} />
-                  My Note
-                </MenuItem>
-                <MenuItem value="Company Note">
-                  <WorkIcon sx={{ color: "gray" }} />
-                  Company Note
-                </MenuItem>
-                <MenuItem value="Study">
-                  <SchoolIcon sx={{ color: "gray" }} />
-                  Study
-                </MenuItem>
-                <MenuItem value="Family & Friends">
-                  <FavoriteIcon sx={{ color: "gray" }} />
-                  Family & Friends
-                </MenuItem>
-                <MenuItem value="Fitness & Health">
-                  <FitnessCenterIcon sx={{ color: "gray" }} />
-                  Fitness & Health
-                </MenuItem>
-              </TextField>
-          </Stack>
+                error={!!fieldErrors.title}
+                helperText={fieldErrors.title}
+                required
+                disabled={isLoading}
+              />
 
-          {/* //status and assignee */}
-          <Stack spacing={2} direction="row">
-            <TextField
-                select
-                label="Status"
-                name="task"
-                fullWidth
-                value={note.task}
-                onChange={handleTaskChange}
-                error={taskError}
-                sx={{
-                  "&.MuiOtilinedInput-root": {
-                    bgcolor: "background.default",
-                    borderRadius: "20px",
-                  },
-                  bgcolor: "background.default",
-                  fontSize:"16px",
-                  color:"text.primary"
-                }}
-              >
-                <MenuItem value="Todo">
-                  Todo
-                </MenuItem>
-                <MenuItem value="In Progress">
-                  In Progress 
-                </MenuItem>
-                <MenuItem value="Complete">
-                  Complete
-                </MenuItem>
-                <MenuItem value="Not Started">Not Started
-                </MenuItem>
-              </TextField>
-             <TextField
+              <TextField
+                label="Description"
+                name="description"
+                multiline
+                rows={4}
+                placeholder="Write your notes..."
+                value={note.description}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+
+              <Divider />
+
+              <Typography variant="subtitle2" color="text.secondary">
+                Details
+              </Typography>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <TextField
+                  select
+                  label="Category"
+                  name="category"
+                  value={note.category}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <MenuItem key={cat.value} value={cat.value}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        {cat.icon}
+                        <span>{cat.value}</span>
+                      </Stack>
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Priority"
+                  name="priority"
+                  value={note.priority}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                >
+                  {PRIORITIES.map((p) => (
+                    <MenuItem key={p} value={p}>
+                      {p}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  select
+                  label="Status"
+                  name="task"
+                  value={note.task}
+                  onChange={handleChange}
+                  error={!!fieldErrors.task}
+                  helperText={fieldErrors.task}
+                  required
+                  disabled={isLoading}
+                >
+                  {STATUSES.map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {s}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Stack>
+
+              <TextField
                 label="Assignee"
                 name="assignee"
-                fullWidth
-                placeholder="Note Assignee..."
-                sx={{
-                  "&.MuiOtilinedInput-root": {
-                    bgcolor: "background.default",
-                    borderRadius: "18px",
-                  },
-                  fontSize:"16px"
-                }}
+                placeholder="Who is responsible?"
                 value={note.assignee}
                 onChange={handleChange}
+                disabled={isLoading}
               />
 
-          </Stack>
-          <Stack spacing={2} direction="row" sx={{m:2}}>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="caption" sx={{ display: "block", mb: 0.5, color: "text.secondary", fontWeight: 500, pl: 1 }}>
-                Start Date & Time
-              </Typography>
-              <Box className="custom-picker-wrapper">
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <DateTimePicker
-                  onChange={(val) => setStartDate(val as DateTimeValue)}
+                  label="Start date & time"
                   value={startDate}
-                  format="y-MM-dd h:mm a"
-                  clearIcon={null}
-                  
+                  onChange={(val) => setStartDate(val)}
+                  disabled={isLoading}
+                  slotProps={{
+                    textField: { fullWidth: true },
+                  }}
                 />
-              </Box>
-            </Box>
-
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="caption" sx={{ display: "block", mb: 0.5, color: "text.secondary", fontWeight: 500, pl: 1 }}>
-                End Date & Time
-              </Typography>
-              <Box className="custom-picker-wrapper">
                 <DateTimePicker
-                  onChange={(val) => setEndDate(val as DateTimeValue)}
+                  label="End date & time"
                   value={endDate}
-                  format="y-MM-dd h:mm a"
-                  clearIcon={null}
-                  
+                  onChange={(val) => setEndDate(val)}
+                  disabled={isLoading}
+                  slotProps={{
+                    textField: { fullWidth: true },
+                  }}
                 />
-              </Box>
-            </Box>
-          </Stack>
+              </Stack>
 
-          
-          {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Stack spacing={2} direction="row">
-              <DateTimePicker
-                label="Start Date & Time"
-                value={startDate}
-                onChange={(newValue) => setStartDate(newValue)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { "& .MuiOutlinedInput-root": { borderRadius: "18px" } }
+              {submitError && <Alert severity="error">{submitError}</Alert>}
+
+              <Divider />
+
+              <Stack
+                direction="row"
+                spacing={1.5}
+                justifyContent="flex-end"
+              >
+                <Button
+                  color="inherit"
+                  onClick={() => navigate(-1)}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={isLoading}
+                  startIcon={
+                    isLoading ? (
+                      <CircularProgress size={18} color="inherit" />
+                    ) : undefined
                   }
-                }}
-                  />
-              <DateTimePicker
-                label="End Date & Time"
-                value={endDate}
-                onChange={(newValue) => setEndDate(newValue)}
-               slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { "& .MuiOutlinedInput-root": { borderRadius: "18px" } }
-                  }
-                }}
-              />
+                  sx={{ px: 3 }}
+                >
+                  {isLoading ? "Saving..." : "Create note"}
+                </Button>
+              </Stack>
             </Stack>
-          </LocalizationProvider> */}
-
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                borderRadius: "18px",
-                py: 1.8,
-                textTransform: "none",
-                fontSize: "16px",
-                bgcolor: "background.default",
-                fontWeight: "bold",
-              }}
-              onClick={handleSubmit}
-              disabled={isLoading}
-            >
-              Save Note
-            </Button>
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={handleClear}
-              sx={{
-                borderRadius: "18px",
-                py: 1.8,
-                textTransform: "none",
-                fontSize: "16px",
-                bgcolor: "white",
-                color: "gray",
-                fontWeight: "bold",
-              }}
-            >
-              Clear
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-    </Box>
+          </Box>
+        </Paper>
+      </Box>
+    </LocalizationProvider>
   );
 };

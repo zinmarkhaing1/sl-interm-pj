@@ -529,29 +529,32 @@ export const NewProjectLayout = () => {
   const repoUrl = `https://github.com/your-org/${formData.name || 'project-name'}`;
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', py: 4 }}>
+    <Box sx={{ maxWidth: 640, mx: 'auto', width: '100%', py: 1 }}>
       <Paper
         elevation={0}
         sx={{
-          p: 4,
+          p: { xs: 2.5, sm: 4 },
           borderRadius: 3,
           border: '1px solid',
           borderColor: 'divider',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+          bgcolor: 'background.paper',
         }}
       >
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <GitHubIcon color="primary" sx={{ fontSize: 36 }} />
-          <Typography variant="h5" >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+          <GitHubIcon color="primary" sx={{ fontSize: 28 }} />
+          <Typography variant="h5" fontWeight={700}>
             Create a new project
           </Typography>
         </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Set up a workspace for notes, tasks, and collaborators.
+        </Typography>
 
         <form onSubmit={handleSubmit}>
+          <Stack spacing={2.5}>
           {/* Project Name */}
           <TextField
-            fullWidth
             required
             label="Project name"
             name="name"
@@ -560,37 +563,22 @@ export const NewProjectLayout = () => {
             error={!!fieldErrors.name}
             helperText={fieldErrors.name || 'A unique name for your project.'}
             placeholder="my-awesome-project"
-            // InputProps={{
-            //   startAdornment: (
-            //     <InputAdornment position="start">
-            //       <PeopleIcon color="action" />
-            //     </InputAdornment>
-            //   ),
-            //   endAdornment: formData.name && (
-            //     <InputAdornment position="end">
-            //       <IconButton size="small" onClick={() => handleClearField('name')}>
-            //         <ClearIcon fontSize="small" />
-            //       </IconButton>
-            //     </InputAdornment>
-            //   ),
-            // }}
             slotProps={{
-              input:{
+              input: {
                 startAdornment: (
-                <InputAdornment position="start">
-                  <PeopleIcon color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: formData.name && (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => handleClearField('name')}>
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
-              }
+                  <InputAdornment position="start">
+                    <PeopleIcon color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: formData.name ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => handleClearField('name')}>
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : undefined,
+              },
             }}
-            sx={{ mb: 2 }}
           />
 
           {/* URL Preview */}
@@ -598,9 +586,8 @@ export const NewProjectLayout = () => {
             <Box
               sx={{
                 p: 1.5,
-                mb: 3,
-                bgcolor: 'primary.50',
-                borderRadius: 1,
+                bgcolor: 'secondary.main',
+                borderRadius: 2,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
@@ -614,7 +601,6 @@ export const NewProjectLayout = () => {
 
           {/* Description */}
           <TextField
-            fullWidth
             label="Description"
             name="description"
             value={formData.description}
@@ -622,11 +608,10 @@ export const NewProjectLayout = () => {
             multiline
             rows={3}
             placeholder="A brief description of your project..."
-            sx={{ mb: 3 }}
           />
 
           {/* Public / Private Toggle */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
             <FormControlLabel
               control={
                 <Switch
@@ -641,16 +626,12 @@ export const NewProjectLayout = () => {
                   {formData.isPrivate ? (
                     <>
                       <LockIcon fontSize="small" />
-                      <Typography variant="body2" >
-                        Private
-                      </Typography>
+                      <Typography variant="body2">Private</Typography>
                     </>
                   ) : (
                     <>
                       <PublicIcon fontSize="small" />
-                      <Typography variant="body2" >
-                        Public
-                      </Typography>
+                      <Typography variant="body2">Public</Typography>
                     </>
                   )}
                 </Box>
@@ -664,77 +645,59 @@ export const NewProjectLayout = () => {
             />
           </Box>
 
-          <Divider sx={{ my: 3 }} />
+          <Divider />
 
           {/* Members and Owners - comma separated */}
-          <Stack spacing={2} sx={{ mb: 3 }}>
+          <Stack spacing={2}>
             <TextField
-              fullWidth
               label="Members (comma separated)"
               name="members"
               value={formData.members}
               onChange={handleChange}
               placeholder="alice, bob, charlie"
               helperText="Enter usernames or emails separated by commas"
-              // InputProps={{
-              //   startAdornment: (
-              //     <InputAdornment position="start">
-              //       <PeopleIcon color="action" />
-              //     </InputAdornment>
-              //   ),
-              // }}
               slotProps={{
-              input:{
-                    startAdornment: (
-                  <InputAdornment position="start">
-                    <PeopleIcon color="action" />
-                  </InputAdornment>
-                    ),
-              }
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PeopleIcon color="action" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
             <TextField
-              fullWidth
               label="Owners (comma separated)"
               name="owners"
               value={formData.owners}
               onChange={handleChange}
               placeholder="admin, lead"
               helperText="Owners have full control over the project"
-              // InputProps={{
-              //   startAdornment: (
-              //     <InputAdornment position="start">
-              //       <OwnerIcon color="action" />
-              //     </InputAdornment>
-              //   ),
-              // }}
               slotProps={{
-                input:{
+                input: {
                   startAdornment: (
-                  <InputAdornment position="start">
-                    <OwnerIcon color="action" />
-                  </InputAdornment>
-                ),
-                }
+                    <InputAdornment position="start">
+                      <OwnerIcon color="action" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </Stack>
 
           {/* Error Display */}
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error">
               {(error as any)?.data?.error || 'Something went wrong. Please try again.'}
             </Alert>
           )}
 
-          {/* Action Buttons */}
-          <Divider sx={{ my: 3 }} />
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <Divider />
+          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
             <Button
-              variant="outlined"
+              color="inherit"
               onClick={() => navigate('/my-project')}
               disabled={isLoading}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
             >
               Cancel
             </Button>
@@ -742,17 +705,13 @@ export const NewProjectLayout = () => {
               type="submit"
               variant="contained"
               disabled={isLoading || !formData.name.trim()}
-              startIcon={isLoading ? <CircularProgress size={20} /> : null}
-              sx={{
-                px: 4,
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-              }}
+              startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
+              sx={{ px: 3 }}
             >
-              {isLoading ? 'Creating...' : 'Create Project'}
+              {isLoading ? 'Creating...' : 'Create project'}
             </Button>
           </Box>
+          </Stack>
         </form>
       </Paper>
     </Box>
