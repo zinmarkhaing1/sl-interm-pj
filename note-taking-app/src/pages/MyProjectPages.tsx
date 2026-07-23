@@ -514,16 +514,24 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  TextField,
+  InputAdornment,
+  Tooltip,
+  Snackbar,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useGetProjectsQuery, useDeleteProjectMutation } from '../services/projectApi';
-import { Folder, Lock, Public, People, Delete, Edit } from '@mui/icons-material';
+import { Folder, Lock, Public, People, Delete, Edit, Share, ContentCopy, Check } from '@mui/icons-material';
+import type { Project } from '../types/Project';
 
 export const MyProjectPages = () => {
   const navigate = useNavigate();
   const { data: projects, isLoading, isError } = useGetProjectsQuery();
   const [deleteProject, { isLoading: isDeleting }] = useDeleteProjectMutation();
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [projectToShare, setProjectToShare] = useState<Project | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   if (isLoading) {
     return (
@@ -541,6 +549,9 @@ export const MyProjectPages = () => {
     );
   }
 
+  const getShareLink = (projectId: string) =>
+    `${window.location.origin}/my-project/edit-project/${projectId}`;
+
   const openDeleteDialog = (id: string, name: string) => {
     setProjectToDelete({ id, name });
   };
@@ -556,6 +567,29 @@ export const MyProjectPages = () => {
       setProjectToDelete(null);
     } catch (err) {
       console.error('Failed to delete project', err);
+    }
+  };
+
+  const openShareDialog = (project: Project) => {
+    setCopied(false);
+    setCopyError(false);
+    setProjectToShare(project);
+  };
+
+  const closeShareDialog = () => {
+    setProjectToShare(null);
+    setCopied(false);
+  };
+
+  const handleCopyLink = async () => {
+    if (!projectToShare) return;
+    const link = getShareLink(projectToShare._id);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setCopyError(false);
+    } catch {
+      setCopyError(true);
     }
   };
 
@@ -585,23 +619,54 @@ export const MyProjectPages = () => {
                 flexDirection: 'column',
               }}
             >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 2,
+                  pt: 2,
+                  pb: 0.5,
+                }}
+              >
+                <Box
+                  onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    minWidth: 0,
+                    flex: 1,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Folder color="primary" />
+                  <Typography variant="h6" noWrap>
+                    {project.name}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />}
+                    label={project.isPrivate ? 'Private' : 'Public'}
+                    variant="outlined"
+                  />
+                </Box>
+                <Tooltip title="Share project">
+                  <IconButton
+                    size="small"
+                    onClick={() => openShareDialog(project)}
+                    sx={{ flexShrink: 0 }}
+                  >
+                    <Share fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+
               <CardActionArea
                 onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
                 sx={{ flex: 1, alignItems: 'stretch' }}
               >
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Folder color="primary" />
-                    <Typography variant="h6" noWrap>
-                      {project.name}
-                    </Typography>
-                    <Chip
-                      size="small"
-                      icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />}
-                      label={project.isPrivate ? 'Private' : 'Public'}
-                      variant="outlined"
-                    />
-                  </Box>
+                <CardContent sx={{ pt: 1 }}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -664,6 +729,75 @@ export const MyProjectPages = () => {
         ))}
       </Grid>
 
+      {/* Share dialog */}
+      <Dialog
+        open={Boolean(projectToShare)}
+        onClose={closeShareDialog}
+        maxWidth="md"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: { maxWidth: 320, borderRadius: 2 },
+          },
+        }}
+      >
+        <DialogTitle>Share “{projectToShare?.name}”</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            {projectToShare?.isPrivate
+              ? 'This project is private. Only the owner and members can open this link.'
+              : 'This project is public. Anyone with the link can open it (if they are signed in).'}
+          </DialogContentText>
+          <TextField
+            fullWidth
+            size="small"
+            label="Share link"
+            value={projectToShare ? getShareLink(projectToShare._id) : ''}
+            slotProps={{
+              input: {
+                readOnly: true,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title={copied ? 'Copied!' : 'Copy link'}>
+                      <IconButton
+                        edge="end"
+                        onClick={handleCopyLink}
+                        color={copied ? 'success' : 'default'}
+                        aria-label="Copy link"
+                      >
+                        {copied ? <Check fontSize="small" /> : <ContentCopy fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          {copyError && (
+            <Alert severity="error" sx={{ mt: 1.5 }}>
+              Could not copy. Please select the link and copy manually.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button
+            onClick={closeShareDialog}
+            fullWidth
+            variant="contained"
+            disableElevation
+            sx={{
+              textTransform: 'none',
+              bgcolor: 'grey.300',
+              color: 'text.primary',
+              '&:hover': { bgcolor: 'grey.400' },
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete dialog */}
       <Dialog
         open={Boolean(projectToDelete)}
         onClose={closeDeleteDialog}
@@ -715,6 +849,14 @@ export const MyProjectPages = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={copied}
+        autoHideDuration={2000}
+        onClose={() => setCopied(false)}
+        message="Link copied to clipboard"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 };

@@ -132,7 +132,6 @@ export const EditProjectLayout = () => {
     );
   }
 
-  const repoUrl = `https://github.com/your-org/${formData.name || "project-name"}`;
 
   return (
     <Box sx={{ maxWidth: 640, mx: "auto", width: "100%", py: 1 }}>
@@ -148,7 +147,7 @@ export const EditProjectLayout = () => {
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <FolderOutlinedIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
             Edit project
           </Typography>
         </Box>
@@ -186,20 +185,6 @@ export const EditProjectLayout = () => {
                 },
               }}
             />
-
-            {formData.name && !fieldErrors.name && (
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: "secondary.main",
-                }}
-              >
-                <Typography variant="body2" color="primary">
-                  {repoUrl}
-                </Typography>
-              </Box>
-            )}
 
             <TextField
               label="Description"
