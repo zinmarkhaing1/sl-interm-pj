@@ -155,32 +155,31 @@ export const NewTaskLayout: React.FC = () => {
     );
   }
 
-  // ---- Render ----
   return (
-    <Box sx={{ maxWidth: 700, mx: 'auto', py: 4 }}>
+    <Box sx={{ maxWidth: 640, mx: 'auto', width: '100%', py: 1 }}>
       <Paper
         elevation={0}
         sx={{
-          p: 4,
+          p: { xs: 2.5, sm: 4 },
           borderRadius: 3,
           border: '1px solid',
           borderColor: 'divider',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+          bgcolor: 'background.paper',
         }}
       >
-        <Typography variant="h5" gutterBottom>
-          Create New Task
+        <Typography variant="h5" fontWeight={700} gutterBottom>
+          Create new task
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Add a new task to one of your projects.
         </Typography>
 
         <form onSubmit={handleSubmit}>
+          <Stack spacing={2.5}>
           {/* Project Selection */}
           <FormControl
             fullWidth
             required
-            sx={{ mb: 2 }}
             error={!!fieldErrors.projectId}
           >
             <InputLabel id="project-select-label">Project</InputLabel>
@@ -204,9 +203,8 @@ export const NewTaskLayout: React.FC = () => {
 
           {/* Task Title */}
           <TextField
-            fullWidth
             required
-            label="Task Title"
+            label="Task title"
             name="title"
             value={form.title}
             onChange={handleChange}
@@ -215,12 +213,10 @@ export const NewTaskLayout: React.FC = () => {
               fieldErrors.title || 'A short, descriptive title for the task.'
             }
             placeholder="Design landing page"
-            sx={{ mb: 2 }}
           />
 
           {/* Description */}
           <TextField
-            fullWidth
             label="Description"
             name="description"
             value={form.description}
@@ -228,23 +224,20 @@ export const NewTaskLayout: React.FC = () => {
             multiline
             rows={3}
             placeholder="Provide more details about this task..."
-            sx={{ mb: 2 }}
           />
 
           {/* Assignee */}
           <TextField
-            fullWidth
             label="Assignee"
             name="assignee"
             value={form.assignee}
             onChange={handleChange}
-            placeholder="Username or email (e.g., john.doe)"
+            placeholder="Username or email"
             helperText="Who is responsible for this task?"
-            sx={{ mb: 2 }}
           />
 
           {/* Status & Priority */}
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <FormControl fullWidth>
               <InputLabel id="status-label">Status</InputLabel>
               <Select
@@ -282,37 +275,33 @@ export const NewTaskLayout: React.FC = () => {
 
           {/* Due Date */}
           <TextField
-            fullWidth
-            label="Due Date"
+            label="Due date"
             type="date"
             name="dueDate"
             value={form.dueDate}
             onChange={handleChange}
-            // InputLabelProps={{ shrink: true }}
             slotProps={{
-              inputLabel:{
-               shrink:true
-              }
+              inputLabel: {
+                shrink: true,
+              },
             }}
-            sx={{ mb: 3 }}
           />
 
           {/* Server Error */}
           {createError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error">
               {getErrorMessage()}
             </Alert>
           )}
 
-          <Divider sx={{ my: 3 }} />
+          <Divider />
 
           {/* Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
             <Button
-              variant="outlined"
+              color="inherit"
               onClick={() => navigate('/my-tasks')}
               disabled={isCreating}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
             >
               Cancel
             </Button>
@@ -320,12 +309,13 @@ export const NewTaskLayout: React.FC = () => {
               type="submit"
               variant="contained"
               disabled={isCreating || !form.title.trim() || !form.projectId}
-              startIcon={isCreating ? <CircularProgress size={20} /> : null}
-              sx={{ px: 4, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+              startIcon={isCreating ? <CircularProgress size={18} color="inherit" /> : null}
+              sx={{ px: 3 }}
             >
-              {isCreating ? 'Creating...' : 'Create Task'}
+              {isCreating ? 'Creating...' : 'Create task'}
             </Button>
           </Box>
+          </Stack>
         </form>
       </Paper>
     </Box>

@@ -1,44 +1,3 @@
-// import { Box, Paper,TextField,Typography,InputAdornment,Stack,Button } from '@mui/material';
-// import { ThemeProvider,createTheme } from '@mui/material/styles';
-// import AccountCircle from '@mui/icons-material/AccountCircle';
-// import Email from '@mui/icons-material/Email';
-// import Lock from '@mui/icons-material/Lock';
-// const theme = createTheme({
-//   palette: {
-//     primary: {
-//       main: '#accbed',
-//       dark: '#6596c6',
-//     },
-//   },
-// });
-// export const LoginForm = () => {
-//   return (
-//      <ThemeProvider theme={theme}>
-
-//             <Box  sx={{display:'flex',justifyContent:'center',alignItems:"center",minHeight:"100vh",bgcolor:'primary.main','&:hover':{bgcolor:'primary.dark',pt:5}}}>
-//                 <Paper elevation={10} sx={{width: 420,p: 4,borderRadius: 3,}} >
-//                    <Typography variant="h5" sx={{textAlign:"center",fontWeight:"bold",color:'#2f72ba'}}>Sign In</Typography>
-//                    {/* <TextField fullWidth margin='normal' variant='standard' label="Name" slotProps={{input: {startAdornment: (
-//                     <InputAdornment position="start"> <AccountCircle /></InputAdornment> ),},}} /> */}
-//                     <TextField fullWidth margin='normal' variant='standard' label="Email" slotProps={{input: {startAdornment: (
-//                     <InputAdornment position="start"> <Email /></InputAdornment> ),},}} />
-//                     <TextField fullWidth margin='normal' variant='standard' label="Password" type='password' slotProps={{input: {startAdornment: (
-//                     <InputAdornment position="start"> <Lock /></InputAdornment> ),},}} />
-
-//                     <Stack spacing={2} direction='row' sx={{mt:3,justifyContent:"center",alignItems:"center"}}>
-//                         <Button variant="contained" color='info' sx={{mt:1, py:1.2,borderRadius:2, textTransform:"none",fontWeight:"bold"}}> Submit</Button>
-//                         {/* <Button variant="outlined" color='info' sx={{mt:1, py:1.0,borderRadius:2, textTransform:"none",fontWeight:"bold"}}> Sign Out</Button> */}
-//                     </Stack>
-//                 </Paper>
-
-//             </Box>
-
-//     </ThemeProvider>
-
-//   )
-// }
-
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   Box,
   Paper,
@@ -48,7 +7,8 @@ import {
   Button,
   IconButton,
   InputAdornment,
-  Alert
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { Link as MuiLink } from "@mui/material";
@@ -56,29 +16,11 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useSignupMutation } from "../services/authApi";
-
-
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#accbed",
-      dark: "#6596c6",
-    },
-  },
-});
-
-// const initialValuesRegister: RegisterValues = {
-//   firstName: "",
-//   lastName: "",
-//   email: "",
-//   password: "",
-// };
+import notebook from "../navicons/34864fc706609d92a131368af91c1e8b-removebg-preview.png";
 
 export const SignUpForm = () => {
-  const [signup, { isLoading,  }] = useSignupMutation();
+  const [signup, { isLoading }] = useSignupMutation();
   const navigate = useNavigate();
-  
 
   const [form, setForm] = useState({
     firstName: "",
@@ -87,143 +29,166 @@ export const SignUpForm = () => {
     password: "",
   });
 
- 
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<String | null >(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  
-  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
   };
 
-  //input change
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMessage(null);
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
+    setFieldErrors((prev) => ({ ...prev, [e.target.name]: "" }));
   };
 
-   // submit
-  const handleSubmit = async () => {
-    const { firstName, lastName, email, password } = form;
-    setErrorMessage(null);
+  const validate = () => {
+    const errors: Record<string, string> = {};
+    if (!form.firstName.trim()) errors.firstName = "First name is required";
+    if (!form.lastName.trim()) errors.lastName = "Last name is required";
+    if (!form.email.trim()) errors.email = "Email is required";
+    if (!form.password.trim()) errors.password = "Password is required";
+    else if (form.password.length < 8)
+      errors.password = "Use at least 8 characters";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-    if (!firstName || !lastName || !email || !password) {
-      setErrorMessage("Please fill all fields");
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    if (!validate()) return;
 
     try {
       const res = await signup({
-        firstName,
-        lastName,
-        email,
-        password,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
       }).unwrap();
-      console.log('Signup Response',res);
-      
 
-       if (res.success) {
+      if (res.success) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        console.log('Signup successfull');
-        
-        navigate("/login");
-       
+        navigate("/dashboard");
       } else {
-       setErrorMessage(res.message || "Signup failed. Please try again.");
+        setErrorMessage(res.message || "Signup failed. Please try again.");
       }
-    } catch (err:any) {
-      console.log(err);
-     const errorMsg = err?.data?.message || err?.message || "Signup Failed. Network error.";
+    } catch (err: any) {
+      const errorMsg =
+        err?.data?.message || err?.message || "Signup failed. Network error.";
       setErrorMessage(errorMsg);
     }
   };
 
-    
-    return (
-      <ThemeProvider theme={theme}>
-        <Box sx={{
-        
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          py: 3,
-        }}>
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        px: 2,
+        py: 3,
+        background:
+          "linear-gradient(160deg, #faf7fc 0%, #f3e8ff 55%, #dec9e9 100%)",
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          width: 440,
+          maxWidth: "100%",
+          p: { xs: 3, sm: 4 },
+          borderRadius: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Stack alignItems="center" spacing={0.5} sx={{ mb: 3 }}>
+          <Box
+            component="img"
+            src={notebook}
+            alt="Note Book"
+            sx={{ width: 44, height: 44, mb: 0.5 }}
+          />
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 600, color: "primary.main", letterSpacing: 0.3 }}
+          >
+            Note Book
+          </Typography>
           <Typography
             variant="h5"
-            sx={{
-              textAlign: "center",
-              fontWeight: "bold",
-              color: "#2f72ba",
-              mb: 3,
-            }}
+            sx={{ fontWeight: 700, color: "text.primary" }}
           >
-            Note Taking App
+            Create account
           </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Paper elevation={10} sx={{ width: 500, p: 4, borderRadius: 3 }}>
-              {errorMessage && (
-              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-                {errorMessage}
-              </Alert>
-            )}
-              <Stack spacing={2} direction="row" sx={{ m: 2 }}>
-                <TextField
-                fullWidth
-                  variant="outlined"
-                  name="firstName"
-                  label="First Name"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  required
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Start organizing your notes and tasks.
+          </Typography>
+        </Stack>
 
-                />
-                <TextField
-                fullWidth
-                  variant="outlined"
-                  name="lastName"
-                  label="Last Name"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  required
-                />
-              </Stack>
-              <Stack spacing={2} sx={{ m: 2 }}>
-                <TextField
-                fullWidth
-                  variant="outlined"
-                  name="email"
-                  label="Email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                 
-                />
-                <TextField
-                  variant="outlined"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  label="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                  slotProps={{
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={2.5}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField
+                name="firstName"
+                label="First name"
+                value={form.firstName}
+                onChange={handleChange}
+                error={!!fieldErrors.firstName}
+                helperText={fieldErrors.firstName}
+                disabled={isLoading}
+                required
+              />
+              <TextField
+                name="lastName"
+                label="Last name"
+                value={form.lastName}
+                onChange={handleChange}
+                error={!!fieldErrors.lastName}
+                helperText={fieldErrors.lastName}
+                disabled={isLoading}
+                required
+              />
+            </Stack>
+
+            <TextField
+              name="email"
+              type="email"
+              label="Email"
+              value={form.email}
+              onChange={handleChange}
+              error={!!fieldErrors.email}
+              helperText={fieldErrors.email}
+              disabled={isLoading}
+              required
+              autoComplete="email"
+            />
+
+            <TextField
+              name="password"
+              type={showPassword ? "text" : "password"}
+              label="Password"
+              value={form.password}
+              onChange={handleChange}
+              error={!!fieldErrors.password}
+              helperText={fieldErrors.password || "At least 8 characters"}
+              disabled={isLoading}
+              required
+              autoComplete="new-password"
+              slotProps={{
                 input: {
-                  
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -232,50 +197,58 @@ export const SignUpForm = () => {
                         onMouseDown={handleMouseDownPassword}
                         edge="end"
                         disabled={isLoading}
+                        size="small"
                       >
                         {showPassword ? (
-                          <VisibilityOff sx={{ fontSize: 20}} />
+                          <VisibilityOff fontSize="small" />
                         ) : (
-                          <Visibility sx={{ fontSize: 20 }} />
+                          <Visibility fontSize="small" />
                         )}
                       </IconButton>
                     </InputAdornment>
                   ),
                 },
               }}
-                />
-              </Stack>
-              <Stack spacing={2} sx={{ m: 1 }}>
-                <Button
-                  variant="contained"
-                  color="info"
-                  sx={{
-                    py: 1.2,
-                    borderRadius: 2,
-                    textTransform: "none",
-                    fontWeight: "bold",
-                  }}
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  
-                >
-                 
-                  {isLoading ? "loading" : "Register"}
-                </Button>
-                {/* <Link color='inherit' onClick={()=>navigate('/login')}>Already have an account? Login here.</Link> */}
-                <MuiLink
-                  component={RouterLink}
-                  to="/login"
-                  color="inherit"
-                  sx={{ cursor: "pointer" }}
-                >
-                  Already have an account? Login here.
-                </MuiLink>
-              </Stack>
-            </Paper>
-          </Box>
+            />
+
+            {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isLoading}
+              startIcon={
+                isLoading ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : undefined
+              }
+              sx={{ py: 1.25 }}
+            >
+              {isLoading ? "Creating account..." : "Create account"}
+            </Button>
+          </Stack>
         </Box>
-      </ThemeProvider>
-    );
-  
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          sx={{ mt: 3 }}
+        >
+          Already have an account?{" "}
+          <MuiLink
+            component={RouterLink}
+            to="/login"
+            color="primary"
+            underline="hover"
+            fontWeight={600}
+          >
+            Sign in
+          </MuiLink>
+        </Typography>
+      </Paper>
+    </Box>
+  );
 };

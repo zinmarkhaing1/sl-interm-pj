@@ -356,7 +356,7 @@ export const NoteLayout = () => {
     );
 
   return (
-    <Box sx={{ bgcolor: "background.default", minHeight: "100vh", width: "100%" }}>
+    <Box sx={{ width: "100%" }}>
       <Box sx={{ width: "100%" }}>
         <Stack
           direction={{ xs: "column", md: "row" }}
@@ -366,7 +366,7 @@ export const NoteLayout = () => {
           <IconButton
             size="small"
             sx={{
-              color: "#7c7b77",
+              color: "text.secondary",
               mr: searchOpen ? 1 : 0,
               borderRadius: "4px",
             }}
@@ -389,10 +389,10 @@ export const NoteLayout = () => {
                   height: 28,
                   fontSize: "13px",
                   borderRadius: "4px",
-                  "& fieldset": { borderColor: "#ededed" },
-                  "&:hover fieldset": { borderColor: "#dfdfdf" },
+                  "& fieldset": { borderColor: "divider" },
+                  "&:hover fieldset": { borderColor: "primary.light" },
                   "&.Mui-focused fieldset": {
-                    borderColor: "#2383e2",
+                    borderColor: "primary.main",
                     borderWidth: "1px",
                   },
                 },
@@ -421,12 +421,14 @@ export const NoteLayout = () => {
                 variant={selectedCategory === cat ? "filled" : "outlined"}
                 onClick={() => setSelectedCategory(cat)}
                 sx={{
-                  bgcolor: selectedCategory === cat ? "#973aa8" : "white",
-                  color: selectedCategory === cat ? "white" : "#000",
-                  fontWeight: "300",
-                  transition: "none",
+                  fontWeight: 500,
+                  bgcolor:
+                    selectedCategory === cat ? "primary.main" : "background.paper",
+                  color: selectedCategory === cat ? "primary.contrastText" : "text.primary",
+                  borderColor: "divider",
                   "&:hover": {
-                    backgroundColor: selectedCategory === cat ? "#973aa8" : "white",
+                    bgcolor:
+                      selectedCategory === cat ? "primary.dark" : "secondary.main",
                     boxShadow: "none",
                   },
                 }}

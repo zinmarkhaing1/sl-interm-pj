@@ -71,7 +71,7 @@ export const ProfilePage = () => {
       sx={{
         width: "100%",
         minHeight: { xs: "calc(100vh - 150px)", sm: "calc(100vh - 120px)" },
-        bgcolor: "#f4f6f8",
+        bgcolor: "background.default",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -96,7 +96,7 @@ export const ProfilePage = () => {
                 width: 100,
                 height: 100,
                 fontSize: "32px",
-                bgcolor: "#6596c6",
+                bgcolor: "primary.main",
                 boxShadow: 2,
               }}
             >
@@ -126,21 +126,14 @@ export const ProfilePage = () => {
                 color="error"
                 fullWidth
                 onClick={handleLogout}
-                sx={{ borderRadius: 2, textTransform: "none" ,border:"none"}}
               >
                 Logout
               </Button>
               <Button
                 variant="contained"
+                color="primary"
                 fullWidth
                 onClick={handleUpdateProfile}
-                sx={{
-                  borderRadius: 2,
-                  backgroundColor: "#973aa8",
-                  color:"white",
-                  textTransform: "none",
-                  "&:hover": { backgroundColor: "#7b2c8a", },
-                }}
               >
                 Update Profile
               </Button>
