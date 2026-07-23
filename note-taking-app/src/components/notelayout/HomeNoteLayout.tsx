@@ -44,7 +44,7 @@ const navigate = useNavigate();
           
           
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{  color: "#274c3c" }}>
+            <Typography variant="h6" sx={{  color: "text.primary" }}>
             <AutoStories sx={{fontSize:"20px",mr:1,color:"#973aa8"}}/>
               My Workspace 
             </Typography>
@@ -64,7 +64,7 @@ const navigate = useNavigate();
             <Grid size={{ xs: 12, sm: 4 }}>
               <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #37123c" }}>
                 <CardContent>
-                  <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600" }}>Total Notes</Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600",color:"#6247aa" }}>Total Notes</Typography>
                   <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#37123c" }}>{totalNotes}</Typography>
                 </CardContent>
               </Card>
@@ -75,7 +75,7 @@ const navigate = useNavigate();
             <Grid size={{ xs: 12, sm: 4 }}>
               <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #6247aa" ,}}>
                 <CardContent>
-                  <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600" }}>Urgent (High)</Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600",color:"#6247aa" }}>Urgent (High)</Typography>
                   <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#6247aa" }}>{highPriorityCount}</Typography>
                 </CardContent>
               </Card>
@@ -85,7 +85,7 @@ const navigate = useNavigate();
             <Grid size={{xs: 12, sm: 4}}>
               <Card sx={{ borderRadius: 3, boxShadow: "0px 4px 12px rgba(0,0,0,0.05)", borderLeft: "6px solid #a891bf" ,mb:2}}>
                 <CardContent>
-                  <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600" }}>Tasks Remaining</Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ fontWeight: "600",color:"#6247aa" }}>Tasks Remaining</Typography>
                   <Typography variant="h4" sx={{ fontWeight: "bold", mt: 1, color: "#a891bf" }}>{todoCount}</Typography>
                 </CardContent>
               </Card>

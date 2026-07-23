@@ -1,3 +1,4 @@
+import { task } from './data/index';
 // import express from "express";
 // import cors from "cors";
 // import mongoose from "mongoose";
@@ -65,6 +66,8 @@ import shareRoutes from "./routes/share";
 import notificationRoutes from "./routes/notifications";
 import pageAccessRoutes from './routes/pageAccess';
 import commentRoutes from './routes/comment';
+import projectRoutes from './routes/project';
+import taskRoutes from './routes/task';
 
 
 
@@ -96,8 +99,10 @@ app.use('/api/notes', noteRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/share', shareRoutes);
-app.use('/api/pageaccess',pageAccessRoutes)
-app.use('/api/comments',commentRoutes)
+app.use('/api/pageaccess',pageAccessRoutes);
+app.use('/api/comments',commentRoutes);
+app.use('/api/projects',projectRoutes);
+app.use('/api/tasks',taskRoutes);
 
 
 // Backward compatibility (optional)

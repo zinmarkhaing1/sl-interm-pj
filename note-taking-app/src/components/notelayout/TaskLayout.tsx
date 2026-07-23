@@ -193,7 +193,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
                     }}
                   >
                     <AddIcon
-                    onClick={() => navigate("/note-form/create")} 
+                    onClick={() => navigate("/my-tasks/task-create-note")} 
                     sx={{ width: 14, height: 14, color: '#6b6a65' }} />
                   </IconButton>
                   

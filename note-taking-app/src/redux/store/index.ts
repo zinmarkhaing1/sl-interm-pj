@@ -2,7 +2,9 @@
 import {configureStore} from '@reduxjs/toolkit';
 import {authApi } from "../../services/authApi";
 import {noteApi} from "../../services/noteApi";
-import { taskApi } from "../../services/taskApi";
+// import { taskApi } from "../../services/taskApi";
+import { projectApi } from '../../services/projectApi';
+import { taskApi } from '../../services/taskApi';
 
 
 export const store = configureStore({
@@ -10,7 +12,8 @@ export const store = configureStore({
         [authApi.reducerPath] : authApi.reducer,
         [noteApi.reducerPath] : noteApi.reducer,
         [taskApi.reducerPath] : taskApi.reducer,
+        [projectApi.reducerPath] : projectApi.reducer,
     },
-    middleware : (getDefaultMiddleware) => getDefaultMiddleware().concat(authApi.middleware,noteApi.middleware,taskApi.middleware),
+    middleware : (getDefaultMiddleware) => getDefaultMiddleware().concat(authApi.middleware,noteApi.middleware,taskApi.middleware,projectApi.middleware),
 });
 

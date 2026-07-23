@@ -51,7 +51,7 @@ export const NoteStatusPage: React.FC = () => {
  
   const BOARD_NAME = "board";
 
-  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery({shareScope:'board' });
+  const { data: notes = [], isLoading, isError, refetch } = useGetNotesQuery({shareScope:'board', populate: 'user' });
   const [updatedNote] = useUpdateNoteMutation();
 //for sharing state
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -63,6 +63,59 @@ export const NoteStatusPage: React.FC = () => {
 
   const isUpdatingRef = useRef(false);
   const previousNotesRef = useRef<Note[]>([]);
+
+
+  const [usersMap, setUsersMap] = useState<Record<string, { firstName: string; lastName: string }>>({});
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const res = await fetch('http://localhost:5000/api/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const users = await res.json();
+          console.log('Fetched user:', users);
+          const map: Record<string, { firstName: string; lastName: string }> = {};
+          users.forEach((u: any) => {
+            map[u._id] = { firstName: u.firstName, lastName: u.lastName || '' };
+          });
+          setUsersMap(map);
+        }
+      } catch (err) {
+        console.error('Failed to fetch users', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const getCreatorName = useCallback((note: Note): string => {
+    //
+    if (note.user && typeof note.user === 'object') {
+      const u = note.user as any;
+      if (u.firstName) return `${u.firstName} ${u.lastName || ''}`.trim();
+    }
+  
+  
+    if (typeof note.user === 'string') {
+      const userObj = usersMap[note.user];
+      if (userObj) {
+        return `${userObj.firstName} ${userObj.lastName}`.trim();
+      }
+    }
+  
+   
+    const userId = (user as any)?._id;
+    const noteUserId = typeof note.user === 'string' ? note.user : (note.user as any)?._id;
+    if (userId && noteUserId === userId) {
+      return `${user?.firstName || 'You'} ${user?.lastName || ''}`.trim() || 'You';
+    }
+  
+  
+    return note.assignee || 'Unknown User';
+  }, [usersMap, user]);
 
   // Filtered and Sorted Notes 
   // const filteredAndSortedNotes = useMemo(() => {
@@ -610,9 +663,9 @@ const filteredAndSortedNotes = useMemo(() => {
                       ref={provided.innerRef}
                       elevation={0}
                       sx={{
-                        p: 1.5,
-                        bgcolor: "#e9e9ef",
-                        minHeight: "400px",
+                        p: 1,
+                        bgcolor: "#f8f9fa",
+                        minHeight: "600px",
                         borderRadius: 2,
                         border: `1px solid ${column.color}`,
                       }}
@@ -669,14 +722,28 @@ const filteredAndSortedNotes = useMemo(() => {
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           lineHeight: 1.5,
+                                           color:"#2F004F"
                                         }}
                                       >
                                         {task.description || task.content || "No Description"}
                                       </Typography>
+
+                                       <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color: "#2F004F",
+                                          fontWeight: "500",
+                                          display: "block",
+                                        }}
+                                      >
+                                        Created By: {getCreatorName(task)}
+                                      </Typography>
+
+                                      
                                     </Box>
 
                                     <Box>
-                                      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: "wrap" }}>
+                                      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 0.2, flexWrap: "wrap" }}>
                                         {task.priority && (
                                           <Typography
                                             variant="caption"
@@ -688,7 +755,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                         {task.category && (
                                           <Typography
                                             variant="caption"
-                                            sx={{ bgcolor: "#e2e8f0", px: 1, py: 0.5, borderRadius: 1 }}
+                                            sx={{ bgcolor: "#e2e8f0", px: 1.5, py: 0.5, borderRadius: 1 }}
                                           >
                                             Category: {task.category}
                                           </Typography>
@@ -696,11 +763,11 @@ const filteredAndSortedNotes = useMemo(() => {
                                       </Stack>
 
                                       {(task.startDate || task.endDate) && (
-                                        <Stack direction="row" sx={{ mt: 1.5, alignItems: 'center', color: 'blue' }}>
+                                        <Stack direction="row" sx={{ mt: 1, alignItems: 'center', color: 'blue' }}>
                                           <IconButton size="small" sx={{ color: 'blue', p: 0, mr: 0.5 }} disabled>
                                             <CalendarMonthIcon sx={{ fontSize: 'medium', color: 'skyblue' }} />
                                           </IconButton>
-                                          <Typography variant='caption' color="textSecondary">
+                                          <Typography variant='caption' color="#3b0560">
                                             {task.startDate || '-'} To {task.endDate || '-'}
                                           </Typography>
                                         </Stack>
