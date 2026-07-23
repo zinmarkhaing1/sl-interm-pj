@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Request, Response } from 'express';
 import Project, { IProject } from '../../models/Project';
 import Auth from '../../models/Auth';
@@ -22,7 +23,7 @@ const getUserIdentifiers = async (req: AuthRequest): Promise<string[]> => {
   const userId = req.user?.id;
   if (!userId) return [];
 
-  const identifiers = [userId];
+  const identifiers = [userId, userId.toLowerCase()];
   let email = req.user?.email?.toLowerCase().trim();
 
   if (!email) {
@@ -34,7 +35,7 @@ const getUserIdentifiers = async (req: AuthRequest): Promise<string[]> => {
     identifiers.push(email);
   }
 
-  return identifiers;
+  return Array.from(new Set(identifiers));
 };
 
 const userHasAccess = (project: IProject | null | undefined, identifiers: string[]) => {
@@ -53,6 +54,39 @@ const userIsOwner = (project: IProject | null | undefined, identifiers: string[]
   return identifiers.some((id) => owners.includes(id.toLowerCase()));
 };
 
+const resolveEmail = async (value: string | undefined): Promise<string | null> => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.includes('@')) {
+    return trimmed.toLowerCase();
+  }
+
+  if (mongoose.Types.ObjectId.isValid(trimmed)) {
+    const user = await Auth.findById(trimmed).select('email').lean();
+    return user?.email?.toLowerCase() || null;
+  }
+
+  return trimmed.toLowerCase();
+};
+
+const enrichProject = async (project: IProject | Record<string, any>) => {
+  const plain =
+    typeof (project as any).toObject === 'function'
+      ? (project as any).toObject()
+      : { ...project };
+
+  const ownerId = plain.owners?.[0];
+  const ownerEmail = (await resolveEmail(ownerId)) || ownerId || null;
+
+  return {
+    ...plain,
+    owners: ownerId ? [ownerId] : [],
+    ownerEmail,
+  };
+};
+
 // ===== Create a new project =====
 export const createProject = async (req: AuthRequest, res: Response) => {
   try {
@@ -61,7 +95,7 @@ export const createProject = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { name, description, isPrivate, members, owners } = req.body;
+    const { name, description, isPrivate, members } = req.body;
 
     if (!name || name.trim().length < 3) {
       return res.status(400).json({
@@ -69,22 +103,20 @@ export const createProject = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const identifiers = await getUserIdentifiers(req);
-    const ownerList = uniqueStrings([...(owners || []), userId, ...identifiers]);
-    const memberList = uniqueStrings(members || []).filter(
-      (m) => !ownerList.map((o) => o.toLowerCase()).includes(m.toLowerCase()),
-    );
+    // Exactly one owner: the authenticated creator (stored as user id)
+    const ownerId = userId.toLowerCase();
+    const memberList = uniqueStrings(members || []).filter((m) => m !== ownerId);
 
     const project = new Project({
       name: name.trim(),
       description: description?.trim() || '',
       isPrivate: isPrivate ?? true,
       members: memberList,
-      owners: ownerList,
+      owners: [ownerId],
     });
 
     await project.save();
-    res.status(201).json(project);
+    res.status(201).json(await enrichProject(project));
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
@@ -106,7 +138,8 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
       ],
     }).sort({ createdAt: -1 });
 
-    res.json(projects);
+    const enriched = await Promise.all(projects.map((p) => enrichProject(p)));
+    res.json(enriched);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -129,13 +162,13 @@ export const getProjectById = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You do not have access to this project' });
     }
 
-    res.json(project);
+    res.json(await enrichProject(project));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// ===== Update a project (owners only) =====
+// ===== Update a project (owner only) =====
 export const updateProject = async (req: AuthRequest, res: Response) => {
   try {
     const identifiers = await getUserIdentifiers(req);
@@ -149,10 +182,10 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
     }
 
     if (!userIsOwner(project, identifiers)) {
-      return res.status(403).json({ error: 'Only project owners can update this project' });
+      return res.status(403).json({ error: 'Only the project owner can update this project' });
     }
 
-    const { name, description, isPrivate, members, owners } = req.body;
+    const { name, description, isPrivate, members } = req.body;
 
     if (name !== undefined) {
       if (!name || name.trim().length < 3) {
@@ -169,23 +202,22 @@ export const updateProject = async (req: AuthRequest, res: Response) => {
       project.isPrivate = Boolean(isPrivate);
     }
 
-    // Always keep the current user as an owner so they cannot lock themselves out
-    const nextOwners = uniqueStrings([...(owners ?? project.owners), ...identifiers]);
-    const nextMembers = uniqueStrings(members ?? project.members).filter(
-      (m) => !nextOwners.map((o) => o.toLowerCase()).includes(m.toLowerCase()),
-    );
+    // Preserve the single existing owner; never accept client-provided owners
+    const ownerId = (project.owners?.[0] || req.user!.id).toLowerCase();
+    project.owners = [ownerId];
 
-    project.owners = nextOwners;
-    project.members = nextMembers;
+    if (members !== undefined) {
+      project.members = uniqueStrings(members).filter((m) => m !== ownerId);
+    }
 
     await project.save();
-    res.json(project);
+    res.json(await enrichProject(project));
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// ===== Delete a project (owners only) =====
+// ===== Delete a project (owner only) =====
 export const deleteProject = async (req: AuthRequest, res: Response) => {
   try {
     const identifiers = await getUserIdentifiers(req);
@@ -199,7 +231,7 @@ export const deleteProject = async (req: AuthRequest, res: Response) => {
     }
 
     if (!userIsOwner(project, identifiers)) {
-      return res.status(403).json({ error: 'Only project owners can delete this project' });
+      return res.status(403).json({ error: 'Only the project owner can delete this project' });
     }
 
     await project.deleteOne();

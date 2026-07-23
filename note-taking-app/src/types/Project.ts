@@ -5,7 +5,10 @@ export interface Project {
   description: string;
   isPrivate: boolean;
   members: string[];
+  /** Stored user id of the single project owner */
   owners: string[];
+  /** Resolved email for display */
+  ownerEmail?: string | null;
   createdAt: string;
   updatedAt: string;
 }

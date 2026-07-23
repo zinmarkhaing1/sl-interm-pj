@@ -539,8 +539,10 @@ export const MyProjectPages = () => {
                 <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                   <People fontSize="small" color="action" />
                   <Typography variant="caption">Members: {project.members?.length || 0}</Typography>
-                  <Typography variant="caption" sx={{ ml: 1 }}>Owners: {project.owners?.length || 0}</Typography>
                 </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                  Owner: {project.ownerEmail || 'Unknown'}
+                </Typography>
                 <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
                   {project.members?.slice(0, 3).map((m, i) => <Avatar key={i} sx={{ width: 24, height: 24, fontSize: 10 }}>{m[0]}</Avatar>)}
                   {(project.members?.length || 0) > 3 && <Avatar sx={{ width: 24, height: 24, fontSize: 10 }}>+{project.members!.length - 3}</Avatar>}

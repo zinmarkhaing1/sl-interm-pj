@@ -459,13 +459,20 @@ export const NewProjectLayout = () => {
   const navigate = useNavigate();
   const [createProject, { isLoading, error }] = useCreateProjectMutation();
 
+  let currentUserEmail = 'You (signed-in account)';
+  try {
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (storedUser?.email) currentUserEmail = storedUser.email;
+  } catch {
+    // keep fallback label
+  }
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     isPrivate: true,
     members: '',
-    owners: '',
   });
 
   // Field-level errors
@@ -507,27 +514,12 @@ export const NewProjectLayout = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    // Always include the current user as owner so the project is scoped to them
-    let currentUserId = '';
-    let currentUserEmail = '';
-    try {
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      currentUserId = storedUser?._id || storedUser?.id || '';
-      currentUserEmail = (storedUser?.email || '').toLowerCase().trim();
-    } catch {
-      // ignore parse errors; backend still attaches req.user.id
-    }
-
+    // Backend assigns the authenticated user as the single owner
     const payload = {
       name: formData.name.trim(),
       description: formData.description.trim(),
       isPrivate: formData.isPrivate,
       members: formData.members.split(',').map((s) => s.trim()).filter(Boolean),
-      owners: [
-        ...formData.owners.split(',').map((s) => s.trim()).filter(Boolean),
-        currentUserId,
-        currentUserEmail,
-      ].filter(Boolean),
     };
 
     try {
@@ -660,37 +652,35 @@ export const NewProjectLayout = () => {
 
           <Divider />
 
-          {/* Members and Owners - comma separated */}
+          {/* Members + read-only owner */}
           <Stack spacing={2}>
             <TextField
-              label="Members (comma separated)"
-              name="members"
-              value={formData.members}
-              onChange={handleChange}
-              placeholder="alice, bob, charlie"
-              helperText="Enter usernames or emails separated by commas"
+              label="Owner"
+              value={currentUserEmail}
+              disabled
+              helperText="Each project has one owner — you, as the creator"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <PeopleIcon color="action" />
+                      <OwnerIcon color="action" />
                     </InputAdornment>
                   ),
                 },
               }}
             />
             <TextField
-              label="Owners (comma separated)"
-              name="owners"
-              value={formData.owners}
+              label="Members (comma separated)"
+              name="members"
+              value={formData.members}
               onChange={handleChange}
-              placeholder="admin, lead"
-              helperText="Owners have full control over the project"
+              placeholder="teammate@email.com"
+              helperText="Optional: invite members by email"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <OwnerIcon color="action" />
+                      <PeopleIcon color="action" />
                     </InputAdornment>
                   ),
                 },

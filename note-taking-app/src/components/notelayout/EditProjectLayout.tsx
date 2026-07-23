@@ -46,7 +46,6 @@ export const EditProjectLayout = () => {
     description: "",
     isPrivate: false,
     members: "",
-    owners: "",
   });
 
   const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
@@ -58,7 +57,6 @@ export const EditProjectLayout = () => {
         description: project.description || "",
         isPrivate: project.isPrivate || false,
         members: project.members?.join(", ") || "",
-        owners: project.owners?.join(", ") || "",
       });
     }
   }, [project]);
@@ -96,16 +94,7 @@ export const EditProjectLayout = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    let currentUserId = "";
-    let currentUserEmail = "";
-    try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      currentUserId = storedUser?._id || storedUser?.id || "";
-      currentUserEmail = (storedUser?.email || "").toLowerCase().trim();
-    } catch {
-      // backend still keeps the authenticated owner
-    }
-
+    // Backend keeps the single owner; only members are editable here
     const payload = {
       name: formData.name.trim(),
       description: formData.description.trim(),
@@ -114,14 +103,6 @@ export const EditProjectLayout = () => {
         .split(",")
         .map((x) => x.trim())
         .filter(Boolean),
-      owners: [
-        ...formData.owners
-          .split(",")
-          .map((x) => x.trim())
-          .filter(Boolean),
-        currentUserId,
-        currentUserEmail,
-      ].filter(Boolean),
     };
 
     try {
@@ -275,32 +256,32 @@ export const EditProjectLayout = () => {
 
             <Stack spacing={2}>
               <TextField
-                label="Members"
-                name="members"
-                value={formData.members}
-                onChange={handleChange}
-                helperText="Comma-separated usernames or emails"
+                label="Owner"
+                value={project?.ownerEmail || "Unknown"}
+                disabled
+                helperText="Projects have a single owner"
                 slotProps={{
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PeopleIcon color="action" />
+                        <OwnerIcon color="action" />
                       </InputAdornment>
                     ),
                   },
                 }}
               />
               <TextField
-                label="Owners"
-                name="owners"
-                value={formData.owners}
+                label="Members"
+                name="members"
+                value={formData.members}
                 onChange={handleChange}
-                helperText="Owners have full control"
+                helperText="Comma-separated emails of additional members"
+                placeholder="teammate@email.com"
                 slotProps={{
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <OwnerIcon color="action" />
+                        <PeopleIcon color="action" />
                       </InputAdornment>
                     ),
                   },
