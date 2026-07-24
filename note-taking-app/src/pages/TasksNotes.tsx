@@ -342,7 +342,7 @@ export const TasksNotes = () => {
               <TextField
                 size="small"
                 autoFocus
-                placeholder="Search by status"   // 🔥 placeholder ကို ပြောင်းထားတယ်
+                placeholder="Search by status"   
                 value={searchText}
                 onChange={(event) => setSearchText(event.target.value)}
                 sx={{
@@ -365,13 +365,13 @@ export const TasksNotes = () => {
               variant="contained"
               disableElevation
               sx={{
-                backgroundColor: '#dec9e9',
+                backgroundColor: '#973aa8',
                 textTransform: 'none',
                 fontWeight: 500,
                 fontSize: '0.85rem',
                 padding: '4px 12px',
                 borderRadius: '4px',
-                '&:hover': { backgroundColor: '#973aa8', color: "#ffffff" }
+                '&:hover': { backgroundColor: '#54295c', color: "#ffffff" }
               }}
               onClick={() => navigate("/my-tasks/task-create-note")}
             >

@@ -1711,7 +1711,7 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom"; 
 import { useGetNotificationsQuery, useMarkNotificationReadMutation } from "../../services/noteApi";
-import { useThemeContext } from "../../Context/ThemeContext";
+import { useTheme } from "../../Context/ThemeContext";
 
 interface CollaboratorItem {
   _id?: string;
@@ -1745,7 +1745,7 @@ interface HeaderBarProps {
 }
 
 export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
-  const { darkMode, toggleDarkMode } = useThemeContext();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [user, setUser] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -2138,7 +2138,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         >
           {darkMode ? <NightlightIcon /> : <LightModeOutlinedIcon />}
         </IconButton>
-        
+{/*         
         <IconButton 
           sx={{ color: "text.primary", mr: 1 }} 
           onClick={handleNotificationToggle}
@@ -2146,7 +2146,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           <Badge badgeContent={unreadCount} sx={{ '& .MuiBadge-badge': { color: '#973aa8' } }}>
             <NotificationsIcon />
           </Badge>
-        </IconButton>
+        </IconButton> */}
 
         <IconButton onClick={handleProfileMenuOpen} sx={{ p: 0, ml: 0.5 }}>
           <Avatar 

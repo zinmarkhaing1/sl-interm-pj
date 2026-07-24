@@ -24,3 +24,14 @@ body,
 body {
   background-color: #dee4ea;
 }
+
+
+html[data-theme="dark"] body {
+  background-color: #1a1520;
+  color: #ffffff;
+}
+
+html[data-theme="light"] body {
+  background-color: #faf7fc;
+  color: #212529;
+}

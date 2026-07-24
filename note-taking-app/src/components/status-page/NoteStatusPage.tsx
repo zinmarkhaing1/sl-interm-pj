@@ -117,72 +117,9 @@ export const NoteStatusPage: React.FC = () => {
     return note.assignee || 'Unknown User';
   }, [usersMap, user]);
 
-  // Filtered and Sorted Notes 
-  // const filteredAndSortedNotes = useMemo(() => {
-  //   if (!notes || !Array.isArray(notes)) return [];
+ 
 
-  //   let result = [...notes];
 
-  //   if (searchText.trim() !== "") {
-  //     const searchLower = searchText.toLowerCase();
-  //     result = result.filter((note: Note) => {
-  //       const titleText = (note.title || "").toLowerCase();
-  //       const contentText = (note.content || note.description || "").toLowerCase();
-  //       return titleText.includes(searchLower) || contentText.includes(searchLower);
-  //     });
-  //   }
-
-  //   result.sort((a, b) => {
-  //     const titleA = (a.title || "").toLowerCase();
-  //     const titleB = (b.title || "").toLowerCase();
-  //     return sortOrder === "asc" ? titleA.localeCompare(titleB) : titleB.localeCompare(titleA);
-  //   });
-
-  //   return result;
-  // }, [notes, searchText, sortOrder]);
-
-  // 🔥 searchText က status (Todo, In Progress, Complete, Not Started) နဲ့ exact match စစ်မယ်
-// const filteredAndSortedNotes = useMemo(() => {
-//   if (!notes || !Array.isArray(notes)) return [];
-
-//   let result = [...notes];
-//   const searchLower = searchText.trim().toLowerCase();
-
-//   if (searchLower !== "") {
-//     const statusKeywords = ["todo", "in progress", "complete", "not started"];
-//     const matchedStatus = statusKeywords.find(keyword => keyword === searchLower);
-//     let statusFilter: string | null = null;
-
-//     if (matchedStatus) {
-//       if (matchedStatus === "todo") statusFilter = "Todo";
-//       else if (matchedStatus === "in progress") statusFilter = "In Progress";
-//       else if (matchedStatus === "complete") statusFilter = "Complete";
-//       else if (matchedStatus === "not started") statusFilter = "Not Started";
-//     }
-
-//     result = result.filter((note: Note) => {
-//       // status exact match
-//       if (statusFilter !== null) {
-//         const currentStatus = (note.task || "").trim();
-//         return currentStatus === statusFilter;
-//       }
-//       // status မဟုတ်ရင် ဘာမှမပြဘူး (သို့မဟုတ် title/content နဲ့လည်း ရှာချင်ရင် ထပ်ထည့်)
-//       return false;
-//     });
-//   }
-
-//   // Sort by title
-//   result.sort((a, b) => {
-//     const titleA = (a.title || "").toLowerCase();
-//     const titleB = (b.title || "").toLowerCase();
-//     return sortOrder === "asc" ? titleA.localeCompare(titleB) : titleB.localeCompare(titleA);
-//   });
-
-//   return result;
-// }, [notes, searchText, sortOrder]);
-
-// 🔥 searchText က status (todo, in progress, complete, not started) ဖြစ်ရင် exact match,
-// မဟုတ်ရင် assignee, priority, category, title, content ကို OR (partial match) စစ်မယ်
 const filteredAndSortedNotes = useMemo(() => {
   if (!Array.isArray(notes)) return [];
 
@@ -664,7 +601,7 @@ const filteredAndSortedNotes = useMemo(() => {
                       elevation={0}
                       sx={{
                         p: 1,
-                        bgcolor: "#f8f9fa",
+                        bgcolor: 'background.default',
                         minHeight: "600px",
                         borderRadius: 2,
                         border: `1px solid ${column.color}`,
@@ -699,14 +636,15 @@ const filteredAndSortedNotes = useMemo(() => {
                                       display: "flex", 
                                       flexDirection: "column", 
                                       justifyContent: "space-between",
-                                      cursor: "pointer"
+                                      cursor: "pointer",
+                                      bgcolor:'background.default'
                                     }}
                                     onClick={() => handleRowClick(task._id || task.id)}
                                   >
                                     <Box>
                                       <Typography
                                         variant="subtitle1"
-                                        sx={{ fontSize: "16px", color:"#2F004F", fontWeight: 500 }}
+                                        sx={{ fontSize: "16px", color:"text.secondary", fontWeight: 500 }}
                                       >
                                         {task.title || "No Title"}
                                       </Typography>
@@ -722,7 +660,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           lineHeight: 1.5,
-                                           color:"#2F004F"
+                                           color:"text.secondary"
                                         }}
                                       >
                                         {task.description || task.content || "No Description"}
@@ -731,9 +669,10 @@ const filteredAndSortedNotes = useMemo(() => {
                                        <Typography
                                         variant="caption"
                                         sx={{
-                                          color: "#2F004F",
+                                          color: "text.secondary",
                                           fontWeight: "500",
                                           display: "block",
+                                          
                                         }}
                                       >
                                         Created By: {getCreatorName(task)}
@@ -747,7 +686,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                         {task.priority && (
                                           <Typography
                                             variant="caption"
-                                            sx={{ bgcolor: "#edf2f7", px: 1, py: 0.5, borderRadius: 1 }}
+                                            sx={{ bgcolor: "background.paper", px: 1, py: 0.5, borderRadius: 1 }}
                                           >
                                             Priority: {task.priority}
                                           </Typography>
@@ -755,7 +694,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                         {task.category && (
                                           <Typography
                                             variant="caption"
-                                            sx={{ bgcolor: "#e2e8f0", px: 1.5, py: 0.5, borderRadius: 1 }}
+                                            sx={{ bgcolor: 'background.paper', px: 1.5, py: 0.5, borderRadius: 1 }}
                                           >
                                             Category: {task.category}
                                           </Typography>
@@ -767,7 +706,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                           <IconButton size="small" sx={{ color: 'blue', p: 0, mr: 0.5 }} disabled>
                                             <CalendarMonthIcon sx={{ fontSize: 'medium', color: 'skyblue' }} />
                                           </IconButton>
-                                          <Typography variant='caption' color="#3b0560">
+                                          <Typography variant='caption' color="text.secondary">
                                             {task.startDate || '-'} To {task.endDate || '-'}
                                           </Typography>
                                         </Stack>

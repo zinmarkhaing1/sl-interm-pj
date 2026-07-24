@@ -13,7 +13,9 @@
 
 import "./App.css";
 import { Router } from "./routes/Router";
-import { AppThemeProvider } from "./Context/ThemeContext";
+import { Provider } from "react-redux";
+import {store} from './redux/store/index';
+import { ReduxThemeProvider } from "./Context/ThemeContext";
 // import 'handsontable/dist/handsontable.full.css';
 // import '@syncfusion/ej2-base/styles/material.css';
 // import '@syncfusion/ej2-inputs/styles/material.css';
@@ -28,8 +30,10 @@ import { AppThemeProvider } from "./Context/ThemeContext";
 
 export default function App() {
   return (
-    <AppThemeProvider>
-      <Router />
-    </AppThemeProvider>
+    <Provider store={store}>
+      <ReduxThemeProvider>
+        <Router />
+      </ReduxThemeProvider>
+    </Provider>
   );
 }

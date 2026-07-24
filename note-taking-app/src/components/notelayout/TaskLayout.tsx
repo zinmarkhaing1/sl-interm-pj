@@ -71,7 +71,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
   const handleToday = () => setCurrentMonth(new Date());
 
   return (
-    <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' ,backgroundColor:"#f4f6f8",}}>
+    <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',bgcolor:'background.default'}}>
       
     
       
@@ -79,7 +79,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
       {/* Calendar Controller Month Year (Dynamic Header) */}
       <Stack direction="row"sx={{ justifyContent:"space-between",alignItems:"center",mb: 2, px: 0.5 }}>
        
-        <Typography sx={{ fontWeight: 600, color: '#37352f', fontSize: '0.95rem' }}>
+        <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}>
           {format(currentMonth, 'MMMM yyyy')}
         </Typography>
         
@@ -94,7 +94,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
   }}
   sx={{ 
     textTransform: 'none', 
-    color: '#37352f', 
+    color: 'text.primary', 
     borderColor: '#e0e0e0',
     fontSize: '0.85rem',
     padding: '2px 8px',
@@ -124,7 +124,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
           
          
           <IconButton size="small" onClick={handlePrevMonth} sx={{ border: '1px solid #e0e0e0', borderRadius: '4px', p: '5px' }}>
-            <ChevronLeft fontSize="small" sx={{color:"#37352f"}}/>
+            <ChevronLeft fontSize="small" sx={{color:"text.secondary"}}/>
           </IconButton>
           
         
@@ -132,14 +132,14 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
           
             variant="text" 
             onClick={handleToday}
-            sx={{ textTransform: 'none', color: '#37352f', minWidth: 'auto', fontSize: '0.85rem', px: 1 }}
+            sx={{ textTransform: 'none', color: 'text.secondary', minWidth: 'auto', fontSize: '0.85rem', px: 1 }}
           >
             Today
           </Button>
 
        
           <IconButton size="small" onClick={handleNextMonth} sx={{ border: '1px solid #e0e0e0', borderRadius: '4px', p: '5px' }}>
-            <ChevronRight fontSize="small" sx={{color:"#37352f"}}/>
+            <ChevronRight fontSize="small" sx={{color:"text.secondary"}}/>
           </IconButton>
         </Stack>
       </Stack>
@@ -150,7 +150,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
         <Grid sx={{display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)'}}>
           {daysOfWeek.map((day) => (
             <Grid  key={day} sx={{ borderRight: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0', py: 0.5, px: 1 }}>
-              <Typography align="right" sx={{ fontSize: '0.75rem', color: '#6b6a65', fontWeight: 500 }}>
+              <Typography align="right" sx={{ fontSize: '0.75rem', color: 'text.secondary', fontWeight: 500 }}>
                 {day}
               </Typography>
             </Grid>
@@ -174,7 +174,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
                   minHeight: '110px',
                   p: 1,
                   position: 'relative',
-                 backgroundColor: isToday ? '#f3e8ff' : 'transparent', 
+                 backgroundColor: isToday ? '#745991' : 'transparent', 
                 border: isToday ? '1px solid #c084fc' : 'transparent',
                   '&:hover .add-task-btn': { opacity: 1 }
                 }}
@@ -194,13 +194,13 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
                   >
                     <AddIcon
                     onClick={() => navigate("/my-tasks/task-create-note")} 
-                    sx={{ width: 14, height: 14, color: '#6b6a65' }} />
+                    sx={{ width: 14, height: 14, color: 'text.primary' }} />
                   </IconButton>
                   
                   <Typography 
                     sx={{ 
                       fontSize: '0.8rem', 
-                      color: isCurrentM ? (isToday ? '#973aa8' : '#37352f') : '#bfbfae', 
+                      color: isCurrentM ? (isToday ? '#973aa8' : 'text.primary') : 'text.secondary', 
                       fontWeight: isToday ? 700 : 500 
                     }}
                   >
@@ -218,15 +218,15 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
                       sx={{
                         padding: '2px 8px',
                         fontSize: '0.85rem',
-                        color: '#37352f',
-                        backgroundColor: '#f7f7f5',
+                        color: 'text.primary',
+                        backgroundColor: 'background.paper',
                         border: '1px solid #edece9',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        '&:hover': { backgroundColor: '#efeee9' }
+                        '&:hover': { backgroundColor: 'background.default' }
                       }}
                     >
                       {task.title}

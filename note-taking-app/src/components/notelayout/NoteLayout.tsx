@@ -520,7 +520,7 @@ export const NoteLayout = () => {
                                   variant="h6"
                                   sx={{
                                     fontSize: "16px",
-                                    color: "#2F004F",
+                                    color: 'text.primary',
                                     lineHeight: 1.3,
                                   }}
                                 >
@@ -533,7 +533,7 @@ export const NoteLayout = () => {
                                   sx={{
                                     fontSize: "11px",
                                     fontWeight: "bold",
-                                    color: "#2F004f",
+                                    color: 'text.primary',
                                   }}
                                 />
                               </Box>
@@ -541,7 +541,7 @@ export const NoteLayout = () => {
                               <Typography
                                 variant="body2"
                                 sx={{
-                                  color: "#6b7677",
+                                  color: 'text.secondary',
                                   mb: 2,
                                   display: "-webkit-box",
                                   WebkitLineClamp: 3,
@@ -567,11 +567,11 @@ export const NoteLayout = () => {
                                     display: "flex",
                                     alignItems: "center",
                                     gap: 0.5,
-                                    color: "#7f8c8d",
+                                    color:'text.secondary',
                                   }}
                                 >
                                   <LabelIcon
-                                    sx={{ fontSize: 16, color: "#95a5a6" }}
+                                    sx={{ fontSize: 16, color: 'text.secondary' }}
                                   />
                                   <Typography variant="caption" sx={{ fontWeight: 500 }}>
                                     {note.category}
@@ -583,7 +583,7 @@ export const NoteLayout = () => {
                                       display: "flex",
                                       alignItems: "center",
                                       gap: 0.5,
-                                      color: "#95a5a6",
+                                      color: 'text.secondary',
                                     }}
                                   >
                                     <AccessTimeIcon sx={{ fontSize: 14 }} />

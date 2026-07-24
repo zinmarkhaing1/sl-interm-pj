@@ -2457,14 +2457,15 @@ export const MyTaskNote = () => {
               disableElevation
               onClick={() => navigate("/my-tasks/new")}
               sx={{
-                backgroundColor: '#dec9e9',
+                backgroundColor: '#973aa8',
                 textTransform: 'none',
                 fontWeight: 500,
                 fontSize: '13px',
                 padding: '4px 12px',
                 borderRadius: '4px',
-                '&:hover': { backgroundColor: '#973aa8', color: "#ffffff" },
-                transition: '0.15s'
+                '&:hover': { backgroundColor: '#7e3a8a' },
+                transition: '0.15s',
+                color:'#ffffff'
               }}
             >
               New task

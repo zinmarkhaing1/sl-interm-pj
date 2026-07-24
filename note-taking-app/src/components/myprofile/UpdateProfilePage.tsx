@@ -129,9 +129,9 @@ export const UpdateProfilePage = () => {
         startIcon={<ArrowBackIosNewOutlinedIcon fontSize="small" />}
         onClick={() => navigate("/profile")}
         color="inherit"
-        sx={{ mb: 2 }}
+        sx={{ mb: 1 }}
       >
-        Back to profile
+        Back 
       </Button>
 
       <Paper
@@ -144,16 +144,17 @@ export const UpdateProfilePage = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
+        <Typography variant="h5" sx={{ mb: 0.5 ,fontWeight:700,alignItems:'center',justifyContent:'center',}}>
           Update profile
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Manage how you appear across Note Book.
         </Typography>
 
         <Box component="form" onSubmit={handleSave} noValidate>
-          <Stack spacing={2.5} alignItems="center" sx={{ mb: 3 }}>
-            <Box sx={{ position: "relative" }}>
+          <Stack spacing={2.5} sx={{ mb: 2 ,alignItems:'flex-start'}}>
+            <Box sx={{ position: "relative"}}>
+              
               <Avatar
                 src={user.photo}
                 sx={{
@@ -188,6 +189,11 @@ export const UpdateProfilePage = () => {
                 accept="image/*"
                 style={{ display: "none" }}
               />
+           
+            </Box>
+            <Box sx={{alignItems:'flex-start'}}>
+              <Typography sx={{fontSize:'12px'}}> {user.firstName} {user.lastName}</Typography>
+              <Typography sx={{fontSize:'12px'}}> {user.email}</Typography>
             </Box>
           </Stack>
 
@@ -221,7 +227,7 @@ export const UpdateProfilePage = () => {
               placeholder="A short intro about you"
             />
 
-            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+            <Stack direction="row" spacing={1.5}  sx={{justifyContent:'flex-end'}}>
               <Button
                 color="inherit"
                 onClick={() => navigate("/profile")}

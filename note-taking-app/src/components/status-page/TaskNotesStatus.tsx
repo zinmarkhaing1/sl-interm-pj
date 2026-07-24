@@ -357,7 +357,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 interface TaskNoteStatusProps {
   filteredNotes: Note[];
-  onUpdateSuccess?: () => void;   // 🔥 parent ကို refetch လုပ်ခိုင်းဖို့
+  onUpdateSuccess?: () => void;  
 }
 
 type ColumnConfig = {
@@ -378,7 +378,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
   const [tasks, setTasks] = React.useState<Note[]>([]);
   const navigate = useNavigate();
 
-  // filteredNotes ပြောင်းတိုင်း tasks ကို sync လုပ်တယ်
+ 
   React.useEffect(() => {
     setTasks(filteredNotes);
   }, [filteredNotes]);
@@ -397,10 +397,10 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
     const movedTask = tasks.find((t) => (t._id || t.id) === draggableId);
     if (!movedTask) return;
 
-    // ၁။ လက်ရှိ tasks array ကို ကူးယူ
+    
     const updatedTasks = Array.from(tasks);
 
-    // ၂။ source column ထဲက သက်ဆိုင်ရာ task ကို ရှာ
+   
     const sourceTasksInColumn = updatedTasks.filter(
       (t) => (t.task || "Todo") === source.droppableId,
     );
@@ -410,10 +410,10 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
       updatedTasks.splice(globalSourceIndex, 1);
     }
 
-    // ၃။ task ရဲ့ status ကို update လုပ်
+   
     const updatedMovedTask = { ...targetTask, task: destination.droppableId };
 
-    // ၄။ destination column ထဲက နေရာကို တွက်
+    
     const destTasksInColumn = updatedTasks.filter(
       (t) => (t.task || "Todo") === destination.droppableId,
     );
@@ -440,14 +440,14 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
           id: taskId,
           body: { task: destination.droppableId },
         }).unwrap();
-        // 🔥 အောင်မြင်ရင် parent component ကို refetch လုပ်ခိုင်းတယ်
+  
         if (onUpdateSuccess) {
           onUpdateSuccess();
         }
       }
     } catch (err) {
       console.error("Failed to update task status:", err);
-      // error ဖြစ်ရင် မူလ filteredNotes ကို ပြန် restore လုပ်
+  
       setTasks(filteredNotes);
     }
   };
@@ -456,8 +456,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
     navigate(`/note-form/detail/${id}`);
   };
 
-  // loading / error ကို parent က handle လုပ်ထားပြီးဖြစ်တဲ့အတွက် ဒီမှာ မလိုတော့ဘူး
-  // ဒါပေမယ့် filteredNotes မရှိရင် ပြစရာမရှိဘူး
+ 
   if (!filteredNotes || filteredNotes.length === 0) {
     return (
       <Typography sx={{ textAlign: 'center', mt: 4, color: 'text.secondary' }}>
@@ -483,7 +482,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
         >
           {COLUMNS.map((column) => {
             const columnId = column.id;
-            // tasks state ကနေ filter လုပ်တယ် (filteredNotes နဲ့ sync ဖြစ်နေမယ်)
+           
             const columnTasks = tasks.filter(
               (t) => (t.task || "Todo") === columnId,
             );
@@ -511,7 +510,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
                       elevation={0}
                       sx={{
                         p: 1.5,
-                        bgcolor: "#e9e9ef",
+                        bgcolor: "background.default",
                         minHeight: "100%",
                         borderRadius: 2,
                         border: `1px solid ${column.color}`,
@@ -539,14 +538,14 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
                                   }}
                                 >
                                   <CardContent
-                                    sx={{ p: "10px !important", width: "100%" }}
+                                    sx={{ p: "10px !important", width: "100%", bgcolor:'background.default' }}
                                     onClick={() => handleRowClick(task._id)}
                                   >
                                     <Typography
                                       variant="subtitle1"
                                       sx={{
                                         fontSize: "16px",
-                                        color: "#1a202c",
+                                        color: "text.primary",
                                       }}
                                     >
                                       {task.title || "No Title"}
@@ -554,7 +553,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
 
                                     <Typography
                                       variant="body2"
-                                      color="textSecondary"
+                                      
                                       sx={{
                                         my: 1,
                                         display: "-webkit-box",
@@ -564,6 +563,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
                                         textOverflow: "ellipsis",
                                         lineHeight: 1.5,
                                         maxHeight: "6em",
+                                        color:'text.primary',
                                       }}
                                     >
                                       {task.description || task.content || "No Description"}
@@ -573,7 +573,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
                                       {task.priority && (
                                         <Typography
                                           variant="caption"
-                                          sx={{ bgcolor: "#edf2f7", px: 1, py: 0.5, borderRadius: 1 }}
+                                          sx={{ bgcolor: "background.default", px: 1, py: 0.5, borderRadius: 1 }}
                                         >
                                           Priority: {task.priority}
                                         </Typography>
@@ -581,7 +581,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
                                       {task.category && (
                                         <Typography
                                           variant="caption"
-                                          sx={{ bgcolor: "#e2e8f0", px: 1, py: 0.5, borderRadius: 1 }}
+                                          sx={{ bgcolor: "background.default", px: 1, py: 0.5, borderRadius: 1 }}
                                         >
                                           Category: {task.category}
                                         </Typography>
@@ -593,7 +593,7 @@ export const TaskNotesStatus = ({ filteredNotes, onUpdateSuccess }: TaskNoteStat
                                         <IconButton size="small" sx={{ color: "blue", p: 0, mr: 0.5 }} disabled>
                                           <CalendarMonthIcon sx={{ fontSize: "medium", color: "skyblue" }} />
                                         </IconButton>
-                                        <Typography variant="caption" color="textSecondary">
+                                        <Typography variant="caption" color="text.secondary">
                                           {task.startDate || "-"} To {task.endDate || "-"}
                                         </Typography>
                                       </Stack>

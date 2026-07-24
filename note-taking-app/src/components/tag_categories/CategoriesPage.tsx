@@ -855,7 +855,7 @@ const filteredAndSortedNotes = useMemo(() => {
                         height: "100%",
                         minHeight: "200px",
                         borderTop: `5px solid ${color}`,
-                        bgcolor: "#f8f9fa",
+                        bgcolor: "background.default",
                       }}
                     >
                       <CardContent>
@@ -886,7 +886,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                     }}
                                     sx={{
                                       p: 1.5,
-                                      bgcolor: "#ffffff",
+                                      bgcolor: "background.default",
                                       borderRadius: 2,
                                       boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
                                       borderLeft: `4px solid ${color}`,
@@ -898,7 +898,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                       },
                                     }}
                                   >
-                                    <Typography sx={{ fontSize: "16px", color: "#2F004F", fontWeight: "500" }}>
+                                    <Typography sx={{ fontSize: "16px", color: "text.primary", fontWeight: "500" }}>
                                       {note.title || "No Title"}
                                     </Typography>
 
@@ -912,7 +912,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                         overflow: "hidden",
                                         textOverflow: "ellipsis",
                                         mt: 0.5,
-                                        color:"#2F004F"
+                                        color:"text.primary"
                                       }}
                                     >
                                       {note.content || note.description || "No Content"}
@@ -936,7 +936,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                       variant="caption"
                                       sx={{
                                         mt: 1,
-                                        color: "#2F004F",
+                                        color: "text.primary",
                                         fontWeight: "500",
                                         display: "block",
                                       }}
