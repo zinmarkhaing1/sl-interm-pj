@@ -32,25 +32,38 @@ export const projectApi = createApi({
   endpoints: (builder) => ({
     // Projects 
     getProjects: builder.query<Project[], void>({
-      query: () => 'projects',
+      query: () => '/projects',
+
+ transformResponse: (response: any) => {
+    
+    if (Array.isArray(response)) {
+      return response;
+    }
+ 
+    if (response && response.projects && Array.isArray(response.projects)) {
+      return response.projects;
+    }
+ 
+    return [];
+  },
       providesTags: ['Project'],
     }),
     getProjectById: builder.query<Project, string>({
-  query: (id) => `projects/${id}`,
+  query: (id) => `/projects/${id}`,
   providesTags: (result, error, id) => [
     { type: 'Project', id }
   ],
 }),
     createProject: builder.mutation<Project, Partial<Project>>({
-      query: (body) => ({ url: 'projects', method: 'POST', body }),
+      query: (body) => ({ url: '/projects', method: 'POST', body }),
       invalidatesTags: ['Project'],
     }),
     updateProject: builder.mutation<Project, { id: string; body: Partial<Project> }>({
-      query: ({ id, body }) => ({ url: `projects/${id}`, method: 'PUT', body }),
+      query: ({ id, body }) => ({ url: `/projects/${id}`, method: 'PUT', body }),
       invalidatesTags: ['Project'],
     }),
     deleteProject: builder.mutation<void, string>({
-      query: (id) => ({ url: `projects/${id}`, method: 'DELETE' }),
+      query: (id) => ({ url: `/projects/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Project'],
     }),
 
@@ -66,29 +79,29 @@ export const projectApi = createApi({
       providesTags: ['Task'],
     }),
     createTask: builder.mutation<Task, Partial<Task> & { projectId: string }>({
-      query: (body) => ({ url: 'tasks', method: 'POST', body }),
+      query: (body) => ({ url: '/tasks', method: 'POST', body }),
       invalidatesTags: ['Task'],
     }),
     updateTask: builder.mutation<Task, { id: string; body: Partial<Task> }>({
-      query: ({ id, body }) => ({ url: `tasks/${id}`, method: 'PUT', body }),
+      query: ({ id, body }) => ({ url: `/tasks/${id}`, method: 'PUT', body }),
       invalidatesTags: ['Task'],
     }),
     deleteTask: builder.mutation<void, string>({
-      query: (id) => ({ url: `tasks/${id}`, method: 'DELETE' }),
+      query: (id) => ({ url: `/tasks/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Task'],
     }),
 
     // ===== Task Notes =====
     getTaskNotes: builder.query<TaskNote[], string>({
-      query: (taskId) => `task-notes/task/${taskId}`,
+      query: (taskId) => `/task-notes/task/${taskId}`,
       providesTags: (result, error, taskId) => [{ type: 'TaskNote', id: taskId }],
     }),
     createTaskNote: builder.mutation<TaskNote, { taskId: string; content: string; createdBy: string }>({
-      query: (body) => ({ url: 'task-notes', method: 'POST', body }),
+      query: (body) => ({ url: '/task-notes', method: 'POST', body }),
       invalidatesTags: (result, error, { taskId }) => [{ type: 'TaskNote', id: taskId }],
     }),
     deleteTaskNote: builder.mutation<void, string>({
-      query: (id) => ({ url: `task-notes/${id}`, method: 'DELETE' }),
+      query: (id) => ({ url: `/task-notes/${id}`, method: 'DELETE' }),
       invalidatesTags: ['TaskNote'],
     }),
   }),

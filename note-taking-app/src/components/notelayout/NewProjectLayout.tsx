@@ -445,13 +445,15 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  GitHub as GitHubIcon,
+  // GitHub as GitHubIcon,
   Lock as LockIcon,
   Public as PublicIcon,
   Clear as ClearIcon,
   People as PeopleIcon,
   SupervisorAccount as OwnerIcon,
+  Folder as FolderIcon
 } from '@mui/icons-material';
+// import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProjectMutation } from '../../services/projectApi';
 
@@ -547,8 +549,8 @@ export const NewProjectLayout = () => {
       >
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <GitHubIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h5" fontWeight={700}>
+          <FolderIcon color="primary" sx={{ fontSize: 28 }} />
+          <Typography variant="h5" >
             Create a new project
           </Typography>
         </Box>

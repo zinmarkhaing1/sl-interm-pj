@@ -114,32 +114,36 @@ export const SignUpForm = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Stack alignItems="center" spacing={0.5} sx={{ mb: 3 }}>
-          <Box
+        <Stack spacing={0.5} sx={{  alignItems:'center'}}>
+          <Box  sx={{display:"flex",flexDirection:'row'}}>
+        <Box
             component="img"
             src={notebook}
             alt="Note Book"
-            sx={{ width: 44, height: 44, mb: 0.5 }}
+            sx={{ width: 44, height: 44, }}
           />
           <Typography
             variant="subtitle1"
-            sx={{ fontWeight: 600, color: "primary.main", letterSpacing: 0.3 }}
+            sx={{ fontWeight: 900, color: "primary.main", letterSpacing: 0.3,mt:1,ml:1,fontSize:'22px' ,fontFamily:'sans-serif'}}
           >
             Note Book
           </Typography>
+
+          </Box>
+          
           <Typography
             variant="h5"
-            sx={{ fontWeight: 700, color: "text.primary" }}
+            sx={{ fontWeight: 700, color: "text.primary" ,mt:0}}
           >
             Create account
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
+          <Typography variant="body2" sx={{textAlign:'center', color:'text.secondary'}}>
             Start organizing your notes and tasks.
           </Typography>
         </Stack>
 
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Stack spacing={2.5}>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{mt:2}}>
+          <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 name="firstName"
@@ -233,9 +237,7 @@ export const SignUpForm = () => {
 
         <Typography
           variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ mt: 3 }}
+          sx={{ mt: 3,textAlign:'center', color:'text.secondary' }}
         >
           Already have an account?{" "}
           <MuiLink
@@ -243,7 +245,8 @@ export const SignUpForm = () => {
             to="/login"
             color="primary"
             underline="hover"
-            fontWeight={600}
+             sx={{fontWeight:500}}
+           
           >
             Sign in
           </MuiLink>

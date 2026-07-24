@@ -24,6 +24,8 @@ const getUserIdentifiers = async (req: AuthRequest): Promise<string[]> => {
   if (!userId) return [];
 
   const identifiers = [userId, userId.toLowerCase()];
+  console.log("Identifiers:", identifiers);
+
   let email = req.user?.email?.toLowerCase().trim();
 
   if (!email) {
@@ -120,6 +122,7 @@ export const createProject = async (req: AuthRequest, res: Response) => {
 
     // Exactly one owner: the authenticated creator (stored as user id)
     const ownerId = userId.toLowerCase();
+    // const ownerId = userId;
     const memberList = uniqueStrings(members || []).filter((m) => m !== ownerId);
 
     const project = new Project({
@@ -147,12 +150,18 @@ export const getProjects = async (req: AuthRequest, res: Response) => {
     }
 
     const normalizedIds = identifiers.map((id) => id.toLowerCase());
+    console.log("Normalized:", normalizedIds);
     const projects = await Project.find({
       $or: [
         { owners: { $in: normalizedIds } },
         { members: { $in: normalizedIds } },
       ],
     }).sort({ createdAt: -1 });
+    console.log("Projects:", projects);
+
+    const allProjects = await Project.find();
+
+console.log("ALL PROJECTS:", allProjects);
 
     const enriched = await Promise.all(
       projects.map((p) => enrichProject(p, identifiers)),

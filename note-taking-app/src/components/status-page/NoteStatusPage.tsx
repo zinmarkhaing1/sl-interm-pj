@@ -208,7 +208,7 @@ const filteredAndSortedNotes = useMemo(() => {
         return currentStatus === statusFilter.toLowerCase();
       }
 
-      // ၂။ status မဟုတ်ရင် category, assignee, priority, title, content ကို partial match (OR)
+      
       const currentCategory = (note.category || "").trim().toLowerCase();
       const currentAssignee = (note.assignee || "").trim().toLowerCase();
       const currentPriority = (note.priority || "").trim().toLowerCase();
@@ -706,7 +706,7 @@ const filteredAndSortedNotes = useMemo(() => {
                                     <Box>
                                       <Typography
                                         variant="subtitle1"
-                                        sx={{ fontSize: "16px", color: "#1a202c", fontWeight: 500 }}
+                                        sx={{ fontSize: "16px", color:"#2F004F", fontWeight: 500 }}
                                       >
                                         {task.title || "No Title"}
                                       </Typography>

@@ -95,26 +95,28 @@ export const LoginForm = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Stack alignItems="center" spacing={0.5} sx={{ mb: 3 }}>
+        <Stack  spacing={0.5} sx={{ mb: 3 ,alignItems:'center'}}>
+          <Stack  sx={{display:"flex",flexDirection:'row',mb:1}}>
           <Box
             component="img"
             src={notebook}
             alt="Note Book"
-            sx={{ width: 44, height: 44, mb: 0.5 }}
+            sx={{ width: 44, height: 44, }}
           />
           <Typography
             variant="subtitle1"
-            sx={{ fontWeight: 600, color: "primary.main", letterSpacing: 0.3 }}
+            sx={{ fontWeight: 900, color: "primary.main", letterSpacing: 0.3 ,ml:1,mt:1,fontSize:'22px',fontFamily:'sans-serif'}}
           >
             Note Book
           </Typography>
+          </Stack>
           <Typography
             variant="h5"
             sx={{ fontWeight: 700, color: "text.primary" }}
           >
             Sign in
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
+          <Typography variant="body2" sx={{color:'text.secondary',textAlign:'center'}}>
             Welcome back to your workspace.
           </Typography>
         </Stack>
@@ -202,9 +204,7 @@ export const LoginForm = () => {
 
         <Typography
           variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ mt: 3 }}
+          sx={{ mt: 3 ,textAlign:'center',color:'text.secondary'}}
         >
           Don&apos;t have an account?{" "}
           <MuiLink
@@ -212,7 +212,7 @@ export const LoginForm = () => {
             to="/signup"
             color="primary"
             underline="hover"
-            fontWeight={600}
+          sx={{fontWeight:500}}
           >
             Sign up
           </MuiLink>

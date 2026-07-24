@@ -50,6 +50,9 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
       return res.status(401).json({ message: "No token provided" });
     }
 
+       console.log("REQUEST URL:", req.originalUrl);
+   console.log("AUTHORIZATION HEADER:", req.headers.authorization);
+
     const token = authHeader.split(' ')[1];
     if (!token) {
       return res.status(401).json({ message: "Invalid token format" });

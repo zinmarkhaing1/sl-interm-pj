@@ -526,7 +526,12 @@ import type { Project } from '../types/Project';
 
 export const MyProjectPages = () => {
   const navigate = useNavigate();
-  const { data: projects, isLoading, isError } = useGetProjectsQuery();
+  const { data: projects=[], isLoading, isError } = useGetProjectsQuery();
+
+console.log("PROJECT ERROR:", isError);
+console.log("PROJECT LOADING:", isLoading);
+
+  console.log("projects =>", projects);
   const [deleteProject, { isLoading: isDeleting }] = useDeleteProjectMutation();
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
   const [projectToShare, setProjectToShare] = useState<Project | null>(null);
@@ -596,7 +601,7 @@ export const MyProjectPages = () => {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5">My Projects</Typography>
+        <Typography variant="h5" sx={{fontSize:'20px'}}>My Projects</Typography>
         <Button
           variant="contained"
           onClick={() => navigate('/my-project/new-project')}
@@ -611,11 +616,12 @@ export const MyProjectPages = () => {
           <Grid size={{ xs: 12, md: 4 }} key={project._id}>
             <Card
               sx={{
-                borderRadius: 3,
+                borderRadius: 0.5,
                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                 '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.1)' },
                 height: '100%',
                 display: 'flex',
+                p:0.2,
                 flexDirection: 'column',
               }}
             >
@@ -626,7 +632,7 @@ export const MyProjectPages = () => {
                   gap: 1,
                   px: 2,
                   pt: 2,
-                  pb: 0.5,
+                  // pb: 0.5,
                 }}
               >
                 <Box
@@ -634,14 +640,14 @@ export const MyProjectPages = () => {
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 1,
+                    gap: 0.5,
                     minWidth: 0,
                     flex: 1,
                     cursor: 'pointer',
                   }}
                 >
                   <Folder color="primary" />
-                  <Typography variant="h6" noWrap>
+                  <Typography variant="h6" noWrap sx={{fontFamily:'sans-serif'}}>
                     {project.name}
                   </Typography>
                   <Chip
@@ -649,6 +655,7 @@ export const MyProjectPages = () => {
                     icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />}
                     label={project.isPrivate ? 'Private' : 'Public'}
                     variant="outlined"
+                    sx={{m:1,py:1.5}}
                   />
                 </Box>
                 <Tooltip title="Share project">
@@ -666,11 +673,11 @@ export const MyProjectPages = () => {
                 onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
                 sx={{ flex: 1, alignItems: 'stretch' }}
               >
-                <CardContent sx={{ pt: 1 }}>
+                <CardContent sx={{  pt: 0.5,height: '100%',display: 'flex',flexDirection: 'column',}}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ mb: 2, height: 40, overflow: 'hidden' }}
+                    sx={{ mb: 2, height: 35, overflow: 'hidden' }}
                   >
                     {project.description || 'No description'}
                   </Typography>
@@ -679,15 +686,17 @@ export const MyProjectPages = () => {
                     <Typography variant="caption">
                       Members: {project.members?.length || 0}
                     </Typography>
-                  </Stack>
-                  <Typography
+                     <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ display: 'block', mb: 1.5 }}
+                    sx={{ display: 'block',  }}
                   >
-                    Owner: {project.ownerEmail || 'Unknown'}
+                    {/* Owner: {project.ownerEmail || 'Unknown'} */}
+                    Owner:{project.owners?.length || 0}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  </Stack>
+                 
+                  <Box sx={{ display: 'flex'}}>
                     {project.members?.slice(0, 3).map((m, i) => (
                       <Avatar key={i} sx={{ width: 24, height: 24, fontSize: 10 }}>
                         {m[0]}
@@ -701,7 +710,8 @@ export const MyProjectPages = () => {
                   </Box>
                 </CardContent>
               </CardActionArea>
-              <Box sx={{ display: 'flex', gap: 1, px: 2, pb: 2 }}>
+
+              <Box sx={{ display: 'flex', gap: 0.5, px: 2, pb: 2 }}>
                 <Button
                   size="small"
                   variant="contained"
