@@ -7,6 +7,8 @@ export interface Note  {
     description? : string;
     category? : string;
     task?:string;
+    taskId?:string;
+    taskTitle?:string;
     priority? : string;
     assignee? : string;
     startDate? : string;
@@ -23,6 +25,8 @@ export interface Note  {
   accessPermission?: "owner" | "edit" | "editor" | "comment" | "commenter" | "view";
   isShared?: boolean;
   sharedWith?: string[] | any[];
+  project?: string | { _id: string; name: string };
+ 
   
 }
 

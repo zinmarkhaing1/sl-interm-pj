@@ -33,7 +33,21 @@ export const authApi = createApi ({
                 body : credentials,
             }),
         }),
+
+        getUsers: builder.query<
+      { _id: string; username: string; email: string }[],
+      void
+    >({
+      query: () => 'users', 
+    }),
+   
+    getUserById: builder.query<
+      { _id: string; username: string; email: string },
+      string
+    >({
+      query: (id) => `users/${id}`,
+    }),
     }),  
 });
 
-export const {useSignupMutation, useLoginMutation} = authApi;
+export const {useSignupMutation, useLoginMutation, useGetUsersQuery, useGetUserByIdQuery} = authApi;

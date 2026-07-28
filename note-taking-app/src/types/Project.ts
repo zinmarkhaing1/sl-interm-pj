@@ -1,4 +1,6 @@
-import { categories } from './../../../note-taking-app-backend/data/index';
+// import { categories } from './../../../note-taking-app-backend/data/index';
+
+
 export interface Project {
   _id: string;
   name: string;
@@ -20,7 +22,11 @@ export interface Task {
   title: string;
   description: string;
   project: Project | string; 
-  assignee: string;
+  assignee: {
+    _id: string;
+    username: string;
+    email?: string;
+  } | string; 
   status: 'Todo' | 'In Progress' | 'Complete' | 'Not Started';
   priority: 'Low' | 'Medium' | 'High';
   startDate?: string;
@@ -33,6 +39,7 @@ export interface TaskNote {
   _id: string;
   task: Task | string;
   content: string;
+  category:string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

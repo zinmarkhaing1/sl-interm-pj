@@ -2294,7 +2294,7 @@ export const NoteDetailPage = () => {
               <Typography variant="h6" sx={{ fontWeight: "600", fontSize: { xs: "16px", md: "20px" }, color: "#2F004F" }}>
                 {note.title}
               </Typography>
-              <Stack direction="row" spacing={1}>
+              {/* <Stack direction="row" spacing={1}>
                 <Chip label={`Priority: ${note.priority || "Normal"}`} color={getPriorityColor(note.priority)} size="medium" />
                 {isOwner && (
                   <Button
@@ -2310,7 +2310,7 @@ export const NoteDetailPage = () => {
                     Share
                   </Button>
                 )}
-              </Stack>
+              </Stack> */}
             </Stack>
 
             {/* Content Display */}

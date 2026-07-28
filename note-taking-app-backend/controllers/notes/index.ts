@@ -46,6 +46,8 @@ const getOwnerMap = async (notes: any[]) => {
 const addOwner = (note: any, ownerById: Map<string, any>) => ({
   ...note,
   owner: ownerById.get(note.user?.toString()) || null,
+    taskId: note.taskId || null,
+  taskTitle: note.taskTitle || null,
 });
 
 
@@ -56,14 +58,16 @@ export const createNote = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { title, content, description, category, priority, assignee, task, startDate, endDate } = req.body;
-
+    const { title, content, description,taskId, taskTitle ,category, priority, assignee, task, startDate, endDate,} = req.body;
+ 
     const note = new Note({
       title,
       content: content || description,
       description,
       category,
       priority,
+      taskId,
+      taskTitle,
       assignee,
       task: task && task.trim().length > 0 ? task : "Not Started",
       startDate,
@@ -81,7 +85,7 @@ export const createNote = async (
 
 export const getNotes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { status, assignee, shareScope, noteId } = req.query;
+    const { status, assignee, shareScope, noteId,taskId } = req.query;
     const requestedShareScope = typeof shareScope === "string" ? shareScope : undefined;
     const userId = req.user?.id;
 
@@ -280,19 +284,7 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
     const ownerMap = await getOwnerMap(filteredNotes);
     let finalNotes = filteredNotes.map((note) => {
       const isOwned = note.user?.toString() === userId;
-      
-      // Category check
-      // const isInSharedCategory = uniqueCategoryNames.some(
-      //   (name) => name.toLowerCase() === (note.category || "").toLowerCase()
-      // );
-      
-      // Board check (if note has category that matches board name, or through workspace)
-      // const isInSharedBoard = uniqueBoardNames.some(
-      //   (name) => name.toLowerCase() === (note.category || "").toLowerCase()
-      // );
-
-      
-
+     
     const hasBoardAccess = boardPageAccesses.length > 0;
   const hasTask = note.task && note.task.trim().length > 0;
   const isBoardNote = hasBoardAccess && hasTask;
@@ -323,6 +315,8 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
           isOwned: isOwned,
           accessPermission: accessPermission,
           sharedVia: sharedVia,
+          taskId: note.taskId || null,
+      taskTitle: note.taskTitle || null,
         },
         ownerMap
       );

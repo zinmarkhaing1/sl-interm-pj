@@ -2216,6 +2216,8 @@
 //     </Box>
 //   );
 // };
+
+
 import * as React from 'react';
 import {
   Box,
@@ -2263,7 +2265,7 @@ export const MyTaskNote = () => {
 
   const projectIdParam = new URLSearchParams(location.search).get('project') || undefined;
 
-  // 🔥 Projects data for project name
+  
   const { data: projects } = useGetProjectsQuery();
 
   const projectName = React.useMemo(() => {
@@ -2271,6 +2273,27 @@ export const MyTaskNote = () => {
     const project = projects.find((p) => p._id === projectIdParam);
     return project?.name || 'Unknown Project';
   }, [projects, projectIdParam]);
+
+  const getAssigneeDisplay = (assignee: Task['assignee']) => {
+  if (!assignee) return 'Unassigned';
+  if (typeof assignee === 'object' && 'username' in assignee) {
+    return assignee.username;
+  }
+  return assignee; // fallback to string ID
+};
+
+// const getAssigneeInitial = (assignee: Task['assignee']) => {
+//   if (!assignee) return '?';
+//   if (typeof assignee === 'object' && 'username' in assignee) {
+//     return assignee.username.charAt(0).toUpperCase();
+//   }
+//   return assignee.charAt(0).toUpperCase();
+// };
+
+const getAssigneeInitial = (assignee: Task['assignee']) => {
+  const display = getAssigneeDisplay(assignee);
+  return display !== 'Unassigned' ? display.charAt(0).toUpperCase() : '?';
+};
 
   // Filter states
   const [selectedStatus, setSelectedStatus] = React.useState<string>("All");
@@ -2296,10 +2319,21 @@ export const MyTaskNote = () => {
     return ['All', ...Array.from(new Set(statuses))];
   }, [tasks]);
 
+  // const uniqueAssignees = React.useMemo(() => {
+  //   const assignees = tasks.map((t: Task) => t.assignee).filter(Boolean);
+  //   return ['All', ...Array.from(new Set(assignees))];
+  // }, [tasks]);
+
   const uniqueAssignees = React.useMemo(() => {
-    const assignees = tasks.map((t: Task) => t.assignee).filter(Boolean);
-    return ['All', ...Array.from(new Set(assignees))];
-  }, [tasks]);
+  const assignees = tasks.map((t: Task) => {
+    if (!t.assignee) return null;
+    if (typeof t.assignee === 'object' && 'username' in t.assignee) {
+      return t.assignee.username;
+    }
+    return t.assignee; // string ID
+  }).filter(Boolean);
+  return ['All', ...Array.from(new Set(assignees))];
+}, [tasks]);
 
   // Filter and sort tasks
   const filteredTasks = React.useMemo(() => {
@@ -2311,19 +2345,28 @@ export const MyTaskNote = () => {
       result = result.filter((t: Task) =>
         t.title.toLowerCase().includes(lower) ||
         (typeof t.project === 'object' && t.project.name.toLowerCase().includes(lower)) ||
-        t.assignee.toLowerCase().includes(lower)
+        getAssigneeDisplay(t.assignee).toLowerCase().includes(lower)
       );
     }
 
-    // ၂။ Status filter
+ 
     if (selectedStatus !== 'All') {
       result = result.filter((t: Task) => t.status === selectedStatus);
     }
 
-    // ၃။ Assignee filter
+
     if (selectedAssignee !== 'All') {
-      result = result.filter((t: Task) => t.assignee === selectedAssignee);
-    }
+  result = result.filter((t: Task) => {
+    const display = getAssigneeDisplay(t.assignee);
+        return display === selectedAssignee;
+  //   const assigneeVal = t.assignee;
+  //   if (!assigneeVal) return false;
+  //   if (typeof assigneeVal === 'object' && 'username' in assigneeVal) {
+  //     return assigneeVal.username === selectedAssignee;
+  //   }
+  //   return assigneeVal === selectedAssignee;
+  });
+}
 
     // ၄။ Sort by title (copy before sort)
     return [...result].sort((a, b) =>
@@ -2455,7 +2498,7 @@ export const MyTaskNote = () => {
             <Button
               variant="contained"
               disableElevation
-              onClick={() => navigate("/my-tasks/new")}
+              onClick={() => navigate("/my-tasks/task-create-note")}
               sx={{
                 backgroundColor: '#973aa8',
                 textTransform: 'none',
@@ -2582,8 +2625,8 @@ export const MyTaskNote = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          avatar={<Avatar sx={{ width: 20, height: 20, fontSize: 10 }}>{task.assignee?.[0] || '?'}</Avatar>}
-                          label={task.assignee || 'Unassigned'}
+                          avatar={<Avatar sx={{ width: 20, height: 20, fontSize: 10 }}>{getAssigneeInitial(task.assignee)}</Avatar>}
+                    label={ getAssigneeDisplay(task.assignee)}
                           size="small"
                         />
                       </TableCell>

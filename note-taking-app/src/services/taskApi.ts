@@ -61,7 +61,7 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Task, TaskNote } from '../types/Project';
-import type { Note } from '../types/Note';
+// import type { Note } from '../types/Note';
 
 const BaseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api';
 console.log('projectApi base url', BaseUrl);
@@ -114,7 +114,7 @@ export const taskApi = createApi({
     // ===== CREATE A NEW TASK =====
     createTask: builder.mutation<
       Task,
-      Partial<Task> & { projectId: string }
+      Partial<Omit<Task, 'assignee'>> & { projectId: string; assignee?: string }
     >({
       query: (body) => ({
         url: 'tasks',

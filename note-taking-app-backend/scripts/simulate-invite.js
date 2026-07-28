@@ -56,7 +56,7 @@ async function main(){
     const inviteRes = await request('/share/multiple', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${inviter.token}` },
-      body: JSON.stringify({ emails: [inviteeEmail], pageUrl: `http://localhost:5173/notes/${noteId}` }),
+      body: JSON.stringify({ emails: [inviteeEmail], pageUrl: `http://localhost:5174/notes/${noteId}` }),
     });
     console.log('Invite response status:', inviteRes.status);
 

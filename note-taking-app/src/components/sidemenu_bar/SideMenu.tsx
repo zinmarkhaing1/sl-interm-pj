@@ -17,6 +17,7 @@ import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlin
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
+import { SpeakerNotesOutlined } from "@mui/icons-material";
 
 const drawerWidth = 240;
 const collapsedWidth = 72;
@@ -72,6 +73,7 @@ const navGroups: NavGroup[] = [
     title: "Organize",
     items: [
       { label: "Categories", path: "/category", icon: <CategoryIcon /> },
+      { label: "Notes", path: "/note-form", icon: <SpeakerNotesOutlined/> },
     ],
   },
 ];

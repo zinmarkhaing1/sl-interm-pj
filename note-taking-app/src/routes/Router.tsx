@@ -193,6 +193,7 @@ import { DashBoardPage } from '../pages/DashBoardPage';
 import { NewTaskLayout } from '../components/taskcreated/NewTaskLayout';
 import { EditProjectLayout } from '../components/notelayout/EditProjectLayout';
 import { TaskDetailPage } from '../pages/TaskDetailPage';
+import { NewNotePage } from '../pages/NewNotesPage';
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -217,6 +218,7 @@ export const Router = () => {
                 <Route path='/profile/edit-profile' element={<MainLayout><UpdateProfilePage/></MainLayout>}/>
                 
                 <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
+                <Route path='/new-note' element={<MainLayout><NewNotePage/></MainLayout>}/>
                 <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
                 <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
                 <Route path='/note-form/detail/:id' element={<MainLayout><NoteDetailPage/></MainLayout>} />

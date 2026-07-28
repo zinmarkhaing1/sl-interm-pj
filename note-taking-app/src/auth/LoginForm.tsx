@@ -58,7 +58,7 @@ export const LoginForm = () => {
       if (response.success) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/dashboard");
+        navigate("/");
       } else {
         setErrorMessage(response.message || "Login failed. Please try again.");
       }

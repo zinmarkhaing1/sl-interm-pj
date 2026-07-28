@@ -7,7 +7,7 @@ import {
   Grid,
   CircularProgress,
 } from "@mui/material";
-import { AutoStories, Add } from "@mui/icons-material";
+import { AutoStories,} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useGetNotesQuery } from "../../services/noteApi";
 import { NoteLayout } from "./NoteLayout";
@@ -98,7 +98,7 @@ export const HomeNoteLayout = () => {
 
       <NoteLayout />
 
-      <Fab
+      {/* <Fab
         color="primary"
         aria-label="add-note"
         onClick={() => navigate("/note-form/create")}
@@ -110,7 +110,7 @@ export const HomeNoteLayout = () => {
         }}
       >
         <Add />
-      </Fab>
+      </Fab> */}
     </Box>
   );
 };

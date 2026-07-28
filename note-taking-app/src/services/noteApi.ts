@@ -46,6 +46,8 @@ export const noteApi = createApi({
       shareScope?: "category" | "note" | "board" | "note-form"; 
       noteId?: string ;
       populate?:string;
+      projectId?:string;
+      taskId?:string;
     } | void>({
       query: (params) => {
         if (!params) return '/notes'; 
@@ -55,6 +57,8 @@ export const noteApi = createApi({
         if (params.assignee) qs.set('assignee', params.assignee);
         if (params.shareScope) qs.set('shareScope', params.shareScope);
         if (params.noteId) qs.set('noteId', params.noteId);
+        if (params.projectId) qs.set('projectId', params.projectId);   
+    if (params.taskId) qs.set('taskId', params.taskId);  
         
         const q = qs.toString();
         const url = q ? `/notes?${q}` : '/notes';

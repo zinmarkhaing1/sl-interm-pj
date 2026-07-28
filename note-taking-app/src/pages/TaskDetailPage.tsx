@@ -1,4 +1,4 @@
-import React from "react";
+
 import {
   Box,
   Paper,
@@ -201,6 +201,13 @@ export const TaskDetailPage = () => {
           sx={{ textTransform: "none", borderRadius: 2 }}
         >
           Back to Tasks
+        </Button>
+         <Button
+          variant="contained"
+          onClick={() => navigate("/new-note")}
+          sx={{ textTransform: "none", borderRadius: 2, alignItems:'flex-end', m:2 }}
+        >
+          New Notes
         </Button>
       </Paper>
     </Box>

@@ -103,8 +103,8 @@ export const BoardStatus = ({
                 border: `1px solid ${column.color}`,
                 p: 1.5,
                 borderRadius: 2,
-                display: "flex", // Added to ensure the Stack can grow
-                flexDirection: "column", // Stack cards vertically inside the container
+                display: "flex",
+                flexDirection: "column", 
               }}
             >
               <Box

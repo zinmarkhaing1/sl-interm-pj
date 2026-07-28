@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState ,useMemo} from 'react';
 import {
   Box,
   Paper,
@@ -20,6 +19,7 @@ import type { SelectChangeEvent } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useGetProjectsQuery } from '../../services/projectApi';
 import { useCreateTaskMutation } from '../../services/taskApi';
+import { useGetUsersQuery } from '../../services/authApi';
 
 // Status & Priority Options
 const STATUS_OPTIONS = ['Todo', 'In Progress', 'Complete', 'Not Started'] as const;
@@ -38,11 +38,14 @@ export const NewTaskLayout: React.FC = () => {
     isError: projectsError,
   } = useGetProjectsQuery();
 
-  // ---- Create Task ----
+
+  const {data:users, isLoading: usersLoading} = useGetUsersQuery();
+  // Create Task
   const [createTask, { isLoading: isCreating, error: createError }] =
     useCreateTaskMutation();
+    
 
-  // ---- Form State ----
+  //  Form State 
   const [form, setForm] = useState<{
     title: string;
     description: string;
@@ -67,6 +70,20 @@ export const NewTaskLayout: React.FC = () => {
     projectId?: string;
   }>({});
 
+  const assigneeOptions = useMemo(() => {
+    if (!form.projectId || !projects || !users) return [];
+
+    const selectedProject = projects.find((p) => p._id === form.projectId);
+    if (!selectedProject) return [];
+     const memberIds = selectedProject.members || [];
+    const ownerIds = selectedProject.owners || [];
+    const allowedUserIds = [...new Set([...memberIds, ...ownerIds])];
+
+    return users.filter((user) => allowedUserIds.includes(user._id));
+  }, [form.projectId, projects, users]);
+
+
+
   // ---- Handlers ----
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -78,9 +95,22 @@ export const NewTaskLayout: React.FC = () => {
     }
   };
 
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+  // const handleSelectChange = (e: SelectChangeEvent<string>) => {
+  //   const { name, value } = e.target;
+  //   console.log('Selected:', name, value);
+  //   setForm((prev) => ({ ...prev, [name as string]: value }));
+  //   if (name === 'projectId') {
+  //     setFieldErrors((prev) => ({ ...prev, projectId: undefined }));
+  //   }
+  // };
+
+   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name as string]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name as string]: value,
+      ...(name === 'projectId' && { assignee: '' }), // project ပြောင်းရင် assignee ကိုရှင်း
+    }));
     if (name === 'projectId') {
       setFieldErrors((prev) => ({ ...prev, projectId: undefined }));
     }
@@ -100,7 +130,7 @@ export const NewTaskLayout: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // ---- Submit ----
+  //  Submit 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -110,7 +140,7 @@ export const NewTaskLayout: React.FC = () => {
         title: form.title.trim(),
         description: form.description.trim(),
         projectId: form.projectId,
-        assignee: form.assignee.trim() || 'Unassigned',
+        assignee: form.assignee || undefined,
         status: form.status,
         priority: form.priority,
         dueDate: form.dueDate || undefined,
@@ -146,7 +176,7 @@ export const NewTaskLayout: React.FC = () => {
     );
   }
 
-  // ---- Error ----
+  //  Error 
   if (projectsError) {
     return (
       <Alert severity="error" sx={{ mt: 5 }}>
@@ -167,7 +197,7 @@ export const NewTaskLayout: React.FC = () => {
           bgcolor: 'background.paper',
         }}
       >
-        <Typography variant="h5" fontWeight={700} gutterBottom>
+        <Typography variant="h5" gutterBottom>
           Create new task
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -227,14 +257,43 @@ export const NewTaskLayout: React.FC = () => {
           />
 
           {/* Assignee */}
-          <TextField
+          {/* <TextField
             label="Assignee"
             name="assignee"
             value={form.assignee}
             onChange={handleChange}
             placeholder="Username or email"
             helperText="Who is responsible for this task?"
-          />
+          /> */}
+
+           <FormControl
+              fullWidth
+              disabled={!form.projectId || usersLoading || assigneeOptions.length === 0}
+            >
+              <InputLabel id="assignee-label">Assignee</InputLabel>
+              <Select
+                labelId="assignee-label"
+                name="assignee"
+                value={form.assignee}
+                label="Assignee"
+                onChange={handleSelectChange}
+              >
+                <MenuItem value="">Unassigned</MenuItem>
+                {assigneeOptions.map((user) => (
+                  <MenuItem key={user._id} value={user._id}>
+                    {user.username} {user.email && `(${user.email})`}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>
+                {!form.projectId
+                  ? 'Please select a project first'
+                  : assigneeOptions.length === 0
+                  ? 'No members in this project'
+                  : 'Select a team member from this project'}
+              </FormHelperText>
+            </FormControl>
+
 
           {/* Status & Priority */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
