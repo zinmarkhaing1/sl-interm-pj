@@ -147,3 +147,23 @@ export const login = async (
     res.status(500).json({ error: err.message });
   }
 };
+
+// Return the user directory used by project member and assignee selectors.
+export const getUsers = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await Auth.find()
+      .select("firstName lastName email")
+      .sort({ firstName: 1, lastName: 1 })
+      .lean();
+
+    res.status(200).json(
+      users.map((user) => ({
+        _id: user._id.toString(),
+        username: `${user.firstName} ${user.lastName}`.trim(),
+        email: user.email,
+      })),
+    );
+  } catch (err: any) {
+    res.status(500).json({ message: err.message || "Failed to load users" });
+  }
+};

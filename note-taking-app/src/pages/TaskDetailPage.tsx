@@ -63,6 +63,9 @@ export const TaskDetailPage = () => {
   }
 
   const project = typeof task.project === "object" ? task.project : null;
+  const assigneeName = typeof task.assignee === "string"
+    ? task.assignee
+    : task.assignee?.username || "Unassigned";
 
   return (
     <Box sx={{ maxWidth: 500, mx: "auto", py: 4 }}>
@@ -132,7 +135,7 @@ export const TaskDetailPage = () => {
                   Assignee
                 </Typography>
                 <Typography >
-                  {task.assignee || "Unassigned"}
+                  {assigneeName}
                 </Typography>
               </Box>
             </Stack>
@@ -204,7 +207,15 @@ export const TaskDetailPage = () => {
         </Button>
          <Button
           variant="contained"
-          onClick={() => navigate("/new-note")}
+          onClick={() => navigate("/new-note", {
+            state: {
+              taskId: task._id,
+              taskTitle: task.title,
+              assignee: typeof task.assignee === "string"
+                ? task.assignee
+                : task.assignee?.username || "",
+            },
+          })}
           sx={{ textTransform: "none", borderRadius: 2, alignItems:'flex-end', m:2 }}
         >
           New Notes

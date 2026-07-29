@@ -1,6 +1,3 @@
-
-
-
 import * as React from "react";
 import { Box, Card, CardContent, Typography, Grid, CircularProgress, Button } from "@mui/material";
 import { BarChart, PieChart, LineChart } from "@mui/x-charts";

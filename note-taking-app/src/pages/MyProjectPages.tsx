@@ -670,7 +670,7 @@ console.log("PROJECT LOADING:", isLoading);
               </Box>
 
               <CardActionArea
-                onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
+                onClick={() => navigate(`/my-project/project-detail/${project._id}`)}
                 sx={{ flex: 1, alignItems: 'stretch' }}
               >
                 <CardContent sx={{  pt: 0.5,height: '100%',display: 'flex',flexDirection: 'column',}}>

@@ -273,6 +273,7 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
           const noteAssignee = (note.assignee && String(note.assignee)) || "";
           if (noteAssignee !== String(assignee)) return false;
         }
+        if (taskId && note.taskId?.toString() !== String(taskId)) return false;
         return true;
       });
     };

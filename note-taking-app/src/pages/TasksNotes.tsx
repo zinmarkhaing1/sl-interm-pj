@@ -211,7 +211,7 @@ import { Search, SwapVertOutlined } from "@mui/icons-material";
 import { TaskLayout } from "../components/notelayout/TaskLayout";
 import type { Note } from "../types/Note";
 import { useGetNotesQuery } from "../services/noteApi";
-import { TaskNotesStatus } from "../components/status-page/TaskNotesStatus";
+// import { TaskNotesStatus } from "../components/status-page/TaskNotesStatus";
 
 export const TasksNotes = () => {
   const navigate = useNavigate();
@@ -382,12 +382,12 @@ export const TasksNotes = () => {
         </Stack>
 
         {currentTab === 0 && <TaskLayout />}
-        {currentTab === 1 && (
+        {/* {currentTab === 1 && (
           <TaskNotesStatus
             filteredNotes={filteredNotes}
             onUpdateSuccess={refetch}   
           />
-        )}
+        )} */}
       </Box>
     </Box>
   );

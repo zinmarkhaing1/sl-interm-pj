@@ -181,7 +181,7 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
               >
                 {/* Day Number Header */}
                 <Stack direction="row" sx={{ justifyContent:"space-between",alignItems:"center",mb: 0.5 }}>
-                  <IconButton 
+                  {/* <IconButton 
                     className="add-task-btn"
                     size="small" 
                     sx={{ 
@@ -193,9 +193,27 @@ const dateInputRef = React.useRef<HTMLInputElement>(null);
                     }}
                   >
                     <AddIcon
-                    onClick={() => navigate("/my-tasks/task-create-note")} 
+                    onClick={() => navigate("/tasks-note/create-task")} 
                     sx={{ width: 14, height: 14, color: 'text.primary' }} />
-                  </IconButton>
+                  </IconButton> */}
+                  <IconButton 
+  className="add-task-btn"
+  size="small" 
+  sx={{ 
+    opacity: 0, 
+    transition: 'opacity 0.2s', 
+    p: '2px', 
+    border: '1px solid #e0e0e0', 
+    borderRadius: '4px' 
+  }}
+>
+  <AddIcon
+    onClick={() => navigate("/tasks-note/create-task", { 
+      state: { prefillDueDate: format(day, 'yyyy-MM-dd') } 
+    })} 
+    sx={{ width: 14, height: 14, color: 'text.primary' }} 
+  />
+</IconButton>
                   
                   <Typography 
                     sx={{ 

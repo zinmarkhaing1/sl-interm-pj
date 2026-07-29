@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Box,
@@ -43,8 +42,9 @@ interface ShareCategoryPageProps {
     currentRole: string
   ) => void;
   getRoleLabel: (role: string) => string;
-  userPermission?: "owner" | "full" |"editor"| "commenter"  |"viewer";
+  userPermission?: "owner" | "full" |"viewer";
   categoryName?:string;
+  redirectUrl?:string;
 }
 
 export const ShareCategoryPage: React.FC<ShareCategoryPageProps> = ({
@@ -55,6 +55,8 @@ export const ShareCategoryPage: React.FC<ShareCategoryPageProps> = ({
   getRoleLabel,
   userPermission = "owner",
   categoryName="",
+  redirectUrl="/category"
+  
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -131,6 +133,7 @@ const handleInvite = async () => {
       pageUrl: window.location.href,
       source: "category_page",
       pageType: "category",
+      redirectUrl: redirectUrl || "/category"
     };
 
     console.log("📨 Sending invite request:", requestBody);

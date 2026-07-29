@@ -174,7 +174,7 @@ import { HomePage } from '../pages/HomePage';
 import { LoginForm } from '../auth/LoginForm';
 import { SignUpForm } from '../auth/SignUpForm';
 import { CategoriesPage } from '../components/tag_categories/CategoriesPage';
-import { CreateNotePage } from '../pages/CreateNotePage';
+// import { CreateNotePage } from '../pages/CreateNotePage';
 import { MainLayout } from '../components/layout/MainLayout';
 import { ProfilePage } from '../pages/ProfilePage';
 import { NoteFrom } from '../pages/NoteFrom';
@@ -188,12 +188,15 @@ import { MyProjectPages } from '../pages/MyProjectPages';
 import { NewProjectLayout } from '../components/notelayout/NewProjectLayout';
 import { UpdateProfilePage } from '../components/myprofile/UpdateProfilePage';
 import { SharedTaskPage } from '../components/status-page/SharedTaskPage';
-import { NoteCreateForm } from "../components/createfolder/NoteCreateForm";
+
 import { DashBoardPage } from '../pages/DashBoardPage';
 import { NewTaskLayout } from '../components/taskcreated/NewTaskLayout';
 import { EditProjectLayout } from '../components/notelayout/EditProjectLayout';
 import { TaskDetailPage } from '../pages/TaskDetailPage';
 import { NewNotePage } from '../pages/NewNotesPage';
+import { ProjectDetailPage } from '../pages/ProjectDetailPage';
+import { NewTaskDateLayout } from '../components/taskcreated/NewTaskDateLayout';
+import { EditMyTaskNote } from '../pages/EditMyTaskNote';
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -219,25 +222,28 @@ export const Router = () => {
                 
                 <Route path='/note-form' element={<MainLayout><NoteFrom /></MainLayout>}/>
                 <Route path='/new-note' element={<MainLayout><NewNotePage/></MainLayout>}/>
-                <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/>
+                {/* <Route path='/note-form/create' element={<MainLayout><CreateNotePage/></MainLayout>}/> */}
                 <Route path='/note-form/edit/:id' element={<MainLayout><EditNotePage/></MainLayout>} />
                 <Route path='/note-form/detail/:id' element={<MainLayout><NoteDetailPage/></MainLayout>} />
                 
                 <Route path='/tasks-note' element={<MainLayout><TasksNotes/></MainLayout>}/>
+                <Route path='/tasks-note/create-task' element={<MainLayout><NewTaskDateLayout/></MainLayout>}/>
                 <Route path='/tasks-note/task-layout' element={<MainLayout><TaskLayout/></MainLayout>}/>
                 
                 <Route path='/my-tasks' element={<MainLayout><MyTaskNote/></MainLayout>}/>
                 <Route path='/my-tasks/task-create-note' element={<MainLayout><NewTaskLayout/></MainLayout>}/>
+                <Route path='/my-tasks/edit/:id' element={<MainLayout><EditMyTaskNote/></MainLayout>}/>
                 <Route path='/my-tasks/shared-task' element={<MainLayout><SharedTaskPage/></MainLayout>}/>
                 <Route path='/my-tasks/task-detail/:id' element={<MainLayout><TaskDetailPage/></MainLayout>}/>
 
                 
                 <Route path='/my-project' element={<MainLayout><MyProjectPages/></MainLayout>}/>
+                <Route path='/my-project/project-detail/:id' element={<MainLayout><ProjectDetailPage/></MainLayout>}/>
                 <Route path='/my-project/new-project' element={<MainLayout><NewProjectLayout/></MainLayout>}/>
                 <Route path='/my-project/edit-project/:id' element={<MainLayout><EditProjectLayout/></MainLayout>}/>
 
                 
-                <Route path='/note' element={<MainLayout><NoteCreateForm/></MainLayout>}/>
+              
             </Route>
             
             <Route path='*' element={<Navigate to='/' replace/>}/>

@@ -1,10 +1,4 @@
-// import React from 'react'
 
-// export const SharePage = () => {
-//   return (
-//     <div>SharePage</div>
-//   )
-// }
 import React, { useState, useEffect } from "react";
 import {
   Box,

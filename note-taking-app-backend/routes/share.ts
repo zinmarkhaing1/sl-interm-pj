@@ -636,10 +636,12 @@ router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response
     //   }
     // } else {
 
-       if (pageType === "category") {
-      filter.pageType = "category";    
+    if (pageType === "category") {
+      filter.pageType = "category";
+      if (pageName) filter.pageName = pageName;
     }else if (pageType === "board") {
       filter.pageType = "board";
+      if (pageName) filter.pageName = pageName;
     } else {
      
       // if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {

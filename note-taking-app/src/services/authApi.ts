@@ -38,14 +38,14 @@ export const authApi = createApi ({
       { _id: string; username: string; email: string }[],
       void
     >({
-      query: () => 'users', 
+      query: () => '/auth/users', 
     }),
    
     getUserById: builder.query<
       { _id: string; username: string; email: string },
       string
     >({
-      query: (id) => `users/${id}`,
+      query: (id) => `/auth/users/${id}`,
     }),
     }),  
 });

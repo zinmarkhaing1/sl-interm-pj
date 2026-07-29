@@ -33,13 +33,13 @@ export const NewTaskLayout: React.FC = () => {
 
   // ---- Projects ----
   const {
-    data: projects,
+    data: projects = [],
     isLoading: projectsLoading,
     isError: projectsError,
   } = useGetProjectsQuery();
 
 
-  const {data:users, isLoading: usersLoading} = useGetUsersQuery();
+  const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
   // Create Task
   const [createTask, { isLoading: isCreating, error: createError }] =
     useCreateTaskMutation();
@@ -71,15 +71,29 @@ export const NewTaskLayout: React.FC = () => {
   }>({});
 
   const assigneeOptions = useMemo(() => {
-    if (!form.projectId || !projects || !users) return [];
+    if (!form.projectId || !projects.length || !users.length) return [];
 
     const selectedProject = projects.find((p) => p._id === form.projectId);
     if (!selectedProject) return [];
-     const memberIds = selectedProject.members || [];
-    const ownerIds = selectedProject.owners || [];
-    const allowedUserIds = [...new Set([...memberIds, ...ownerIds])];
 
-    return users.filter((user) => allowedUserIds.includes(user._id));
+    const memberIdentifiers = [
+      ...(selectedProject.members || []),
+      ...(selectedProject.owners || []),
+    ];
+
+    return memberIdentifiers.reduce<typeof users>((options, member) => {
+      const identifier = member.trim().toLowerCase();
+      const user = users.find(
+        (candidate) =>
+          candidate._id.toLowerCase() === identifier ||
+          candidate.email.toLowerCase() === identifier,
+      );
+
+      if (user && !options.some((option) => option._id === user._id)) {
+        options.push(user);
+      }
+      return options;
+    }, []);
   }, [form.projectId, projects, users]);
 
 
@@ -280,7 +294,7 @@ export const NewTaskLayout: React.FC = () => {
               >
                 <MenuItem value="">Unassigned</MenuItem>
                 {assigneeOptions.map((user) => (
-                  <MenuItem key={user._id} value={user._id}>
+                  <MenuItem key={user._id} value={user.username}>
                     {user.username} {user.email && `(${user.email})`}
                   </MenuItem>
                 ))}

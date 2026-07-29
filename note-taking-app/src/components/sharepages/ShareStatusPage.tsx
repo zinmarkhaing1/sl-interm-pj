@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Box,
@@ -40,7 +39,9 @@ interface ShareStatusPageProps {
     currentRole: string
   ) => void;
   getRoleLabel: (role: string) => string;
-  boardName:string; 
+  boardName: string;
+  pageUrl?: string;
+  redirectUrl?:string;
 }
 
 export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
@@ -49,7 +50,9 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
   setCollaborators,
   handleOpenPermissionMenu,
   getRoleLabel,
-  boardName, 
+  boardName,
+  pageUrl,
+  redirectUrl="/board", 
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -79,9 +82,11 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
           email: inviteEmail.trim(),
           invitedEmail: inviteEmail.trim(),
           role: "viewer",
-          pageUrl: window.location.href,
+          pageUrl: pageUrl || window.location.href,
+          pageName: boardName,
           source: "board_page",
-          pageType: "board",          
+          pageType: "board",  
+          redirectUrl: redirectUrl || pageUrl || window.location.href || "/board",        
       
         }),
       });
