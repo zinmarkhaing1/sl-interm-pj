@@ -1,12 +1,56 @@
 import { Request, Response } from 'express';
 import Task from '../../models/Task';
-import Project from '../../models/Project';
+import Project, { IProject } from '../../models/Project';
+import {
+  getUserIdentifiers,
+  userHasAccess,
+} from '../project';
+
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email?: string;
+  };
+}
+
+const getAccessibleProjectIds = async (identifiers: string[]) => {
+  const normalizedIds = identifiers.map((id) => id.toLowerCase());
+  const projects = await Project.find({
+    $or: [
+      { owners: { $in: normalizedIds } },
+      { members: { $in: normalizedIds } },
+    ],
+  }).select('_id');
+
+  return projects.map((p) => p._id);
+};
+
+const assertProjectAccess = (
+  project: IProject | null | undefined,
+  identifiers: string[],
+  res: Response,
+) => {
+  if (!project) {
+    res.status(404).json({ error: 'Project not found' });
+    return false;
+  }
+  if (!userHasAccess(project, identifiers)) {
+    res.status(403).json({ error: 'Forbidden' });
+    return false;
+  }
+  return true;
+};
 
 // =============================================
 // 1. CREATE TASK
 // =============================================
-export const createTask = async (req: Request, res: Response) => {
+export const createTask = async (req: AuthRequest, res: Response) => {
   try {
+    const identifiers = await getUserIdentifiers(req);
+    if (identifiers.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const {
       title,
       description,
@@ -29,11 +73,9 @@ export const createTask = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Project ID is required' });
     }
 
-    // --- Check if project exists ---
+    // --- Check if project exists and user has access ---
     const project = await Project.findById(projectId);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
+    if (!assertProjectAccess(project, identifiers, res)) return;
 
     // --- Create Task ---
     const task = new Task({
@@ -59,13 +101,35 @@ export const createTask = async (req: Request, res: Response) => {
 // =============================================
 // 2. GET ALL TASKS (with filters)
 // =============================================
-export const getTasks = async (req: Request, res: Response) => {
+export const getTasks = async (req: AuthRequest, res: Response) => {
   try {
-    const { projectId, status, assignee } = req.query;
+    const identifiers = await getUserIdentifiers(req);
+    if (identifiers.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-    // Build filter object
-    const filter: any = {};
-    if (projectId) filter.project = projectId;
+    const { projectId, status, assignee } = req.query;
+    const accessibleIds = await getAccessibleProjectIds(identifiers);
+
+    if (accessibleIds.length === 0) {
+      return res.json([]);
+    }
+
+    const filter: any = {
+      project: { $in: accessibleIds },
+    };
+
+    if (projectId) {
+      const requestedId = String(projectId);
+      const allowed = accessibleIds.some(
+        (id) => String(id) === requestedId,
+      );
+      if (!allowed) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      filter.project = requestedId;
+    }
+
     if (status) filter.status = status;
     if (assignee) filter.assignee = assignee;
 
@@ -82,8 +146,13 @@ export const getTasks = async (req: Request, res: Response) => {
 // =============================================
 // 3. GET TASK BY ID
 // =============================================
-export const getTaskById = async (req: Request, res: Response) => {
+export const getTaskById = async (req: AuthRequest, res: Response) => {
   try {
+    const identifiers = await getUserIdentifiers(req);
+    if (identifiers.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { id } = req.params;
 
     const task = await Task.findById(id).populate('project');
@@ -91,6 +160,13 @@ export const getTaskById = async (req: Request, res: Response) => {
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
+
+    const project =
+      task.project && typeof task.project === 'object' && '_id' in task.project
+        ? (task.project as unknown as IProject)
+        : await Project.findById(task.project);
+
+    if (!assertProjectAccess(project, identifiers, res)) return;
 
     res.json(task);
   } catch (error: any) {
@@ -101,11 +177,24 @@ export const getTaskById = async (req: Request, res: Response) => {
 // =============================================
 // 4. UPDATE TASK
 // =============================================
-export const updateTask = async (req: Request, res: Response) => {
+export const updateTask = async (req: AuthRequest, res: Response) => {
   try {
+    const identifiers = await getUserIdentifiers(req);
+    if (identifiers.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { id } = req.params;
     const { title, description, assignee, status, priority, startDate, dueDate } =
       req.body;
+
+    const existing = await Task.findById(id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const project = await Project.findById(existing.project);
+    if (!assertProjectAccess(project, identifiers, res)) return;
 
     const task = await Task.findByIdAndUpdate(
       id,
@@ -137,17 +226,24 @@ export const updateTask = async (req: Request, res: Response) => {
 // =============================================
 // 5. DELETE TASK
 // =============================================
-export const deleteTask = async (req: Request, res: Response) => {
+export const deleteTask = async (req: AuthRequest, res: Response) => {
   try {
+    const identifiers = await getUserIdentifiers(req);
+    if (identifiers.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { id } = req.params;
 
-    const task = await Task.findByIdAndDelete(id);
-
-    if (!task) {
+    const existing = await Task.findById(id);
+    if (!existing) {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    // Optional: Also delete all associated TaskNotes here if needed
+    const project = await Project.findById(existing.project);
+    if (!assertProjectAccess(project, identifiers, res)) return;
+
+    await Task.findByIdAndDelete(id);
 
     res.json({ message: 'Task deleted successfully' });
   } catch (error: any) {

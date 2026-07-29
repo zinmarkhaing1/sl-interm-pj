@@ -6,8 +6,12 @@ import {
   updateTask,
   deleteTask,
 } from '../controllers/task';
+import { verifyToken } from '../middleware/auth';
 
 const router = Router();
+
+// Base path: /api/tasks — all routes require auth
+router.use(verifyToken);
 
 router.post('/', createTask);
 router.get('/', getTasks);

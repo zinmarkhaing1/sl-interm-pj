@@ -19,7 +19,7 @@ const uniqueStrings = (values: string[]) =>
     ),
   );
 
-const getUserIdentifiers = async (req: AuthRequest): Promise<string[]> => {
+export const getUserIdentifiers = async (req: AuthRequest): Promise<string[]> => {
   const userId = req.user?.id;
   if (!userId) return [];
 
@@ -40,7 +40,7 @@ const getUserIdentifiers = async (req: AuthRequest): Promise<string[]> => {
   return Array.from(new Set(identifiers));
 };
 
-const userHasAccess = (project: IProject | null | undefined, identifiers: string[]) => {
+export const userHasAccess = (project: IProject | null | undefined, identifiers: string[]) => {
   if (!project || identifiers.length === 0) return false;
   const owners = (project.owners || []).map((v) => v.toLowerCase());
   const members = (project.members || []).map((v) => v.toLowerCase());
