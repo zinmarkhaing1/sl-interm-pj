@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Box,
@@ -43,7 +42,8 @@ interface ShareNoteDetailPageProps {
   ) => void;
   getRoleLabel: (role: string) => string;
   noteId: string;
-  onRefresh?: () => void; // ✅ Add refresh callback
+  onRefresh?: () => void; // Add refresh callback
+  pageUrl?:string;
 }
 
 export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
@@ -53,7 +53,7 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
   handleOpenPermissionMenu,
   getRoleLabel,
   noteId,
-  onRefresh, // ✅ Receive refresh callback
+  onRefresh, //  Receive refresh callback
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -69,7 +69,7 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
     }
   };
 
-  // ✅ FIXED: Refresh collaborators from parent
+  //  FIXED: Refresh collaborators from parent
   const refreshCollaborators = async () => {
     if (onRefresh) {
       await onRefresh();
@@ -124,6 +124,7 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
 
     try {
       const token = localStorage.getItem("token");
+      const pageUrlToUse = pageUrl || window.location.href;
       const response = await fetch("http://localhost:5000/api/share/invite", {
         method: "POST",
         headers: {
@@ -134,14 +135,14 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
           email: inviteEmail.trim(),
           invitedEmail: inviteEmail.trim(),
           role: "commenter",
-          pageUrl: window.location.href,
+          pageUrl: pageUrlToUse,
           source: "note_form_page",
           noteId: noteId,
         }),
       });
 
       if (response.ok) {
-        // ✅ Refresh after successful invite
+        //  Refresh after successful invite
         await refreshCollaborators();
         setInviteEmail("");
         alert("Invitation sent successfully!");
@@ -149,7 +150,7 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
         const errorData = await response.json();
         console.error("Failed to invite collaborator:", errorData);
         
-        // ✅ Better error messages
+        //  Better error messages
         if (errorData.message?.includes("already been invited")) {
           alert(`"${inviteEmail.trim()}" has already been invited. Please check the list above.`);
         } else {
@@ -164,7 +165,7 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
     }
   };
 
-  // ✅ Filter collaborators by noteId
+  //  Filter collaborators by noteId
   const filteredCollaborators = collaborators.filter(
     (person) => person.noteId === noteId
   );

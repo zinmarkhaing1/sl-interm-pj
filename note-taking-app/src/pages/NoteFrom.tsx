@@ -75,7 +75,7 @@ export const NoteFrom = () => {
 
   // ============ FIX: Remove 'undefined' parameter ============
   // Get all notes - no parameter needed
-  const { data: allNotes = [], isLoading: isAllLoading, isError, refetch } = useGetNotesQuery(); 
+  const { data: allNotes = [], isLoading: isAllLoading, isError, refetch } = useGetNotesQuery({shareScope:'note-form'}); 
 
  const { data: allTasks = [] } = useGetTasksQuery({});
 
@@ -183,7 +183,7 @@ const loadCollaboratorsForNote = async (noteId: string, pageUrl: string, source:
   const token = localStorage.getItem("token");
   if (!token) return;
   try {
-    const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}`, {
+    const response = await fetch(`http://localhost:5000/api/share/collaborators?noteId=${noteId}&pageUrl=${encodeURIComponent(pageUrl)}&source=${source}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response.ok) {
@@ -381,6 +381,7 @@ const filteredNotes = useMemo<Note[]>(() => {
     setShareAnchorEl(event.currentTarget);
     setSelectedNoteId(noteId);
     setSelectedNoteTitle(noteTitle);
+    const noteUrl = `/note-form/detail/${noteId}`;
     await loadCollaboratorsForNote(noteId,window.location.pathname,"note_form_page");
   };
 
@@ -494,6 +495,7 @@ const renderSharePopover = () => (
       handleOpenPermissionMenu={handleOpenPermissionMenu}
       getRoleLabel={getRoleLabel}
       noteId={selectedNoteId || ''}
+      pageUrl={`/note-form/detail/${selectedNoteId}`}
       onRefresh={() => selectedNoteId && loadCollaboratorsForNote(selectedNoteId, window.location.pathname, "note_form_page")}
     />
   </Popover>

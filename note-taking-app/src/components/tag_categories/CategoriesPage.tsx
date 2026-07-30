@@ -169,16 +169,6 @@ export const CategoriesPage = () => {
 
   // Sync local tasks when filtered data changes
   useEffect(() => {
-    // const fetchUsers = async() => {
-    //   const token = localStorage.getItem("token");
-    //   if(!token) return;
-    //   try{
-
-    //     const res = await fetch("http://localhost:5000/api/auth", {
-    //       headers: { Authorization: `Bearer ${token}` },
-    //     });
-    //   }
-    // }
     const currentData = JSON.stringify(filteredAndSortedNotes);
     const previousData = JSON.stringify(previousNotesRef.current);
 
@@ -188,53 +178,9 @@ export const CategoriesPage = () => {
     }
   }, [filteredAndSortedNotes]);
 
-  // ---------- Load users for creator name ----------
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     const token = localStorage.getItem("token");
-  //     if (!token) return;
-  //     try {
-  //       const res = await fetch("http://localhost:5000/api/users", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       if (res.ok) {
-  //         const users = await res.json();
-  //         const map: Record<string, { firstName: string; lastName: string }> = {};
-  //         users.forEach((u: any) => {
-  //           map[u._id] = { firstName: u.firstName, lastName: u.lastName || "" };
-  //         });
-  //         setUsersMap(map);
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch users", err);
-  //     }
-  //   };
-  //   fetchUsers();
-  // }, []);
+ 
 
-  // ---------- Get creator name helper ----------
-  // const getCreatorName = useCallback(
-  //   (note: Note): string => {
-  //     if (note.user && typeof note.user === "object") {
-  //       const u = note.user as any;
-  //       if (u.firstName) return `${u.firstName} ${u.lastName || ""}`.trim();
-  //     }
-  //     if (typeof note.user === "string") {
-  //       const userObj = usersMap[note.user];
-  //       if (userObj) {
-  //         return `${userObj.firstName} ${userObj.lastName}`.trim();
-  //       }
-  //     }
-  //     const userId = (user as any)?._id;
-  //     const noteUserId = typeof note.user === "string" ? note.user : (note.user as any)?._id;
-  //     if (userId && noteUserId === userId) {
-  //       return `${user?.firstName || "You"} ${user?.lastName || ""}`.trim() || "You";
-  //     }
-  //     return note.assignee || "Unknown User";
-  //   },
-  //   [usersMap, user]
-  // );
-
+  
   const getCreatorName = useCallback((): string => {
   if (user) {
     const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
@@ -503,7 +449,7 @@ export const CategoriesPage = () => {
     );
   }
 
-  // ---------- Render ----------
+  // Render 
   return (
     <Box
       sx={{
@@ -592,7 +538,8 @@ export const CategoriesPage = () => {
           />
         )}
 
-        {/* ---------- TASK DROPDOWN (only) ---------- */}
+        {/* TASK DROPDOWN (only)  */}
+        
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Task</InputLabel>
           <Select

@@ -253,13 +253,22 @@ export const NoteDetailPage = () => {
     return false;
   };
 
-  const showCommentBox = hasCommentPermission();
+
+
+  const hasEditCollaborator = collaborators.some(
+  c => (c.role === "editor" || c.role === "full") && c.status === "accepted"
+);
+
+  // const canEditNote = userRole === "owner" || userRole === "editor" || userRole === "full";
+  const canEditNote = note?.accessPermission === "owner" || 
+                    note?.accessPermission === "edit" || 
+                    note?.accessPermission === "full";
+
+  const showCommentBox = !hasEditCollaborator && hasCommentPermission();
   const canAddComment = hasCommentPermission();
   
   console.log(" showCommentBox:", showCommentBox);
   console.log(" canAddComment:", canAddComment);
-
-  const canEditNote = userRole === "owner" || userRole === "editor" || userRole === "full";
   const hasBeenShared = collaborators.length > 0;
 
   // ===== FIXED: accessLabel =====
@@ -596,7 +605,7 @@ export const NoteDetailPage = () => {
         >
           {[
             { role: "full", label: "Full access", desc: "Edit, suggest, comment, and share" },
-            { role: "editor", label: "Can edit", desc: "Edit, suggest, and comment" },
+            { role: "editor", label: "Can edit", desc: "Edit and suggesst" },
             { role: "commenter", label: "Can comment", desc: "Suggest and comment" },
             { role: "viewer", label: "Can view", desc: "" },
           ].map(({ role, label, desc }) => (

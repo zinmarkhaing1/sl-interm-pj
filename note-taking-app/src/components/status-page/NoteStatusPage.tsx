@@ -39,7 +39,7 @@ import {
 } from "@mui/icons-material";
 import { ShareStatusPage } from "../sharepages/ShareStatusPage";
 
-// ---------- Types ----------
+//  Types 
 interface CollaboratorItem {
   _id?: string;
   invitedEmail: string;
@@ -79,12 +79,12 @@ export const NoteStatusPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ---------- Project filter ----------
+  // Project filter 
   const [selectedProjectId, setSelectedProjectId] = useState<string>(() =>
     new URLSearchParams(location.search).get("project") || "",
   );
 
-  // ---------- RTK Query hooks ----------
+  // RTK Query hooks 
   // Fetch tasks with optional project filter
   const {
     data: fetchedTasks = [],
@@ -110,11 +110,11 @@ export const NoteStatusPage: React.FC = () => {
 
   const [updateTask] = useUpdateTaskMutation();
 
-  // ---------- Local state for drag & drop ----------
+  // Local state for drag & drop 
   const isUpdatingRef = useRef(false);
   const previousTasksRef = useRef<Task[]>([]);
 
-  // ---------- User & collaborators (sharing) ----------
+  //  User & collaborators (sharing) 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
   const [shareAnchorEl, setShareAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -127,7 +127,7 @@ export const NoteStatusPage: React.FC = () => {
     {}
   );
 
-  // ---------- Fetch users for assignee names ----------
+  // Fetch users for assignee names
   useEffect(() => {
     const fetchUsers = async () => {
       const token = localStorage.getItem("token");
@@ -151,7 +151,7 @@ export const NoteStatusPage: React.FC = () => {
     fetchUsers();
   }, []);
 
-  // ---------- Get assignee name helper ----------
+  //  Get assignee name helper 
   const getAssigneeName = useCallback(
     (task: Task): string => {
       if (task.assignee && typeof task.assignee === "object") {
@@ -174,7 +174,7 @@ export const NoteStatusPage: React.FC = () => {
     [usersMap, user]
   );
 
-  // ---------- Filtering & sorting (category မပါ) ----------
+  //  Filtering & sorting 
   const filteredAndSortedTasks = useMemo(() => {
     if (!Array.isArray(fetchedTasks)) return [];
 
@@ -234,7 +234,7 @@ export const NoteStatusPage: React.FC = () => {
     }
   }, [filteredAndSortedTasks]);
 
-  // ---------- Load collaborators ----------
+  //  Load collaborators 
   const loadCollaborators = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -690,7 +690,7 @@ export const NoteStatusPage: React.FC = () => {
                     >
                       <Stack spacing={2}>
                         {columnTasks.map((task, index) => {
-                          const taskId = task._id || task.id || String(index);
+                          const taskId = task._id  || String(index);
 
                           return (
                             <Draggable key={taskId} draggableId={taskId} index={index}>
@@ -720,7 +720,7 @@ export const NoteStatusPage: React.FC = () => {
                                       cursor: "pointer",
                                       bgcolor: "background.default",
                                     }}
-                                    onClick={() => handleRowClick(task._id || task.id)}
+                                    onClick={() => handleRowClick(task._id )}
                                   >
                                     <Box>
                                       <Typography
@@ -744,7 +744,7 @@ export const NoteStatusPage: React.FC = () => {
                                           color: "text.secondary",
                                         }}
                                       >
-                                        {task.description || task.content || "No Description"}
+                                        {task.description  || "No Description"}
                                       </Typography>
 
                                       {/* Project name */}
@@ -785,13 +785,13 @@ export const NoteStatusPage: React.FC = () => {
                                       
                                       </Stack>
 
-                                      {(task.startDate || task.endDate) && (
+                                      {(task.startDate || task.dueDate) && (
                                         <Stack direction="row" sx={{ mt: 1, alignItems: "center", color: "blue" }}>
                                           <IconButton size="small" sx={{ color: "blue", p: 0, mr: 0.5 }} disabled>
                                             <CalendarMonthIcon sx={{ fontSize: "medium", color: "skyblue" }} />
                                           </IconButton>
                                           <Typography variant="caption" color="text.secondary">
-                                            {task.startDate || "-"} To {task.endDate || "-"}
+                                            {task.startDate || "-"} To {task.dueDate || "-"}
                                           </Typography>
                                         </Stack>
                                       )}

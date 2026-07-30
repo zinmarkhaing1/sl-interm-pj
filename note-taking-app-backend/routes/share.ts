@@ -66,8 +66,16 @@ const getAccessScope = (pageUrl?: string, source?: string): "category"| "board" 
 
 const extractPageName = (url?: string, pageType?: string): string | null => {
   if (!url) return null;
-  
-  if (pageType === "category") {
+  const urlObj = new URL(url, 'http://dummy');
+   if (pageType === "board" && urlObj.searchParams.has('project')) {
+       return urlObj.searchParams.get('project');
+    // const match = url.match(/\/board\/([^\/?#]+)/);
+    // if (match) {
+    //  const decoded = decodeURIComponent(match[1]);
+    //   console.log('Extracted board name:', decoded);
+    //   return decoded
+    // }
+  }else if (pageType === "category") {
     const match = url.match(/\/category\/([^\/?#]+)/);
     if (match) {
       // return decodeURIComponent(match[1]);
@@ -75,14 +83,9 @@ const extractPageName = (url?: string, pageType?: string): string | null => {
       console.log('Extracted category name:', decoded);
       return decoded
     }
-  } else if (pageType === "board") {
-    const match = url.match(/\/board\/([^\/?#]+)/);
-    if (match) {
-     const decoded = decodeURIComponent(match[1]);
-      console.log('Extracted board name:', decoded);
-      return decoded
-    }
-  }
+  } 
+    
+  
 
    const categoryMatch = url.match(/\/category\/([^\/?#]+)/);
   if (categoryMatch) {
@@ -197,12 +200,13 @@ const grantPageAccess = async ({
   ownerId,
   pageType,
   pageUrl,
-
+  pageName,
 }: {
   userId: string;
   ownerId: string;
   pageType: "category" | "board" ;
   pageUrl: string;
+  pageName?:string;
   
 }) => {
   console.log(" GRANT PAGE ACCESS:", {
@@ -210,6 +214,7 @@ const grantPageAccess = async ({
     ownerId,
     pageType,
     pageUrl,
+    pageName,
 
   });
 
@@ -222,6 +227,7 @@ const grantPageAccess = async ({
       userId,
       ownerId,
       pageType,
+      pageName: pageName || null,
 
     },
     {
@@ -229,8 +235,8 @@ const grantPageAccess = async ({
       ownerId,
       pageType,
       pageUrl,
-
-      permission
+      pageName: pageName || null,
+      permission,
     },
     {
       upsert: true,
@@ -312,15 +318,18 @@ router.post("/multiple", verifyToken, async (req: AuthRequest, res: Response) =>
       });
 
       if (existingUser) {
-        const pageNameExtracted = extractPageName(shareLink, accessScope === "category" ? "category" : 
-                                                       accessScope === "board" ? "board" : undefined);
-        
+        // const pageNameExtracted = extractPageName(shareLink, accessScope === "category" ? "category" : 
+        //                                                accessScope === "board" ? "board" : undefined);
+        const pageNameExtracted = extractPageName(shareLink, accessScope === "category" ? "category" : "board") ?? undefined;
+
         if (accessScope === "category" || accessScope === "board") {
           await grantPageAccess({
             userId: existingUser._id.toString(),
             ownerId: inviterId,
             pageType: accessScope,
             pageUrl: shareLink,
+            pageName:pageNameExtracted,
+          
       
           });
            console.log("PageAccess updated");
@@ -398,15 +407,7 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
 
 
 
-    // Check for existing invitation
-    // const existingInvitation = await ShareInvitation.findOne({
-    //   invitedBy: inviterId,
-    //   invitedEmail: targetEmail,
-    //   pageType : pageType,
-    //   pageName:pageName,
-    //   pageUrl: shareLink,
-    //   status: { $in: ["pending", "accepted"] },
-    // });
+  
 
     let existingInvitation = null;
     if (pageType === "category" || pageType === "board") {
@@ -456,22 +457,13 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
 
     if (accessScope === "category") {
       finalPageType = "category";
-      // if (!finalPageName) {
-      //   const extracted = extractPageName(shareLink, "category");
-      //   finalPageName = extracted || undefined;
-      // }
+ 
        if (!finalPageName || finalPageName === "all") {
         finalPageName = "all";
       }
     }
 
-    // if (accessScope === "category" || accessScope === "board") {
-    //   finalPageType = accessScope;
-    //   if (!finalPageName) {
-    //     const extracted = extractPageName(shareLink, accessScope);
-    //     finalPageName = extracted || undefined;
-    //   }
-    // }                        
+                       
     const invitation = await ShareInvitation.create({
       invitedBy: inviterId,
       invitedEmail: targetEmail,
@@ -494,6 +486,7 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
           ownerId: inviterId,
           pageType: "board",
           pageUrl: shareLink,
+          pageName:finalPageName,
         });
         console.log(` PageAccess granted for board`);
       }
@@ -508,29 +501,7 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
         }
    
 
-      //  if (accessScope === "category" || accessScope === "board") {
-    
-        // if (!pageNameToUse) {
-        //   const match = shareLink.match(/\/category\/([^\/?#]+)/);
-        //   if (match) {
-        //     pageNameToUse = decodeURIComponent(match[1]);
-        //   }
-        // }
-        // console.log("Extracted page name:", pageNameToUse);
-
-      //    if (pageNameToUse) {
-      //     await grantPageAccess({
-      //       userId: existingUser._id.toString(),
-      //       ownerId: inviterId,
-      //       pageType: accessScope,
-      //       pageUrl: shareLink,
-      //       pageName: pageNameToUse,
-      //     });
-      //     console.log(`PageAccess granted for ${accessScope}: ${pageNameToUse || shareLink}`);
-      //   } else {
-      //     console.log("Could not extract page name from URL:", shareLink);
-      //   }
-      // }
+      
 
       if (accessScope === "category") {
   await grantPageAccess({
@@ -538,7 +509,7 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
     ownerId: inviterId,
     pageType: "category",
     pageUrl: shareLink,
-    
+    pageName:finalPageName,
   });
   console.log(`PageAccess granted for category`);
   }
@@ -743,12 +714,13 @@ router.put("/:id/role", verifyToken, async (req: AuthRequest, res: Response) => 
       const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
 
  if (accessScope === "category" || accessScope === "board") {
-        const pageName = extractPageName(invitation.pageUrl, accessScope);
+        // const pageName = extractPageName(invitation.pageUrl, accessScope);
         await grantPageAccess({
           userId: invitation.userId.toString(),
           ownerId: inviterId,
           pageType: accessScope,
           pageUrl: invitation.pageUrl,
+          pageName : invitation.pageName || undefined,
         
         });
         console.log(` PageAccess updated for ${accessScope}`);
@@ -804,16 +776,17 @@ router.get("/debug/user-data", verifyToken, async (req: AuthRequest, res: Respon
     console.log('📄 PageAccess:', pageAccesses);
 
     // 2. Get category names from page access
-    const categoryNames = pageAccesses
+    const pageNames = pageAccesses
       .filter(pa => pa.pageType === "category" || pa.pageType === "board")
-      .map(pa => pa.pageName);
-    console.log('📂 Category names:', categoryNames);
+      .map(pa => pa.pageName)
+      .filter((name): name is string => typeof name === "string" && name.length > 0);
+    console.log('📂 Category names:', pageNames);
 
     // 3. Get notes from categories
     let categoryNotes: any[] = [];
-    if (categoryNames.length > 0) {
+    if (pageNames.length > 0) {
       categoryNotes = await Note.find({
-        category: { $in: categoryNames }
+        category: { $in: pageNames }
       }).lean();
     }
     console.log('📚 Category notes:', categoryNotes.length);
@@ -827,7 +800,7 @@ router.get("/debug/user-data", verifyToken, async (req: AuthRequest, res: Respon
     res.json({
       userId,
       pageAccesses,
-      categoryNames,
+      pageNames,
       categoryNotes,
       categoryNotesCount: categoryNotes.length,
       allNotesCount: allNotes.length,
@@ -889,12 +862,12 @@ router.delete("/:id", verifyToken, async (req: AuthRequest, res: Response) => {
       
 
       if (accessScope === "category" || accessScope === "board") {
-        const pageName = extractPageName(invitation.pageUrl, accessScope);
+        // const pageName = extractPageName(invitation.pageUrl, accessScope);
         await PageAccess.deleteMany({
           userId: invitation.userId,
           ownerId: inviterId,
           pageType: accessScope,
-          pageName: pageName || undefined
+          pageName: invitation.pageName || undefined
         });
         console.log(`✅ PageAccess deleted for ${accessScope}`);
       } else if (accessScope === "note" || accessScope === "note-form" || accessScope === "global") {
@@ -1038,31 +1011,3 @@ res.json({
 });
 
 export default router;
-
-// import express from "express";
-// import { 
-//   inviteCollaborator, 
-//   getCollaborators, 
-//   updateCollaboratorRole, 
-//   removeCollaborator,
-//   getInvitations,
-//   respondToInvitation,
-//   getWorkspaceAccess
-// } from "../controllers/share/index";
-// import { verifyToken } from "../middleware/auth";
-
-// const router = express.Router();
-
-// // All share routes require authentication
-// router.use(verifyToken);
-
-// // Share routes
-// router.post("/invite", inviteCollaborator);
-// router.get("/collaborators", getCollaborators);
-// router.put("/:id/role", updateCollaboratorRole);
-// router.delete("/:id", removeCollaborator);
-// router.get("/invitations", getInvitations);
-// router.put("/invitations/:id/respond", respondToInvitation);
-// router.get("/workspace/:noteId", getWorkspaceAccess);
-
-// export default router;

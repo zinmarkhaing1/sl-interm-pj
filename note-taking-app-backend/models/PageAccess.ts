@@ -5,6 +5,7 @@ export interface IPageAccess extends Document {
   ownerId: Types.ObjectId;
   pageType: "category" | "board";
   pageUrl: string;
+  pageName?:string;
   permission: "view";
   createdAt: Date;
   updatedAt: Date;
@@ -59,6 +60,11 @@ const PageAccessSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+      pageName: {
+    type: String,
+    required: false,
+    index: true,
+  },
 
     permission: {
       type: String,
