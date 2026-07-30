@@ -578,12 +578,13 @@ router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response
 
     const filter: any = {
       status: { $in: ["pending", "accepted"] },
-      $or: [
+    };
+      filter.$or=[
         { invitedBy: currentUserId },
         { userId: currentUserId },
         { invitedEmail: currentUser?.email?.toLowerCase() }
       ]
-    };
+    
 
     if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
       filter.noteId = new mongoose.Types.ObjectId(noteId as string);
@@ -596,24 +597,15 @@ router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response
     
     // Get page access for category/board
     let pageAccess = null;
-    // if (pageUrl && (source === "category_page" || source === "board_page")) {
-      // const pageType = source === "category_page" ? "category" : "board";
-      // const pageName = extractPageName(pageUrl as string, pageType);
-    //   if (pageType && (pageType === "category" || pageType === "board")) {
-    //   filter.pageType = pageType;
+    
+    
 
-    //    if (pageName) {
-    //     filter.pageName = pageName;
-    //   }
-    // } else {
-
-    if (pageType === "category") {
-      filter.pageType = "category";
-      if (pageName) filter.pageName = pageName;
-    }else if (pageType === "board") {
-      filter.pageType = "board";
-      if (pageName) filter.pageName = pageName;
-    } else {
+    if (pageType === "category" || pageType === "board") {
+      filter.pageType = pageType;
+      if (pageName) {
+        filter.pageName = pageName;
+      } 
+    }else {
      
       // if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
       //   filter.noteId = new mongoose.Types.ObjectId(noteId as string);
