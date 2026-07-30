@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { PeopleAltOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import { useEffect } from 'react';
+import { useGetUsersQuery } from '../../services/authApi';
 
 interface CollaboratorItem {
   _id?: string;
@@ -36,6 +37,8 @@ export const SharedTaskPage = () => {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [isError, setIsError] = React.useState<boolean>(false);
 
+  const { data:users = [] } = useGetUsersQuery();
+
  
 
   useEffect(() => {
@@ -60,7 +63,8 @@ export const SharedTaskPage = () => {
         
 const allCollaborators: CollaboratorItem[] = data.collaborators || [];
 // const currentUserEmail = localStorage.getItem("userEmail") || localStorage.getItem("email") || "";
-const currentUserEmail = "zinmarkhaing979@gmail.com" 
+// const currentUserEmail = users.email
+const currentUserEmail = "";
 
 const filteredCollaborators = allCollaborators.filter(
   (item) => item.invitedEmail?.trim().toLowerCase() !== currentUserEmail.trim().toLowerCase()

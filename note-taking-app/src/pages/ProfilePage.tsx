@@ -1,4 +1,3 @@
-
 import {
   Avatar,
   Box,
@@ -27,13 +26,18 @@ export const ProfilePage = () => {
     bio: "",
     photo: "",
   });
+  // console.log('user',user)
 
- 
-  useEffect(() => {
+    const [, forceUpdate] = useState(0);
+  const navigate = useNavigate();
+   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    console.log(" ProfilePage - storedUser raw:", storedUser);
+
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        console.log(" ProfilePage - parsedUser:", parsedUser);
         setUser({
           firstName: parsedUser.firstName || "",
           lastName: parsedUser.lastName || "",
@@ -41,12 +45,15 @@ export const ProfilePage = () => {
           bio: parsedUser.bio || "",
           photo: parsedUser.photo || "",
         });
-      } catch {
+        forceUpdate((prev) => prev + 1);
+      } catch (error) {
+        console.error(" ProfilePage - Parse error:", error);
         localStorage.removeItem("user");
       }
+    } else {
+      console.warn("ProfilePage - No user found in localStorage");
     }
   }, []);
-  const navigate = useNavigate();
 
 
   const handleUpdateProfile = () => {
@@ -101,15 +108,16 @@ export const ProfilePage = () => {
               }}
             >
               {!user.photo && (user.firstName?.charAt(0).toUpperCase() || "U")}
+          
             </Avatar>
 
             {/* name and email */}
             <Box sx={{ textAlign: "center", width: "100%" }}>
               <Typography variant="h5" sx={{ fontWeight: "bold", mb: 0.5 }}>
-                {user.firstName || "First"} {user.lastName || "Last"}
+                {user.firstName || "First"} {user.lastName || "last"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {user.email || "no-email@example.com"}
+                {user.email || "Email"}
               </Typography>
               {user.bio && (
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, fontStyle: "italic" }}>

@@ -153,7 +153,7 @@ export const getCollaborators = async (
   try {
 
     const userId = (req as any).user?.id;
-    const { noteId, pageUrl, source } = req.query;
+    const { noteId, pageUrl, source,pageName,pageType } = req.query;
 
 
     if (!userId) {
@@ -185,6 +185,8 @@ export const getCollaborators = async (
     if (source) {
       filter.source = source;
     }
+     if (pageType) filter.pageType = pageType;
+    if (pageName) filter.pageName = pageName;
 
 
     const collaborators =
@@ -198,6 +200,8 @@ export const getCollaborators = async (
       collaborators
     });
 
+    console.log(req.query);
+
 
   } catch(error:any){
 
@@ -206,6 +210,7 @@ export const getCollaborators = async (
     });
 
   }
+
 };
 
 // 3. Update Collaborator Role

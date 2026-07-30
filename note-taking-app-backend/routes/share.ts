@@ -597,7 +597,7 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
 router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
   try {
     const currentUserId = req.user?.id;
-    const { noteId, pageUrl, source ,pageType} = req.query;
+    const { noteId, pageUrl, source ,pageType,pageName} = req.query;
 
     if (!currentUserId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -959,6 +959,7 @@ router.get("/debug/page-access", verifyToken, async (req: AuthRequest, res: Resp
 router.get("/debug/page-access-for-user", verifyToken, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
+   
     
     const pageAccesses = await PageAccess.find({
       userId: userId

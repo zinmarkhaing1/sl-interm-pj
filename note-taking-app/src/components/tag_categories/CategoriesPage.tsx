@@ -169,6 +169,16 @@ export const CategoriesPage = () => {
 
   // Sync local tasks when filtered data changes
   useEffect(() => {
+    // const fetchUsers = async() => {
+    //   const token = localStorage.getItem("token");
+    //   if(!token) return;
+    //   try{
+
+    //     const res = await fetch("http://localhost:5000/api/auth", {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     });
+    //   }
+    // }
     const currentData = JSON.stringify(filteredAndSortedNotes);
     const previousData = JSON.stringify(previousNotesRef.current);
 

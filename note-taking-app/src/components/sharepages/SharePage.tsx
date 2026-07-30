@@ -14,6 +14,7 @@ import SendIcon from "@mui/icons-material/Send";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+// import {useGetUsersQuery } from "../../services/authApi";
 
 interface CollaboratorItem {
   _id?: string;
@@ -39,6 +40,7 @@ interface SharePopoverComponentProps {
   getRoleLabel: (role: string) => string;
 }
 
+
 export const SharePage = ({
   user,
   collaborators,
@@ -51,6 +53,7 @@ export const SharePage = ({
   const [inviteMessage, setInviteMessage] = useState<string>("");
   const [isInviting, setIsInviting] = useState<boolean>(false);
 
+  // const { data: users = [] } = useGetUsersQuery();
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
@@ -157,14 +160,14 @@ export const SharePage = ({
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, color: "text.primary" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Avatar src={user?.photo || ""} sx={{ width: 36, height: 36, bgcolor: "#e3e3e3" }}>
-                {!user?.photo && (user?.firstName?.charAt(0) || "Z")}
+                {!user?.photo && (user?.firstName?.charAt(0) || "U")}
               </Avatar>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "13.5px" }}>
-                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "Zin Mar Khaing"} (You)
+                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : ""} (You)
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontSize: "11px" }}>
-                  {user?.email || "zinmarkhaing979@gmail.com"}
+                  {user?.email || ""}
                 </Typography>
               </Box>
             </Box>

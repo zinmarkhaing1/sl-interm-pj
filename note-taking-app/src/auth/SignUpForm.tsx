@@ -74,11 +74,12 @@ export const SignUpForm = () => {
         email: form.email,
         password: form.password,
       }).unwrap();
+      console.log(res)
 
       if (res.success) {
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        navigate("/dashboard");
+        localStorage.setItem("user", JSON.stringify(res.data.auth));
+        navigate("/");
       } else {
         setErrorMessage(res.message || "Signup failed. Please try again.");
       }
@@ -88,6 +89,7 @@ export const SignUpForm = () => {
       setErrorMessage(errorMsg);
     }
   };
+  
 
   return (
     <Box

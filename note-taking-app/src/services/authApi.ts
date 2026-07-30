@@ -34,6 +34,20 @@ export const authApi = createApi ({
             }),
         }),
 
+          getAuths: builder.query<
+      { _id: string; username: string; email: string }[],
+      void
+    >({
+      query: () => '/auth/auth', 
+    }),
+
+      getAuthById: builder.query<
+      { _id: string; username: string; email: string },
+      string
+    >({
+      query: (id) => `/auth/auth/${id}`,
+    }),
+
         getUsers: builder.query<
       { _id: string; username: string; email: string }[],
       void
@@ -50,4 +64,4 @@ export const authApi = createApi ({
     }),  
 });
 
-export const {useSignupMutation, useLoginMutation, useGetUsersQuery, useGetUserByIdQuery} = authApi;
+export const {useSignupMutation, useLoginMutation, useGetUsersQuery, useGetUserByIdQuery,useGetAuthsQuery,useGetAuthByIdQuery} = authApi;

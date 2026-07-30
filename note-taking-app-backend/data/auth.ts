@@ -33,3 +33,16 @@ export const seedAuth = async ():Promise<void> => {
         
     }
 }
+
+//for signup
+// const { firstName, lastName, email, password } = req.body;
+// const existingUser = await Auth.findOne({ email });
+// if (existingUser) return res.status(400).json({ message: 'Email already exists' });
+// const hashedPassword = await bcrypt.hash(password, 10);
+// const newUser = new Auth({ firstName, lastName, email, password: hashedPassword });
+// await newUser.save();
+
+//login
+// const { email, password } = req.body;
+// const user = await Auth.findOne({ email });
+// if (!user) return res.status(401).json({ message: 'Invalid credentials' });

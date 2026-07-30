@@ -36,7 +36,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom"; 
 import { useGetNotificationsQuery, useMarkNotificationReadMutation } from "../../services/noteApi";
 import { useTheme } from "../../Context/ThemeContext";
-
+// import { useGetUsersQuery } from "../../services/authApi";
 interface CollaboratorItem {
   _id?: string;
   invitedEmail: string;
@@ -74,6 +74,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [tabValue, setTabValue] = useState<number>(0);
   const [email, setEmail] = useState<string>('');
@@ -91,6 +92,8 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   const [markNotificationRead] = useMarkNotificationReadMutation();
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<HTMLElement | null>(null);
+
+
 
   const hasLoadedRef = useRef(false);
 
@@ -483,7 +486,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
               fontWeight: 600 
             }}
           >
-            {!user?.photo && (user?.firstName?.charAt(0).toUpperCase() || "Z")}
+            {!user?.photo && (user?.firstName?.charAt(0).toUpperCase() || "U")}
           </Avatar>
         </IconButton>
 
@@ -638,14 +641,14 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                       bgcolor: "#e3e3e3" 
                     }}
                   >
-                    {!user?.photo && (user?.firstName?.charAt(0) || "Z")}
+                    {!user?.photo && (user?.firstName?.charAt(0) || "U")}
                   </Avatar>
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "13.5px" }}>
-                      {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "Zin Mar Khaing"} (You)
+                      {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : ""} (You)
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontSize: "11px" }}>
-                      {user?.email || "zinmarkhaing979@gmail.com"}
+                      {user?.email }
                     </Typography>
                   </Box>
                 </Box>
@@ -777,10 +780,10 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         >
           <Box sx={{ px: 2, py: 1.5 }}>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
-              {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : "Zin Mar Khaing"}
+              {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : ""}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {user?.email || "zinmarkhaing979@gmail.com"}
+              {user?.email || ""}
             </Typography>
           </Box>
           
@@ -788,7 +791,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           
           <MenuItem onClick={() => { 
             handleProfileMenuClose(); 
-            navigate("/profile/edit-profile"); 
+            navigate("/profile"); 
           }} sx={{ py: 1, borderRadius: 1.5 }}>
             <ListItemIcon sx={{ minWidth: 32 }}>
               <AccountCircleOutlinedIcon sx={{ fontSize: 20 }} />

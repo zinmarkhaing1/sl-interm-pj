@@ -168,7 +168,8 @@ export const NoteStatusPage: React.FC = () => {
       if (userId && task.assignee === userId) {
         return `${user?.firstName || "You"} ${user?.lastName || ""}`.trim() || "You";
       }
-      return task.assignee || "Unknown";
+      task.assignee || "Unknown";
+      return "Unknown";
     },
     [usersMap, user]
   );
@@ -193,17 +194,16 @@ export const NoteStatusPage: React.FC = () => {
       }
 
       result = result.filter((task: Task) => {
-        // ၁။ status filter (exact match)
+        //  status filter (exact match)
         if (statusFilter !== null) {
           const currentStatus = (task.status || "").trim().toLowerCase();
           return currentStatus === statusFilter.toLowerCase();
         }
 
-        // ၂။ category မပါတော့ -> assignee, priority, title, description ကိုသာ search
         const currentAssignee = (task.assignee || "").toString().toLowerCase();
         const currentPriority = (task.priority || "").trim().toLowerCase();
         const titleText = (task.title || "").toLowerCase();
-        const contentText = (task.description || task.content || "").toLowerCase();
+        const contentText = (task.description || "").toLowerCase();
 
         return (
           currentAssignee.includes(searchLower) ||
@@ -283,7 +283,7 @@ export const NoteStatusPage: React.FC = () => {
       isUpdatingRef.current = true;
 
       try {
-        const movedTask = tasks.find((t) => (t._id || t.id) === draggableId);
+        const movedTask = tasks.find((t) => (t._id ) === draggableId);
         if (!movedTask) {
           isUpdatingRef.current = false;
           return;
@@ -294,13 +294,17 @@ export const NoteStatusPage: React.FC = () => {
           (t) => (t.status || "Todo") === source.droppableId
         );
         const targetTask = sourceTasksInColumn[source.index];
+         if (!targetTask) {
+        isUpdatingRef.current = false;
+        return;
+      }
         const globalSourceIndex = updatedTasks.indexOf(targetTask);
 
         if (globalSourceIndex !== -1) {
           updatedTasks.splice(globalSourceIndex, 1);
         }
 
-        const updatedMovedTask = { ...targetTask, status: destination.droppableId };
+        const updatedMovedTask = { ...targetTask, status: destination.droppableId as Task["status"]};
 
         const destTasksInColumn = updatedTasks.filter(
           (t) => (t.status || "Todo") === destination.droppableId
@@ -318,11 +322,11 @@ export const NoteStatusPage: React.FC = () => {
         updatedTasks.splice(globalDestIndex, 0, updatedMovedTask);
         setTasks(updatedTasks);
 
-        const taskId = targetTask._id || targetTask.id;
+        const taskId = targetTask._id || targetTask._id;
         if (taskId) {
           await updateTask({
             id: taskId,
-            body: { status: destination.droppableId },
+            body: { status: destination.droppableId as Task["status"]},
           }).unwrap();
           refetch();
         }
@@ -747,7 +751,6 @@ export const NoteStatusPage: React.FC = () => {
                                       {task.project && (
                                         <Typography
                                           variant="caption"
-                                          display="block"
                                           sx={{ color: "text.secondary" }}
                                         >
                                           Project:{" "}
