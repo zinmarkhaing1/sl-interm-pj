@@ -54,11 +54,13 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
   getRoleLabel,
   noteId,
   onRefresh, //  Receive refresh callback
+  pageUrl,
 }) => {
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const [isInviting, setIsInviting] = useState<boolean>(false);
-
+   const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -96,49 +98,78 @@ export const ShareNoteDetailPage: React.FC<ShareNoteDetailPageProps> = ({
 
   
   const handleInvite = async () => {
-    if (!inviteEmail.trim() || !noteId) {
-      alert("Please enter an email address.");
-      return;
-    }
+     const email = inviteEmail.trim();
+  if (!email) {
+    setError("Please enter an email address");
+    return;
+  }
+
+   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    setError("Please enter a valid email address");
+    return;
+  }
+    // if (!inviteEmail.trim() || !noteId) {
+    //   alert("Please enter an email address.");
+    //   return;
+    // }
 
     // Check if inviting self
     if (user?.email && inviteEmail.trim().toLowerCase() === user.email.toLowerCase()) {
-      alert("You cannot invite yourself!");
+      setError("You cannot invite yourself!");
       return;
     }
 
     
+    // const alreadyInvited = collaborators.some(
+    //   (c) => 
+    //     c.noteId === noteId && 
+    //     c.invitedEmail.toLowerCase() === inviteEmail.trim().toLowerCase()
+    // );
+    
+    // if (alreadyInvited) {
+    //   alert(`"${inviteEmail.trim()}" has already been invited to this note.`);
+    //   setInviteEmail("");
+    //   return;
+    // }
+
+    // setIsInviting(true);
+
     const alreadyInvited = collaborators.some(
-      (c) => 
-        c.noteId === noteId && 
-        c.invitedEmail.toLowerCase() === inviteEmail.trim().toLowerCase()
-    );
-    
-    if (alreadyInvited) {
-      alert(`"${inviteEmail.trim()}" has already been invited to this note.`);
-      setInviteEmail("");
-      return;
-    }
+    (c) => c.invitedEmail.toLowerCase() === email.toLowerCase()
+  );
+  if (alreadyInvited) {
+    setError("This email has already been invited");
+    return;
+  }
 
-    setIsInviting(true);
+  setLoading(true);
+  setError(null);
 
     try {
       const token = localStorage.getItem("token");
+
+      if (!token) {
+      setError("You must be logged in to invite collaborators");
+      setLoading(false);
+      return;
+    }
       const pageUrlToUse = pageUrl || window.location.href;
+        const requestBody = {
+  invitedEmail: email,
+  role: "viewer",
+  pageUrl: pageUrlToUse,
+  source: "note_form_page",
+  noteId: noteId, 
+};
+console.log("📨 Sending invite request:", requestBody);
       const response = await fetch("http://localhost:5000/api/share/invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token || ""}`,
         },
-        body: JSON.stringify({
-          email: inviteEmail.trim(),
-          invitedEmail: inviteEmail.trim(),
-          role: "commenter",
-          pageUrl: pageUrlToUse,
-          source: "note_form_page",
-          noteId: noteId,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {

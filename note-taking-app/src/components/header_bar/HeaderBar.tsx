@@ -1,4 +1,5 @@
 
+
 import {
   AppBar,
   Toolbar,
@@ -11,7 +12,7 @@ import {
   Badge,
   Divider,
   Tabs,
-  Tab, 
+  Tab,
   TextField,
   Popover,
   Dialog,
@@ -21,22 +22,27 @@ import {
   ListItemIcon,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
-import NightlightIcon from '@mui/icons-material/Nightlight';
+import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
+import NightlightIcon from "@mui/icons-material/Nightlight";
 import notebook from "../../navicons/34864fc706609d92a131368af91c1e8b-removebg-preview.png";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
-import NotificationsIcon from '@mui/icons-material/NotificationsNone';
-import CheckIcon from '@mui/icons-material/Check';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import NotificationsIcon from "@mui/icons-material/NotificationsNone";
+import CheckIcon from "@mui/icons-material/Check";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom"; 
-import { useGetNotificationsQuery, useMarkNotificationReadMutation } from "../../services/noteApi";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+  useGetCollaboratorsQuery,
+  useGetInvitationsQuery,
+} from "../../services/noteApi";
 import { useTheme } from "../../Context/ThemeContext";
-// import { useGetUsersQuery } from "../../services/authApi";
+
 interface CollaboratorItem {
   _id?: string;
   invitedEmail: string;
@@ -74,30 +80,38 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [tabValue, setTabValue] = useState<number>(0);
-  const [email, setEmail] = useState<string>('');
-  const [inviteMessage, setInviteMessage] = useState<string>('');
+  const [email, setEmail] = useState<string>("");
+  const [inviteMessage, setInviteMessage] = useState<string>("");
   const [isInviting, setIsInviting] = useState<boolean>(false);
-  const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
-  const [invitations, setInvitations] = useState<InvitationNotice[]>([]);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
-  
   const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
-  const [activeRole, setActiveRole] = useState<string>("full"); 
-
+  const [activeRole, setActiveRole] = useState<string>("full");
   const [notificationAnchor, setNotificationAnchor] = useState<HTMLElement | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [markNotificationRead] = useMarkNotificationReadMutation();
   const [openInviteDialog, setOpenInviteDialog] = useState(false);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<HTMLElement | null>(null);
-
-
+  const [processingInvite, setProcessingInvite] = useState<string | null>(null);
 
   const hasLoadedRef = useRef(false);
 
-  // Load user from localStorage
+ 
+  const {
+    data: collaboratorsData,
+    refetch: refetchCollaborators,
+  } = useGetCollaboratorsQuery(undefined, { skip: !token });
+
+  const {
+    data: invitationsData,
+    refetch: refetchInvitations,
+  } = useGetInvitationsQuery(undefined, { skip: !token });
+
+
+  const collaborators = collaboratorsData?.collaborators || [];
+  const invitations = invitationsData?.invitations || [];
+
+  // ---------- Load User ----------
   const loadUser = useCallback(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
@@ -112,61 +126,23 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     }
   }, []);
 
-  // Load collaborators
-  const loadCollaborators = useCallback(async () => {
-    if (!token) return;
-    try {
-      const response = await fetch("http://localhost:5000/api/share/collaborators", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCollaborators(data.collaborators || []);
-      }
-    } catch (error) {
-      console.error("Error loading collaborators:", error);
-      setCollaborators([]);
-    }
-  }, [token]);
-
-  // Load invitations
-  const loadInvitations = useCallback(async () => {
-    if (!token) return;
-    if (localStorage.getItem("invitationDismissed") === "true") {
-      setInvitations([]);
-      return;
-    }
-    try {
-      const response = await fetch("http://localhost:5000/api/share/invitations", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setInvitations(data.invitations || []);
-        if ((data.invitations || []).length > 0 && localStorage.getItem("invitationDismissed") !== "true") {
-          setOpenInviteDialog(true);
-        }
-      }
-    } catch {
-      setInvitations([]);
-    }
-  }, [token]);
-
-  // Refresh all data
+  // ---------- Refresh All Data ----------
   const refreshData = useCallback(() => {
     loadUser();
-    loadCollaborators();
-    loadInvitations();
-  }, [loadUser, loadCollaborators, loadInvitations]);
+    if (token) {
+      refetchCollaborators();
+      refetchInvitations();
+    }
+  }, [loadUser, refetchCollaborators, refetchInvitations, token]);
 
-  // Initial load
+  // ---------- Initial Load ----------
   useEffect(() => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
     refreshData();
   }, [refreshData]);
 
-  // Event listeners for updates
+  // ---------- Event Listeners ----------
   useEffect(() => {
     const handleProfileUpdated = (event: Event) => {
       const updatedUser = (event as CustomEvent<UserProfile>).detail;
@@ -180,7 +156,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     window.addEventListener("profileUpdated", handleProfileUpdated);
     window.addEventListener("storage", refreshData);
     window.addEventListener("focus", refreshData);
-    
+
     return () => {
       window.removeEventListener("profileUpdated", handleProfileUpdated);
       window.removeEventListener("storage", refreshData);
@@ -188,24 +164,35 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     };
   }, [loadUser, refreshData]);
 
-  // Notifications
-  const { data: notificationData } = useGetNotificationsQuery(undefined, { 
-    skip: !token 
+  // ---------- Invitation Dialog Logic ----------
+  useEffect(() => {
+    if (invitations.length > 0 && localStorage.getItem("invitationDismissed") !== "true") {
+      setOpenInviteDialog(true);
+    }
+  }, [invitations]);
+
+  // ---------- Notifications ----------
+  const { data: notificationData } = useGetNotificationsQuery(undefined, {
+    skip: !token,
   });
+
+  const [markNotificationRead] = useMarkNotificationReadMutation();
 
   useEffect(() => {
     if (notificationData?.notifications) {
-      setUnreadCount(notificationData.notifications.filter((item) => !item.isRead).length);
+      setUnreadCount(
+        notificationData.notifications.filter((item) => !item.isRead).length
+      );
     }
   }, [notificationData]);
 
-  // Handlers
+  // ---------- Handlers ----------
   const handleNotificationToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     setNotificationAnchor(notificationAnchor ? null : event.currentTarget);
   };
 
-  const handleNotificationClose = () => { 
-    setNotificationAnchor(null); 
+  const handleNotificationClose = () => {
+    setNotificationAnchor(null);
   };
 
   const handleMarkRead = async (notificationId: string) => {
@@ -213,12 +200,12 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     setNotificationAnchor(null);
   };
 
-  const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => { 
-    setAnchorEl(event.currentTarget); 
+  const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleShareClose = () => { 
-    setAnchorEl(null); 
+  const handleShareClose = () => {
+    setAnchorEl(null);
   };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -252,13 +239,17 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     navigate("/my-tasks?view=shared");
   };
 
+  // ---------- Invite People ----------
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
       setInviteMessage("Please enter at least one email address.");
       return;
     }
-    const emailList = email.split(',').map((str) => str.trim()).filter((str) => str !== '');
+    const emailList = email
+      .split(",")
+      .map((str) => str.trim())
+      .filter((str) => str !== "");
     if (emailList.length === 0) {
       setInviteMessage("Please enter at least one valid email address.");
       return;
@@ -282,16 +273,13 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
 
       if (response.ok) {
         const data = await response.json().catch(() => ({}));
-        setInviteMessage(data.message || `Invite sent to ${emailList.length} email${emailList.length > 1 ? "s" : ""}.`);
-        setEmail('');
-        const nextCollaborators = (data.invitations || []).map((item: any) => ({
-          invitedEmail: item.email,
-          status: item.status,
-          role: item.role || "full",
-          pageUrl: item.pageUrl,
-          source: 'Shared link',
-        }));
-        setCollaborators((prev) => [...nextCollaborators, ...prev]);
+        setInviteMessage(
+          data.message ||
+            `Invite sent to ${emailList.length} email${emailList.length > 1 ? "s" : ""}.`
+        );
+        setEmail("");
+      
+        refetchCollaborators();
       } else {
         const errorData = await response.json().catch(() => ({}));
         setInviteMessage(errorData.message || "Unable to send invitations right now.");
@@ -305,13 +293,92 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert('Link copied to clipboard!');
+    alert("Link copied to clipboard!");
+  };
+
+  // ---------- Accept / Decline Invitation ----------
+  const handleAcceptInvitation = async (notification: any) => {
+    const invitationId = notification.invitationId;
+    if (!invitationId) {
+      alert("Invitation ID missing");
+      return;
+    }
+    setProcessingInvite(invitationId);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/share/accept/${invitationId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        await markNotificationRead(notification._id).unwrap();
+      
+        refetchCollaborators();
+        refetchInvitations();
+        if (data.pageUrl) {
+          window.location.href = data.pageUrl;
+        } else {
+          alert("Invitation accepted!");
+        }
+      } else {
+        const err = await response.json().catch(() => ({}));
+        alert(err.message || "Failed to accept.");
+      }
+    } catch (error) {
+      console.error("Accept error:", error);
+      alert("An error occurred.");
+    } finally {
+      setProcessingInvite(null);
+    }
+  };
+
+  const handleDeclineInvitation = async (notification: any) => {
+    const invitationId = notification.invitationId;
+    if (!invitationId) {
+      alert("Invitation ID missing");
+      return;
+    }
+    setProcessingInvite(invitationId);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/share/decline/${invitationId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        await markNotificationRead(notification._id).unwrap();
+        refetchCollaborators();
+        refetchInvitations();
+        alert("Invitation declined.");
+      } else {
+        const err = await response.json().catch(() => ({}));
+        alert(err.message || "Failed to decline.");
+      }
+    } catch (error) {
+      console.error("Decline error:", error);
+      alert("An error occurred.");
+    } finally {
+      setProcessingInvite(null);
+    }
   };
 
   const dismissInvitationNotice = () => {
-    setInvitations([]);
-    handleShareClose();
     setOpenInviteDialog(false);
+    localStorage.setItem("invitationDismissed", "true");
+  
   };
 
   const extractNoteIdFromUrl = (url?: string) => {
@@ -331,10 +398,10 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
       return;
     }
     let arr: string[] = [];
-    try { 
-      arr = JSON.parse(localStorage.getItem("watchLaterSharedNotes") || "[]"); 
-    } catch { 
-      arr = []; 
+    try {
+      arr = JSON.parse(localStorage.getItem("watchLaterSharedNotes") || "[]");
+    } catch {
+      arr = [];
     }
     if (!arr.includes(noteId)) arr.push(noteId);
     localStorage.setItem("watchLaterSharedNotes", JSON.stringify(arr));
@@ -344,7 +411,12 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     alert("Saved to Watch Later");
   };
 
-  const handleOpenPermissionMenu = (event: React.MouseEvent<HTMLButtonElement>, id: string | null, currentRole: string) => {
+  // ---------- Collaborator Permission Menu ----------
+  const handleOpenPermissionMenu = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: string | null,
+    currentRole: string
+  ) => {
     setMenuAnchorEl(event.currentTarget);
     setActiveCollaboratorId(id);
     setActiveRole(currentRole || "full");
@@ -362,19 +434,21 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}/role`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({ role }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/share/${activeCollaboratorId}/role`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+          body: JSON.stringify({ role }),
+        }
+      );
 
       if (response.ok) {
-        setCollaborators((prev) => prev.map((person) => 
-          person._id === activeCollaboratorId ? { ...person, role } : person
-        ));
+      
+        refetchCollaborators();
       }
     } catch {
       // Handle Error
@@ -386,12 +460,17 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   const handleRemoveCollaborator = async () => {
     if (!activeCollaboratorId) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/share/${activeCollaboratorId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/share/${activeCollaboratorId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        }
+      );
       if (response.ok) {
-        setCollaborators((prev) => prev.filter((person) => person._id !== activeCollaboratorId));
+        refetchCollaborators();
       }
     } catch {
       // Error handling
@@ -409,15 +488,15 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   };
 
   const isShareOpen = Boolean(anchorEl);
-  const shareId = isShareOpen ? 'share-popover' : undefined;
+  const shareId = isShareOpen ? "share-popover" : undefined;
 
   return (
     <AppBar
       position="fixed"
       elevation={0}
       sx={{
-        top: 0, 
-        left: 0, 
+        top: 0,
+        left: 0,
         right: 0,
         zIndex: (theme) => theme.zIndex.drawer + 1,
         boxShadow: "none",
@@ -427,28 +506,32 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         borderColor: "divider",
       }}
     >
-      <Toolbar sx={{ 
-        height: 64, 
-        px: 2, 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "space-between" 
-      }}>
+      <Toolbar
+        sx={{
+          height: 64,
+          px: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.primary" }}>
           <IconButton onClick={onMenuClick} sx={{ color: "text.primary", p: 1 }}>
             <MenuIcon />
           </IconButton>
-          <Box 
-            sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }} 
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
             onClick={() => navigate("/dashboard")}
           >
             <Box component="img" src={notebook} alt="notebook" sx={{ width: 35, height: 35 }} />
-            <Typography sx={{ 
-              fontSize: { xs: "1rem", sm: "1.2rem" }, 
-              whiteSpace: "nowrap", 
-              lineHeight: 1, 
-              letterSpacing: "0.5px" 
-            }}>
+            <Typography
+              sx={{
+                fontSize: { xs: "1rem", sm: "1.2rem" },
+                whiteSpace: "nowrap",
+                lineHeight: 1,
+                letterSpacing: "0.5px",
+              }}
+            >
               Note Book
             </Typography>
           </Box>
@@ -456,34 +539,31 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <IconButton 
-          sx={{  
-            color: "text.primary", 
-            mr: 1 
-          }} 
+        <IconButton
+          sx={{ color: "text.primary", mr: 1 }}
           onClick={() => toggleDarkMode()}
         >
           {darkMode ? <NightlightIcon /> : <LightModeOutlinedIcon />}
         </IconButton>
-{/*         
-        <IconButton 
-          sx={{ color: "text.primary", mr: 1 }} 
+
+        <IconButton
+          sx={{ color: "text.primary", mr: 1 }}
           onClick={handleNotificationToggle}
         >
-          <Badge badgeContent={unreadCount} sx={{ '& .MuiBadge-badge': { color: '#973aa8' } }}>
+          <Badge badgeContent={unreadCount} sx={{ "& .MuiBadge-badge": { color: "#973aa8" } }}>
             <NotificationsIcon />
           </Badge>
-        </IconButton> */}
+        </IconButton>
 
         <IconButton onClick={handleProfileMenuOpen} sx={{ p: 0, ml: 0.5 }}>
-          <Avatar 
-            src={user?.photo || ""} 
-            sx={{ 
-              width: 36, 
-              height: 36, 
-              bgcolor: "primary.main", 
-              fontSize: "15px", 
-              fontWeight: 600 
+          <Avatar
+            src={user?.photo || ""}
+            sx={{
+              width: 36,
+              height: 36,
+              bgcolor: "primary.main",
+              fontSize: "15px",
+              fontWeight: 600,
             }}
           >
             {!user?.photo && (user?.firstName?.charAt(0).toUpperCase() || "U")}
@@ -498,49 +578,65 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           onClose={handleNotificationClose}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
-          slotProps={{ 
-            paper: { 
-              sx: { 
-                width: 320, 
-                p: 2, 
-                mt: 1, 
+          slotProps={{
+            paper: {
+              sx: {
+                width: 320,
+                p: 2,
+                mt: 1,
                 borderRadius: 2,
-                bgcolor: 'background.paper'
-              } 
-            } 
+                bgcolor: "background.paper",
+              },
+            },
           }}
         >
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
             Notifications
           </Typography>
           {notificationData?.notifications?.length ? (
-            notificationData.notifications.map((notification) => (
-              <Box 
-                key={notification._id} 
-                sx={{ 
-                  mb: 1, 
-                  p: 1, 
-                  borderRadius: 2, 
-                  bgcolor: notification.isRead ? "#fafafa" : "#f2f7ff" 
-                }}
-              >
-                <Typography variant="body2" sx={{ mb: 0.5 }}>
-                  {notification.message}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {new Date(notification.createdAt || "").toLocaleString()}
-                </Typography>
-                {!notification.isRead && (
-                  <Button 
-                    size="small" 
-                    onClick={() => handleMarkRead(notification._id || "")} 
-                    sx={{ textTransform: "none", mt: 1 }}
-                  >
-                    Mark as read
-                  </Button>
-                )}
-              </Box>
-            ))
+            notificationData.notifications.map((notification) => {
+              const notif = notification as any;
+              const isInvitation = notif?.type === "invite" || notif?.type === "share_invitation";
+
+              return (
+                <Box key={notif._id} sx={{ fontSize: 12, mb: 1, p: 1, borderRadius: 1, bgcolor: notif.isRead ? "#fafafa" : "#f2f7ff" }}>
+                  <Typography variant="body2">{notif.message}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {new Date(notif.createdAt).toLocaleString()}
+                  </Typography>
+                  {!notif.isRead && (
+                    <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                      {isInvitation ? (
+                        <>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            disabled={processingInvite === notif.invitationId}
+                            onClick={() => handleAcceptInvitation(notif)}
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            disabled={processingInvite === notif.invitationId}
+                            onClick={() => handleDeclineInvitation(notif)}
+                          >
+                            Decline
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="small" onClick={() => handleMarkRead(notif._id)}>
+                          Mark as read
+                        </Button>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+              );
+            })
           ) : (
             <Typography variant="body2" color="text.secondary">
               No notifications yet.
@@ -556,39 +652,39 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           onClose={handleShareClose}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
-          slotProps={{ 
-            paper: { 
-              sx: { 
-                width: 420, 
-                p: 2.5, 
-                mt: 1, 
-                borderRadius: 3, 
+          slotProps={{
+            paper: {
+              sx: {
+                width: 420,
+                p: 2.5,
+                mt: 1,
+                borderRadius: 3,
                 boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.15)",
-                bgcolor: 'background.default',
-                color: 'text.primary'
-              } 
-            } 
+                bgcolor: "background.default",
+                color: "text.primary",
+              },
+            },
           }}
         >
           <Tabs
             value={tabValue}
             onChange={(_, newValue) => setTabValue(newValue)}
-            textColor="primary" 
+            textColor="primary"
             indicatorColor="primary"
-            sx={{ 
-              minHeight: 32, 
-              mb: 2, 
-              borderBottom: "1px solid #f0f0f0" 
-            }}
+            sx={{ minHeight: 32, mb: 2, borderBottom: "1px solid #f0f0f0" }}
           >
             <Tab label="Share" sx={{ textTransform: "none", minHeight: 32, fontWeight: 600 }} />
           </Tabs>
 
           {tabValue === 0 && (
             <Box>
-              <Box component="form" onSubmit={handleInvite} sx={{ display: "flex", gap: 1, mb: 2.5 }}>
+              <Box
+                component="form"
+                onSubmit={handleInvite}
+                sx={{ display: "flex", gap: 1, mb: 2.5 }}
+              >
                 <TextField
-                  fullWidth 
+                  fullWidth
                   size="small"
                   placeholder="Email or group, separated by commas"
                   value={email}
@@ -596,14 +692,14 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                   sx={{ "& .MuiOutlinedInput-root": { fontSize: "13px" } }}
                 />
                 <Button
-                  type="submit" 
-                  variant="contained" 
-                  disableElevation 
+                  type="submit"
+                  variant="contained"
+                  disableElevation
                   disabled={isInviting}
-                  sx={{ 
-                    textTransform: "none", 
-                    bgcolor: "#e9c0f1", 
-                    "&:hover": { bgcolor: "#973aa8", color: 'white' } 
+                  sx={{
+                    textTransform: "none",
+                    bgcolor: "#e9c0f1",
+                    "&:hover": { bgcolor: "#973aa8", color: "white" },
                   }}
                 >
                   {isInviting ? "Sending..." : "Invite"}
@@ -611,13 +707,14 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
               </Box>
 
               {inviteMessage && (
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    mb: 1.5, 
-                    color: inviteMessage.includes("Unable") || inviteMessage.includes("Please") 
-                      ? "error.main" 
-                      : "success.main" 
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mb: 1.5,
+                    color:
+                      inviteMessage.includes("Unable") || inviteMessage.includes("Please")
+                        ? "error.main"
+                        : "success.main",
                   }}
                 >
                   {inviteMessage}
@@ -625,20 +722,22 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
               )}
 
               {/* Current User */}
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "space-between", 
-                mb: 2,
-                color: 'text.primary' 
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: 2,
+                  color: "text.primary",
+                }}
+              >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Avatar 
-                    src={user?.photo || ""} 
-                    sx={{ 
-                      width: 36, 
-                      height: 36, 
-                      bgcolor: "#e3e3e3" 
+                  <Avatar
+                    src={user?.photo || ""}
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      bgcolor: "#e3e3e3",
                     }}
                   >
                     {!user?.photo && (user?.firstName?.charAt(0) || "U")}
@@ -647,13 +746,17 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                     <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "13.5px" }}>
                       {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : ""} (You)
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontSize: "11px" }}>
-                      {user?.email }
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", fontSize: "11px" }}
+                    >
+                      {user?.email}
                     </Typography>
                   </Box>
                 </Box>
                 <Button
-                  size="small" 
+                  size="small"
                   variant="text"
                   endIcon={<KeyboardArrowDownIcon />}
                   onClick={(e) => handleOpenPermissionMenu(e, null, "full")}
@@ -665,38 +768,40 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
 
               {/* Collaborators List */}
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}>
-                {collaborators.map((person) => (
-                  <Box 
-                    key={person._id || person.invitedEmail} 
+                {collaborators.map((person: CollaboratorItem) => (
+                  <Box
+                    key={person._id || person.invitedEmail}
                     sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
                   >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Avatar sx={{ 
-                        width: 36, 
-                        height: 36, 
-                        bgcolor: "#e8f3ff", 
-                        color: "#1a6cb3", 
-                        fontSize: "14px", 
-                        fontWeight: "bold" 
-                      }}>
+                      <Avatar
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          bgcolor: "#e8f3ff",
+                          color: "#1a6cb3",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                        }}
+                      >
                         {person.invitedEmail.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
                         <Typography variant="body2" sx={{ fontSize: "13.5px", fontWeight: 500 }}>
                           {person.invitedEmail}
                         </Typography>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary" 
-                          sx={{ 
-                            display: "inline-block", 
-                            bgcolor: "background.default", 
-                            px: 0.8, 
-                            py: 0.1, 
-                            borderRadius: 1, 
-                            fontSize: "10px", 
-                            fontWeight: 600, 
-                            mt: 0.3 
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            display: "inline-block",
+                            bgcolor: "background.default",
+                            px: 0.8,
+                            py: 0.1,
+                            borderRadius: 1,
+                            fontSize: "10px",
+                            fontWeight: 600,
+                            mt: 0.3,
                           }}
                         >
                           {person.status === "accepted" ? "Active" : "Invited"}
@@ -704,17 +809,19 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                       </Box>
                     </Box>
                     <Button
-                      size="small" 
+                      size="small"
                       variant="text"
                       endIcon={<KeyboardArrowDownIcon />}
-                      onClick={(e) => handleOpenPermissionMenu(e, person._id || null, person.role)}
-                      sx={{ 
-                        textTransform: "none", 
-                        color: "text.primary", 
-                        fontSize: "13px", 
+                      onClick={(e) =>
+                        handleOpenPermissionMenu(e, person._id || null, person.role)
+                      }
+                      sx={{
+                        textTransform: "none",
+                        color: "text.primary",
+                        fontSize: "13px",
                         bgcolor: "background.default",
-                        borderRadius: 3, 
-                        px: 1 
+                        borderRadius: 3,
+                        px: 1,
                       }}
                     >
                       {getRoleLabel(person.role)}
@@ -723,7 +830,10 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                 ))}
               </Box>
 
-              <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary", display: "block", mb: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 600, color: "text.secondary", display: "block", mb: 1 }}
+              >
                 General access
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
@@ -736,20 +846,30 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
               <Divider sx={{ my: 1.5 }} />
 
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "text.secondary", cursor: "pointer" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "text.secondary",
+                    cursor: "pointer",
+                  }}
+                >
                   <HelpOutlineIcon sx={{ fontSize: 16 }} />
-                  <Typography variant="caption" sx={{ fontSize: "12px" }}>Learn about sharing</Typography>
+                  <Typography variant="caption" sx={{ fontSize: "12px" }}>
+                    Learn about sharing
+                  </Typography>
                 </Box>
                 <Button
-                  size="small" 
+                  size="small"
                   variant="outlined"
                   startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
                   onClick={handleCopyLink}
-                  sx={{ 
-                    textTransform: "none", 
-                    borderRadius: 2, 
-                    borderColor: "#e0e0e0", 
-                    color: "text.primary" 
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 2,
+                    borderColor: "#e0e0e0",
+                    color: "text.primary",
                   }}
                 >
                   Copy link
@@ -766,44 +886,59 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           onClose={handleProfileMenuClose}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
-          slotProps={{ 
-            paper: { 
-              sx: { 
-                width: 240, 
-                borderRadius: 3, 
-                mt: 1.5, 
-                p: 0.5, 
-                boxShadow: "0px 4px 16px rgba(0,0,0,0.1)" 
-              } 
-            } 
+          slotProps={{
+            paper: {
+              sx: {
+                width: 240,
+                borderRadius: 3,
+                mt: 1.5,
+                p: 0.5,
+                boxShadow: "0px 4px 16px rgba(0,0,0,0.1)",
+              },
+            },
           }}
         >
           <Box sx={{ px: 2, py: 1.5 }}>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
               {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : ""}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: "block",
+                mt: 0.2,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {user?.email || ""}
             </Typography>
           </Box>
-          
+
           <Divider sx={{ my: 0.5 }} />
-          
-          <MenuItem onClick={() => { 
-            handleProfileMenuClose(); 
-            navigate("/profile"); 
-          }} sx={{ py: 1, borderRadius: 1.5 }}>
+
+          <MenuItem
+            onClick={() => {
+              handleProfileMenuClose();
+              navigate("/profile");
+            }}
+            sx={{ py: 1, borderRadius: 1.5 }}
+          >
             <ListItemIcon sx={{ minWidth: 32 }}>
               <AccountCircleOutlinedIcon sx={{ fontSize: 20 }} />
             </ListItemIcon>
             <ListItemText primary={<Typography variant="body2">My Profile</Typography>} />
           </MenuItem>
-          
+
           <MenuItem onClick={handleLogout} sx={{ py: 1, color: "error.main", borderRadius: 1.5 }}>
             <ListItemIcon sx={{ minWidth: 32, color: "error.main" }}>
               <LogoutOutlinedIcon sx={{ fontSize: 20 }} />
             </ListItemIcon>
-            <ListItemText primary={<Typography variant="body2" sx={{ fontWeight: 500 }}>Logout</Typography>} />
+            <ListItemText
+              primary={<Typography variant="body2" sx={{ fontWeight: 500 }}>Logout</Typography>}
+            />
           </MenuItem>
         </Menu>
 
@@ -814,21 +949,25 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           onClose={handleClosePermissionMenu}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
-          slotProps={{ 
-            paper: { 
-              sx: { 
-                width: 340, 
-                borderRadius: 3, 
-                p: 0.5, 
-                boxShadow: "0px 4px 16px rgba(0,0,0,0.12)" 
-              } 
-            } 
+          slotProps={{
+            paper: {
+              sx: {
+                width: 340,
+                borderRadius: 3,
+                p: 0.5,
+                boxShadow: "0px 4px 16px rgba(0,0,0,0.12)",
+              },
+            },
           }}
         >
           <MenuItem onClick={() => handlePermissionChange("full")} sx={{ py: 1 }}>
             <ListItemText
               primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Full access</Typography>}
-              secondary={<Typography variant="caption" color="text.secondary">Edit, suggest, comment, and share</Typography>}
+              secondary={
+                <Typography variant="caption" color="text.secondary">
+                  Edit, suggest, comment, and share
+                </Typography>
+              }
             />
             {activeRole === "full" && <CheckIcon sx={{ fontSize: 16, ml: 1 }} />}
           </MenuItem>
@@ -836,7 +975,11 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           <MenuItem onClick={() => handlePermissionChange("editor")} sx={{ py: 1 }}>
             <ListItemText
               primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can edit</Typography>}
-              secondary={<Typography variant="caption" color="text.secondary">Edit, suggest, and comment</Typography>}
+              secondary={
+                <Typography variant="caption" color="text.secondary">
+                  Edit, suggest, and comment
+                </Typography>
+              }
             />
             {activeRole === "editor" && <CheckIcon sx={{ fontSize: 16, ml: 1 }} />}
           </MenuItem>
@@ -844,13 +987,19 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           <MenuItem onClick={() => handlePermissionChange("commenter")} sx={{ py: 1 }}>
             <ListItemText
               primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can comment</Typography>}
-              secondary={<Typography variant="caption" color="text.secondary">Suggest and comment</Typography>}
+              secondary={
+                <Typography variant="caption" color="text.secondary">
+                  Suggest and comment
+                </Typography>
+              }
             />
             {activeRole === "commenter" && <CheckIcon sx={{ fontSize: 16, ml: 1 }} />}
           </MenuItem>
 
           <MenuItem onClick={() => handlePermissionChange("viewer")} sx={{ py: 1 }}>
-            <ListItemText primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can view</Typography>} />
+            <ListItemText
+              primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>Can view</Typography>}
+            />
             {activeRole === "viewer" && <CheckIcon sx={{ fontSize: 16, ml: 1 }} />}
           </MenuItem>
 
@@ -869,22 +1018,37 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         {/* Invitations Dialog */}
         <Dialog open={openInviteDialog} onClose={() => setOpenInviteDialog(false)}>
           <Box sx={{ p: 2, minWidth: 320 }}>
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Shared invitations</Typography>
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
+              Shared invitations
+            </Typography>
             {invitations.length === 0 ? (
               <Typography variant="body2">No invitations</Typography>
             ) : (
               invitations.map((inv) => (
-                <Box key={inv._id || inv.invitedEmail} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1 }}>
+                <Box
+                  key={inv._id || inv.invitedEmail}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    py: 1,
+                  }}
+                >
                   <Box>
                     <Typography variant="subtitle2">{inv.invitedEmail}</Typography>
-                    <Typography variant="caption" color="text.secondary">Role: {inv.role}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Role: {inv.role}
+                    </Typography>
                   </Box>
                   <Stack direction="row" spacing={1}>
-                    <Button size="small" onClick={() => { 
-                      if ((inv as any).pageUrl) { 
-                        window.open((inv as any).pageUrl); 
-                      } 
-                    }}>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        if ((inv as any).pageUrl) {
+                          window.open((inv as any).pageUrl);
+                        }
+                      }}
+                    >
                       Open
                     </Button>
                     <Button size="small" onClick={() => handleWatchLaterForInvitation(inv)}>
@@ -894,12 +1058,13 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                 </Box>
               ))
             )}
-            <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: 'flex-end' }}>
-              <Button onClick={() => { 
-                setOpenInviteDialog(false); 
-                localStorage.setItem('invitationDismissed', 'true'); 
-                setInvitations([]); 
-              }}>
+            <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: "flex-end" }}>
+              <Button
+                onClick={() => {
+                  setOpenInviteDialog(false);
+                  localStorage.setItem("invitationDismissed", "true");
+                }}
+              >
                 Dismiss
               </Button>
             </Stack>
@@ -920,7 +1085,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
       </Toolbar>
 
       {/* Invitations Alert Bar */}
-      {invitations.length > 0 && (
+      {/* {invitations.length > 0 && (
         <Box
           sx={{
             px: 2,
@@ -936,13 +1101,14 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           }}
         >
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            You have been invited to collaborate with access: {
-              invitations[0].role === "editor" ? "Can edit" : 
-              invitations[0].role === "commenter" ? "Can comment" : 
-              "Can view"
-            }
-          </Typography>
-          <Stack direction="row" spacing={1}>
+            You have been invited to collaborate with access:{" "}
+            {invitations[0].role === "editor"
+              ? "Can edit"
+              : invitations[0].role === "commenter"
+              ? "Can comment"
+              : "Can view"}
+          </Typography> */}
+          {/* <Stack direction="row" spacing={1}>
             <Button
               size="small"
               variant="contained"
@@ -956,8 +1122,8 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
               }}
             >
               Open shared notes
-            </Button>
-            <Button
+            </Button> */}
+            {/* <Button
               size="small"
               variant="outlined"
               onClick={handleWatchLater}
@@ -971,10 +1137,10 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
               }}
             >
               Watch later
-            </Button>
-          </Stack>
-        </Box>
-      )}
+            </Button> */}
+          {/* </Stack> */}
+        {/* </Box> */}
+      {/* )} */}
     </AppBar>
   );
 };

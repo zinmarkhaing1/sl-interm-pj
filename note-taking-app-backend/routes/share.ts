@@ -48,13 +48,13 @@ const extractNoteId = (url?: string): string | null => {
   return match ? match[1] : null;
 };
 
-const getAccessScope = (pageUrl?: string, source?: string): "category"| "board" | "note" |"note-form" | "global" => {
+const getAccessScope = (pageUrl?: string, source?: string): "category"| "board" | "note-form" | "global" => {
   if (source === "category_page" || /\/category(?:[/?#]|$)/.test(pageUrl || "")) {
     return "category" as const;
   }
-  if (source === "note_page" || /\/note(?:[/?#]|$)/.test(pageUrl || "")) {
-    return "note" as const;
-  } 
+  // if (source === "note_page" || /\/note(?:[/?#]|$)/.test(pageUrl || "")) {
+  //   return "note" as const;
+  // } 
   if (source === "board_page" || /\/board(?:[/?#]|$)/.test(pageUrl || "")) {
     return "board" as const;
   }
@@ -119,7 +119,7 @@ const grantWorkspaceAccess = async ({
   inviterId: string;
   pageNoteId: string | null;
   role: "editor" | "viewer" | "commenter" | "full";
-  accessScope:  "note" | "note-form" | "global";
+  accessScope:   "note-form" | "global";
 }) => {
   console.log("GRANT WORKSPACE ACCESS:", {
     userId,
@@ -302,7 +302,6 @@ router.post("/multiple", verifyToken, async (req: AuthRequest, res: Response) =>
       const status = existingUser ? "accepted" : "pending";
       
       const invitationSource = accessScope === "category" ? "category_page" : 
-                              accessScope === "note" ? "note_page" : 
                               accessScope === "board" ? "board_page" :
                               accessScope === "note-form" ? "note_form_page" : "default";
       
@@ -334,7 +333,7 @@ router.post("/multiple", verifyToken, async (req: AuthRequest, res: Response) =>
           });
            console.log("PageAccess updated");
         }
-if (accessScope === "note" || accessScope==="note-form"){
+if (accessScope==="note-form"){
   await grantWorkspaceAccess({
           userId: existingUser._id.toString(),
           inviterId,
@@ -351,6 +350,8 @@ if (accessScope === "note" || accessScope==="note-form"){
           toUser: existingUser._id,
           type: "invite",
           message: `You were invited to collaborate (role: ${role}) by the user.`,
+          invitationId: invitation._id,
+          pageUrl: shareLink,
         }).catch(() => null);
       }
 
@@ -440,7 +441,6 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
       : undefined;
 
     const invitationSource = accessScope === "category" ? "category_page" : 
-                            accessScope === "note" ? "note_page" : 
                             accessScope === "board" ? "board_page" :
                             accessScope === "note-form" ? "note_form_page" : "default";
 
@@ -515,7 +515,7 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
   }
 }
 
-      if (accessScope === "note" || accessScope === "note-form"){
+      if (accessScope === "note-form"){
         await grantWorkspaceAccess({
         userId: existingUser._id.toString(),
         inviterId,
@@ -545,6 +545,8 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
         toUser: existingUser._id,
         type: "invite",
         message: `You were invited to ${accessScope} page (role: ${role}) by the user.`,
+        invitationId:invitation._id,
+        pageUrl:shareLink,
       }).catch(() => null);
     }
 
@@ -565,10 +567,88 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
 
 // FIXED: GET COLLABORATORS
 
+// router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
+//   try {
+//     const currentUserId = req.user?.id;
+//     const { noteId, pageUrl, source ,pageType,pageName} = req.query;
+
+//     if (!currentUserId) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const currentUser = await Auth.findById(currentUserId).select("email");
+
+//     const filter: any = {
+//       status: { $in: ["pending", "accepted"] },
+//     };
+//       filter.$or=[
+//         { invitedBy: currentUserId },
+//         { userId: currentUserId },
+//         { invitedEmail: currentUser?.email?.toLowerCase() }
+//       ]
+    
+
+//     if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
+//       filter.noteId = new mongoose.Types.ObjectId(noteId as string);
+//     }
+
+   
+
+    
+
+    
+//     // Get page access for category/board
+//     let pageAccess = null;
+    
+    
+
+//     if (pageType === "category" || pageType === "board") {
+//       filter.pageType = pageType;
+//       if (pageName) {
+//         filter.pageName = pageName;
+//       } 
+//     }else {
+     
+//       // if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
+//       //   filter.noteId = new mongoose.Types.ObjectId(noteId as string);
+//       // }
+
+//        if (noteId) filter.noteId = noteId;
+      
+    
+  
+
+//      if (pageUrl) {
+//       filter.pageUrl = pageUrl;
+//     }
+
+//     if (source) {
+//       filter.source = source;
+//     }
+//   }
+
+//     const collaborators = await ShareInvitation.find(filter)
+//       .populate("userId", "name email firstName lastName")
+//       .lean();
+
+//       console.log(` Found ${collaborators.length} collaborators`);
+
+
+
+//     res.json({
+//       collaborators,
+//       pageAccess: pageAccess || null
+//     });
+//   } catch (error) {
+//     console.error(' Error loading collaborators:', error);
+//     res.status(500).json({ message: "Unable to load collaborators" });
+//   }
+
+// });
 router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response) => {
   try {
     const currentUserId = req.user?.id;
-    const { noteId, pageUrl, source ,pageType,pageName} = req.query;
+    const { noteId, pageUrl, source, pageType, pageName } = req.query;
 
     if (!currentUserId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -576,74 +656,47 @@ router.get("/collaborators", verifyToken, async (req: AuthRequest, res: Response
 
     const currentUser = await Auth.findById(currentUserId).select("email");
 
+    // Base filter: only pending/accepted invitations
     const filter: any = {
       status: { $in: ["pending", "accepted"] },
-    };
-      filter.$or=[
+      $or: [
         { invitedBy: currentUserId },
         { userId: currentUserId },
         { invitedEmail: currentUser?.email?.toLowerCase() }
       ]
-    
+    };
 
+    // If noteId is provided, use it exclusively (ignore pageUrl/source for note-form)
     if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
       filter.noteId = new mongoose.Types.ObjectId(noteId as string);
+    } else {
+      // Otherwise, use pageType, pageName, pageUrl, source
+      if (pageType === "category" || pageType === "board") {
+        filter.pageType = pageType;
+        if (pageName) filter.pageName = pageName;
+      } else {
+        if (pageUrl) filter.pageUrl = pageUrl;
+        if (source) filter.source = source;
+      }
     }
 
-   
-
-    
-
-    
-    // Get page access for category/board
-    let pageAccess = null;
-    
-    
-
-    if (pageType === "category" || pageType === "board") {
-      filter.pageType = pageType;
-      if (pageName) {
-        filter.pageName = pageName;
-      } 
-    }else {
-     
-      // if (noteId && mongoose.Types.ObjectId.isValid(noteId as string)) {
-      //   filter.noteId = new mongoose.Types.ObjectId(noteId as string);
-      // }
-
-       if (noteId) filter.noteId = noteId;
-      
-    
-  
-
-     if (pageUrl) {
-      filter.pageUrl = pageUrl;
-    }
-
-    if (source) {
-      filter.source = source;
-    }
-  }
+    console.log("🔍 Collaborators filter:", JSON.stringify(filter, null, 2));
 
     const collaborators = await ShareInvitation.find(filter)
       .populate("userId", "name email firstName lastName")
       .lean();
 
-      console.log(` Found ${collaborators.length} collaborators`);
-
-
+    console.log(`📋 Found ${collaborators.length} collaborators`);
 
     res.json({
       collaborators,
-      pageAccess: pageAccess || null
+      pageAccess: null,
     });
   } catch (error) {
-    console.error(' Error loading collaborators:', error);
+    console.error("Error loading collaborators:", error);
     res.status(500).json({ message: "Unable to load collaborators" });
   }
-
 });
-
 // GET INVITATIONS
 
 router.get("/invitations", verifyToken, async (req: AuthRequest, res: Response) => {
@@ -716,7 +769,7 @@ router.put("/:id/role", verifyToken, async (req: AuthRequest, res: Response) => 
         
         });
         console.log(` PageAccess updated for ${accessScope}`);
-      } else if (accessScope === "note" || accessScope === "note-form") {
+      } else if ( accessScope === "note-form") {
         await grantWorkspaceAccess({
           userId: invitation.userId.toString(),
           inviterId,
@@ -861,8 +914,8 @@ router.delete("/:id", verifyToken, async (req: AuthRequest, res: Response) => {
           pageType: accessScope,
           pageName: invitation.pageName || undefined
         });
-        console.log(`✅ PageAccess deleted for ${accessScope}`);
-      } else if (accessScope === "note" || accessScope === "note-form" || accessScope === "global") {
+        console.log(` PageAccess deleted for ${accessScope}`);
+      } else if (accessScope === "note-form" || accessScope === "global") {
         const userNotes = pageNoteId
           ? await Note.find({ _id: pageNoteId, user: inviterId }).select("_id")
           : await Note.find({ user: inviterId }).select("_id");
@@ -1002,4 +1055,293 @@ res.json({
   }
 });
 
+
+// ACCEPT INVITATION
+
+// router.put("/accept/:id", verifyToken, async (req: AuthRequest, res: Response) => {
+//   try {
+//     const userId = req.user?.id;
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const invitationId = req.params.id;
+//     const invitation = await ShareInvitation.findById(invitationId);
+//     if (!invitation) {
+//       return res.status(404).json({ message: "Invitation not found" });
+//     }
+
+//     const currentUser = await Auth.findById(userId).select("email");
+//     if (!currentUser || invitation.invitedEmail !== currentUser.email?.toLowerCase()) {
+//       return res.status(403).json({ message: "Not authorized to accept this invitation" });
+//     }
+
+//     if (invitation.status === "accepted") {
+//       return res.status(400).json({ message: "Invitation already accepted" });
+//     }
+
+    
+//     invitation.status = "accepted";
+//     await invitation.save();
+
+   
+    
+//     const invitee = await Auth.findById(userId);
+//     const note = invitation.noteId ? await Note.findById(invitation.noteId) : null;
+
+//     await Notification.create({
+//       fromUser: userId,
+//       toUser: invitation.invitedBy,   // Owner ID
+//       noteId: invitation.noteId,
+//       type: "edit",
+//       message: `${invitee?.firstName || "User"} accepted your invitation to collaborate on "${note?.title || "the page"}"`,
+//       isRead: false,
+//     }).catch((err) => console.error("Owner notification error:", err));
+
+   
+//     try {
+//       const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
+
+//       if (accessScope === "category" || accessScope === "board") {
+//         await grantPageAccess({
+//           userId: userId,
+//           ownerId: invitation.invitedBy.toString(),
+//           pageType: accessScope,
+//           pageUrl: invitation.pageUrl,
+//           pageName: invitation.pageName || undefined,
+//         });
+//       } else if ( accessScope === "note-form") {
+//         const noteId = extractNoteId(invitation.pageUrl);
+//         await grantWorkspaceAccess({
+//           userId: userId,
+//           inviterId: invitation.invitedBy.toString(),
+//           pageNoteId: noteId,
+//           role: invitation.role,
+//           accessScope: accessScope,
+//         });
+//       } else if (accessScope === "global") {
+//         await grantWorkspaceAccess({
+//           userId: userId,
+//           inviterId: invitation.invitedBy.toString(),
+//           pageNoteId: null,
+//           role: invitation.role,
+//           accessScope: "global",
+//         });
+//       }
+//     } catch (accessError) {
+   
+//       console.error("Access granting error:", accessError);
+//     }
+
+   
+//     res.status(200).json({
+//       message: "Invitation accepted successfully",
+//       invitation,
+//       redirectUrl: invitation.pageUrl,
+//     });
+//   } catch (error) {
+//     console.error("Accept error:", error);
+//     res.status(500).json({ message: "Unable to accept invitation" });
+//   }
+// });
+
+// routes/share.ts - replace the existing accept route
+
+router.put("/accept/:id", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const invitationId = req.params.id;
+    const invitation = await ShareInvitation.findById(invitationId);
+    if (!invitation) {
+      return res.status(404).json({ message: "Invitation not found" });
+    }
+
+    const currentUser = await Auth.findById(userId).select("email firstName lastName");
+    if (!currentUser || invitation.invitedEmail !== currentUser.email?.toLowerCase()) {
+      return res.status(403).json({ message: "Not authorized to accept this invitation" });
+    }
+
+    if (invitation.status === "accepted") {
+      return res.status(400).json({ message: "Invitation already accepted" });
+    }
+
+    invitation.status = "accepted";
+    await invitation.save();
+
+    // Grant access based on scope (already implemented)
+    try {
+      const accessScope = getAccessScope(invitation.pageUrl, invitation.source);
+      if (accessScope === "category" || accessScope === "board") {
+        await grantPageAccess({
+          userId,
+          ownerId: invitation.invitedBy.toString(),
+          pageType: accessScope,
+          pageUrl: invitation.pageUrl,
+          pageName: invitation.pageName || undefined,
+        });
+      } else if (accessScope === "note-form") {
+        const noteId = extractNoteId(invitation.pageUrl);
+        await grantWorkspaceAccess({
+          userId,
+          inviterId: invitation.invitedBy.toString(),
+          pageNoteId: noteId,
+          role: invitation.role,
+          accessScope,
+        });
+      } else if (accessScope === "global") {
+        await grantWorkspaceAccess({
+          userId,
+          inviterId: invitation.invitedBy.toString(),
+          pageNoteId: null,
+          role: invitation.role,
+          accessScope: "global",
+        });
+      }
+    } catch (accessError) {
+      console.error("Access granting error:", accessError);
+      // still proceed to notify owner
+    }
+
+    // Get note title for message
+    let noteTitle = "the page";
+    if (invitation.noteId) {
+      const note = await Note.findById(invitation.noteId).select("title");
+      if (note) noteTitle = note.title || "Untitled Note";
+    }
+
+    // Notify owner: invitation accepted
+    await Notification.create({
+      fromUser: userId,
+      toUser: invitation.invitedBy,          // owner
+      noteId: invitation.noteId,
+      type: "invite_accepted",               // new type
+      message: `${currentUser.firstName || "User"} accepted your invitation to collaborate on "${noteTitle}"`,
+      isRead: false,
+      invitationId: invitation._id,
+      pageUrl: invitation.pageUrl,
+    }).catch((err) => console.error("Owner notification error:", err));
+
+    // Return response with pageUrl (frontend expects pageUrl)
+    res.status(200).json({
+      message: "Invitation accepted successfully",
+      pageUrl: invitation.pageUrl,           // key for frontend redirect
+      invitation,
+    });
+  } catch (error) {
+    console.error("Accept error:", error);
+    res.status(500).json({ message: "Unable to accept invitation" });
+  }
+});
+
+
+// DECLINE INVITATION
+
+// router.put("/decline/:id", verifyToken, async (req: AuthRequest, res: Response) => {
+//   try {
+//     const userId = req.user?.id;
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const invitationId = req.params.id;
+//     const invitation = await ShareInvitation.findById(invitationId);
+//     if (!invitation) {
+//       return res.status(404).json({ message: "Invitation not found" });
+//     }
+
+//     const currentUser = await Auth.findById(userId).select("email");
+//     if (!currentUser || invitation.invitedEmail !== currentUser.email?.toLowerCase()) {
+//       return res.status(403).json({ message: "Not authorized to decline this invitation" });
+//     }
+
+//     if (invitation.status === "declined") {
+//       return res.status(400).json({ message: "Invitation already declined" });
+//     }
+
+//     // Update status
+//     invitation.status = "declined";
+//     await invitation.save();
+
+    
+//     const invitee = await Auth.findById(userId);
+//     const note = invitation.noteId ? await Note.findById(invitation.noteId) : null;
+
+//     await Notification.create({
+//       fromUser: userId,                           
+//       toUser: invitation.invitedBy,               // Owner
+//       noteId: invitation.noteId,
+//       type: "view",   
+//       message: `${invitee?.firstName || "User"} declined your invitation to collaborate on "${note?.title || "the page"}"`,
+//       isRead: false,
+//     }).catch(() => null);
+
+//     res.status(200).json({
+//       message: "Invitation declined successfully",
+//       invitation,
+//     });
+//   } catch (error) {
+//     console.error("Decline error:", error);
+//     res.status(500).json({ message: "Unable to decline invitation" });
+//   }
+// });
+
+// routes/share.ts - replace the existing decline route
+
+router.put("/decline/:id", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const invitationId = req.params.id;
+    const invitation = await ShareInvitation.findById(invitationId);
+    if (!invitation) {
+      return res.status(404).json({ message: "Invitation not found" });
+    }
+
+    const currentUser = await Auth.findById(userId).select("email firstName lastName");
+    if (!currentUser || invitation.invitedEmail !== currentUser.email?.toLowerCase()) {
+      return res.status(403).json({ message: "Not authorized to decline this invitation" });
+    }
+
+    if (invitation.status === "declined") {
+      return res.status(400).json({ message: "Invitation already declined" });
+    }
+
+    invitation.status = "declined";
+    await invitation.save();
+
+    // Get note title for message
+    let noteTitle = "the page";
+    if (invitation.noteId) {
+      const note = await Note.findById(invitation.noteId).select("title");
+      if (note) noteTitle = note.title || "Untitled Note";
+    }
+
+    // Notify owner: invitation declined
+    await Notification.create({
+      fromUser: userId,
+      toUser: invitation.invitedBy,          
+      noteId: invitation.noteId,
+      type: "invite_declined",              
+      message: `${currentUser.firstName || "User"} declined your invitation to collaborate on "${noteTitle}"`,
+      isRead: false,
+      invitationId: invitation._id,
+      pageUrl: invitation.pageUrl,
+    }).catch((err) => console.error("Owner notification error:", err));
+
+    res.status(200).json({
+      message: "Invitation declined successfully",
+      invitation,
+    });
+  } catch (error) {
+    console.error("Decline error:", error);
+    res.status(500).json({ message: "Unable to decline invitation" });
+  }
+});
 export default router;

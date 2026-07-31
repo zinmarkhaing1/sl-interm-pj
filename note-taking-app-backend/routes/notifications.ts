@@ -8,9 +8,7 @@ interface AuthRequest extends Request {
     id: string;
   };
 }
-
 const router = express.Router();
-
 router.get("/", verifyToken, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;

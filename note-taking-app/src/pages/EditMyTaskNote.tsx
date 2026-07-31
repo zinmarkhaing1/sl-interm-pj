@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -17,6 +19,7 @@ import {
 import type { SelectChangeEvent } from '@mui/material';
 import { useGetProjectsQuery } from '../services/projectApi';
 import { useGetUsersQuery } from '../services/authApi';
+import { useGetCategoriesQuery } from '../services/categoryApi'; // 👈 Category API
 import { useGetTaskQuery, useUpdateTaskMutation } from '../services/taskApi';
 import type { Task } from '../types/Project';
 
@@ -27,6 +30,7 @@ type FormState = {
   title: string;
   description: string;
   projectId: string;
+  categoryId: string; // 👈 categoryId ထည့်
   assignee: string;
   status: Task['status'];
   priority: Task['priority'];
@@ -36,16 +40,20 @@ type FormState = {
 export const EditMyTaskNote: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  
   const { data: task, isLoading: taskLoading, isError: taskError } = useGetTaskQuery(id, {
     skip: !id,
   });
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery(); // 👈 Categories
   const [updateTask, { isLoading: isSaving, error: updateError }] = useUpdateTaskMutation();
+  
   const [form, setForm] = useState<FormState>({
     title: '',
     description: '',
     projectId: '',
+    categoryId: '', // 👈 default empty
     assignee: '',
     status: 'Todo',
     priority: 'Medium',
@@ -55,10 +63,15 @@ export const EditMyTaskNote: React.FC = () => {
   useEffect(() => {
     if (!task) return;
     const projectId = typeof task.project === 'string' ? task.project : task.project?._id;
+    const categoryId = typeof task.category === 'object' && task.category !== null
+      ? task.category._id
+      : '';
+    
     setForm({
       title: task.title || '',
       description: task.description || '',
       projectId: projectId || '',
+      categoryId: categoryId || '',
       assignee: typeof task.assignee === 'string' ? task.assignee : task.assignee?.username || '',
       status: task.status,
       priority: task.priority,
@@ -101,6 +114,7 @@ export const EditMyTaskNote: React.FC = () => {
         body: {
           title: form.title.trim(),
           description: form.description.trim(),
+          categoryId: form.categoryId || undefined, 
           assignee: form.assignee || 'Unassigned',
           status: form.status,
           priority: form.priority,
@@ -109,11 +123,11 @@ export const EditMyTaskNote: React.FC = () => {
       }).unwrap();
       navigate('/my-tasks');
     } catch {
-      // The mutation error is displayed below.
+      // Error handled below
     }
   };
 
-  if (taskLoading || projectsLoading || usersLoading) {
+  if (taskLoading || projectsLoading || usersLoading || categoriesLoading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}><CircularProgress /></Box>;
   }
 
@@ -136,6 +150,25 @@ export const EditMyTaskNote: React.FC = () => {
           <TextField fullWidth multiline rows={3} label="Description" name="description" value={form.description} onChange={handleTextChange} />
 
           <TextField fullWidth label="Project" value={projects.find((project) => project._id === form.projectId)?.name || 'Unknown project'} disabled />
+
+          {/* 👇 Category Dropdown (NEW) */}
+          <FormControl fullWidth>
+            <InputLabel id="edit-category-label">Category (Optional)</InputLabel>
+            <Select
+              labelId="edit-category-label"
+              label="Category (Optional)"
+              name="categoryId"
+              value={form.categoryId}
+              onChange={handleSelectChange}
+            >
+              <MenuItem value="">None</MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat._id} value={cat._id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <FormControl fullWidth disabled={!assigneeOptions.length}>
             <InputLabel id="edit-assignee-label">Assignee</InputLabel>
@@ -173,4 +206,3 @@ export const EditMyTaskNote: React.FC = () => {
     </Box>
   );
 };
-

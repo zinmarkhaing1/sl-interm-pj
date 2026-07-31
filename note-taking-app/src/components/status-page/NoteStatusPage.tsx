@@ -1,5 +1,4 @@
 
-
 import * as React from "react";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -39,7 +38,6 @@ import {
 } from "@mui/icons-material";
 import { ShareStatusPage } from "../sharepages/ShareStatusPage";
 
-//  Types 
 interface CollaboratorItem {
   _id?: string;
   invitedEmail: string;
@@ -71,7 +69,6 @@ const COLUMNS: ColumnConfig[] = [
 ];
 
 export const NoteStatusPage: React.FC = () => {
-  // ---------- UI state ----------
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -84,29 +81,22 @@ export const NoteStatusPage: React.FC = () => {
     new URLSearchParams(location.search).get("project") || "",
   );
 
-  // RTK Query hooks 
-  // Fetch tasks with optional project filter
+  // ---- Fetch projects ----
+  const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
+
+  // ---- Detect shared view ----
+  const isShared = new URLSearchParams(location.search).get('shared') === 'true';
+
+  // ---- Fetch tasks with shareScope if shared ----
   const {
     data: fetchedTasks = [],
-    isLoading,
-    isError,
+    isLoading: tasksLoading,
+    isError: tasksError,
     refetch,
-  } = useGetTasksQuery(
-    { projectId: selectedProjectId || undefined },
-    { skip: false }
-  );
-
-  // Fetch projects for dropdown
-  const { data: projects = [] } = useGetProjectsQuery();
-
-  const selectedProject = useMemo(
-    () => projects.find((project) => project._id === selectedProjectId),
-    [projects, selectedProjectId],
-  );
-  const sharePageName = selectedProject?.name || "All Projects";
-  const sharePageUrl = selectedProjectId
-    ? `${window.location.origin}/board?project=${encodeURIComponent(selectedProjectId)}`
-    : `${window.location.origin}/board`;
+  } = useGetTasksQuery({
+    projectId: selectedProjectId || undefined,
+    shareScope: isShared ? 'board' : undefined,
+  });
 
   const [updateTask] = useUpdateTaskMutation();
 
@@ -114,7 +104,7 @@ export const NoteStatusPage: React.FC = () => {
   const isUpdatingRef = useRef(false);
   const previousTasksRef = useRef<Task[]>([]);
 
-  //  User & collaborators (sharing) 
+  // User & collaborators (sharing) 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [collaborators, setCollaborators] = useState<CollaboratorItem[]>([]);
   const [shareAnchorEl, setShareAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -123,9 +113,7 @@ export const NoteStatusPage: React.FC = () => {
   const [activeRole, setActiveRole] = useState<string>("full");
 
   // Map user IDs to names (for assignee display)
-  const [usersMap, setUsersMap] = useState<Record<string, { firstName: string; lastName: string }>>(
-    {}
-  );
+  const [usersMap, setUsersMap] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   // Fetch users for assignee names
   useEffect(() => {
@@ -151,7 +139,19 @@ export const NoteStatusPage: React.FC = () => {
     fetchUsers();
   }, []);
 
-  //  Get assignee name helper 
+  // ---- Compute selectedProject from projects ----
+  const selectedProject = useMemo(
+    () => projects.find((project) => project._id === selectedProjectId),
+    [projects, selectedProjectId],
+  );
+
+  // ---- Share page info ----
+  const sharePageName = selectedProject?.name || "All Projects";
+  const sharePageUrl = selectedProjectId
+    ? `${window.location.origin}/board?project=${encodeURIComponent(selectedProjectId)}`
+    : `${window.location.origin}/board`;
+
+  // ---- Get assignee name ----
   const getAssigneeName = useCallback(
     (task: Task): string => {
       if (task.assignee && typeof task.assignee === "object") {
@@ -168,13 +168,12 @@ export const NoteStatusPage: React.FC = () => {
       if (userId && task.assignee === userId) {
         return `${user?.firstName || "You"} ${user?.lastName || ""}`.trim() || "You";
       }
-      task.assignee || "Unknown";
       return "Unknown";
     },
     [usersMap, user]
   );
 
-  //  Filtering & sorting 
+  // ---- Filtering & sorting ----
   const filteredAndSortedTasks = useMemo(() => {
     if (!Array.isArray(fetchedTasks)) return [];
 
@@ -194,7 +193,6 @@ export const NoteStatusPage: React.FC = () => {
       }
 
       result = result.filter((task: Task) => {
-        //  status filter (exact match)
         if (statusFilter !== null) {
           const currentStatus = (task.status || "").trim().toLowerCase();
           return currentStatus === statusFilter.toLowerCase();
@@ -214,7 +212,6 @@ export const NoteStatusPage: React.FC = () => {
       });
     }
 
-    // Sort by title
     result.sort((a, b) => {
       const titleA = (a.title || "").toLowerCase();
       const titleB = (b.title || "").toLowerCase();
@@ -234,12 +231,15 @@ export const NoteStatusPage: React.FC = () => {
     }
   }, [filteredAndSortedTasks]);
 
-  //  Load collaborators 
+  // ---- Load collaborators ----
   const loadCollaborators = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const params = new URLSearchParams({ pageType: "board", pageName: sharePageName });
+      const params = new URLSearchParams({
+        pageType: "board",
+        pageName: sharePageName, // "All Projects" if none selected
+      });
       const url = `http://localhost:5000/api/share/collaborators?${params.toString()}`;
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -283,7 +283,7 @@ export const NoteStatusPage: React.FC = () => {
       isUpdatingRef.current = true;
 
       try {
-        const movedTask = tasks.find((t) => (t._id ) === draggableId);
+        const movedTask = tasks.find((t) => t._id === draggableId);
         if (!movedTask) {
           isUpdatingRef.current = false;
           return;
@@ -294,17 +294,16 @@ export const NoteStatusPage: React.FC = () => {
           (t) => (t.status || "Todo") === source.droppableId
         );
         const targetTask = sourceTasksInColumn[source.index];
-         if (!targetTask) {
-        isUpdatingRef.current = false;
-        return;
-      }
+        if (!targetTask) {
+          isUpdatingRef.current = false;
+          return;
+        }
         const globalSourceIndex = updatedTasks.indexOf(targetTask);
-
         if (globalSourceIndex !== -1) {
           updatedTasks.splice(globalSourceIndex, 1);
         }
 
-        const updatedMovedTask = { ...targetTask, status: destination.droppableId as Task["status"]};
+        const updatedMovedTask = { ...targetTask, status: destination.droppableId as Task["status"] };
 
         const destTasksInColumn = updatedTasks.filter(
           (t) => (t.status || "Todo") === destination.droppableId
@@ -322,11 +321,11 @@ export const NoteStatusPage: React.FC = () => {
         updatedTasks.splice(globalDestIndex, 0, updatedMovedTask);
         setTasks(updatedTasks);
 
-        const taskId = targetTask._id || targetTask._id;
+        const taskId = targetTask._id;
         if (taskId) {
           await updateTask({
             id: taskId,
-            body: { status: destination.droppableId as Task["status"]},
+            body: { status: destination.droppableId as Task["status"] },
           }).unwrap();
           refetch();
         }
@@ -424,10 +423,8 @@ export const NoteStatusPage: React.FC = () => {
 
   const isShareOpen = Boolean(shareAnchorEl);
 
-  // const redirectUrl = sharePageUrl;
-
   const handleRowClick = (id: any) => {
-    navigate(`/task-detail/${id}`); // task detail route
+    navigate(`/task-detail/${id}`);
   };
 
   const handleSearchToggle = () => {
@@ -442,7 +439,7 @@ export const NoteStatusPage: React.FC = () => {
   };
 
   // ---------- Loading / Error ----------
-  if (isLoading) {
+  if (tasksLoading || projectsLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
         <CircularProgress />
@@ -451,7 +448,7 @@ export const NoteStatusPage: React.FC = () => {
     );
   }
 
-  if (isError) {
+  if (tasksError) {
     return (
       <Typography color="error" sx={{ textAlign: "center", mt: 5 }}>
         Failed to load tasks.
@@ -690,7 +687,7 @@ export const NoteStatusPage: React.FC = () => {
                     >
                       <Stack spacing={2}>
                         {columnTasks.map((task, index) => {
-                          const taskId = task._id  || String(index);
+                          const taskId = task._id || String(index);
 
                           return (
                             <Draggable key={taskId} draggableId={taskId} index={index}>
@@ -720,7 +717,7 @@ export const NoteStatusPage: React.FC = () => {
                                       cursor: "pointer",
                                       bgcolor: "background.default",
                                     }}
-                                    onClick={() => handleRowClick(task._id )}
+                                    onClick={() => handleRowClick(task._id)}
                                   >
                                     <Box>
                                       <Typography
@@ -744,10 +741,9 @@ export const NoteStatusPage: React.FC = () => {
                                           color: "text.secondary",
                                         }}
                                       >
-                                        {task.description  || "No Description"}
+                                        {task.description || "No Description"}
                                       </Typography>
 
-                                      {/* Project name */}
                                       {task.project && (
                                         <Typography
                                           variant="caption"
@@ -782,7 +778,6 @@ export const NoteStatusPage: React.FC = () => {
                                             Priority: {task.priority}
                                           </Typography>
                                         )}
-                                      
                                       </Stack>
 
                                       {(task.startDate || task.dueDate) && (

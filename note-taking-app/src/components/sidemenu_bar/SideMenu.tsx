@@ -55,7 +55,7 @@ const navGroups: NavGroup[] = [
         path: "/my-project",
         icon: <BusinessCenterOutlinedIcon />,
       },
-      { label: "Board", path: "/board", icon: <LeaderboardIcon /> },
+      { label: "Status", path: "/board", icon: <LeaderboardIcon /> },
     ],
   },
   {
@@ -72,7 +72,7 @@ const navGroups: NavGroup[] = [
   {
     title: "Organize",
     items: [
-      { label: "Categories", path: "/category", icon: <CategoryIcon /> },
+      { label: "Categories", path: "/category-page", icon: <CategoryIcon /> },
       { label: "Notes", path: "/note-form", icon: <SpeakerNotesOutlined/> },
     ],
   },

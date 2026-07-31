@@ -1,4 +1,6 @@
-import React, { useState ,useMemo} from 'react';
+
+
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -20,8 +22,8 @@ import { useNavigate } from 'react-router-dom';
 import { useGetProjectsQuery } from '../../services/projectApi';
 import { useCreateTaskMutation } from '../../services/taskApi';
 import { useGetUsersQuery } from '../../services/authApi';
+import { useGetCategoriesQuery } from '../../services/categoryApi';
 
-// Status & Priority Options
 const STATUS_OPTIONS = ['Todo', 'In Progress', 'Complete', 'Not Started'] as const;
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High'] as const;
 
@@ -31,25 +33,22 @@ type PriorityType = typeof PRIORITY_OPTIONS[number];
 export const NewTaskLayout: React.FC = () => {
   const navigate = useNavigate();
 
-  // ---- Projects ----
   const {
     data: projects = [],
     isLoading: projectsLoading,
     isError: projectsError,
   } = useGetProjectsQuery();
 
-
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
-  // Create Task
-  const [createTask, { isLoading: isCreating, error: createError }] =
-    useCreateTaskMutation();
-    
 
-  //  Form State 
+  const [createTask, { isLoading: isCreating, error: createError }] = useCreateTaskMutation();
+
   const [form, setForm] = useState<{
     title: string;
     description: string;
     projectId: string;
+    categoryId: string;
     assignee: string;
     status: StatusType;
     priority: PriorityType;
@@ -58,13 +57,13 @@ export const NewTaskLayout: React.FC = () => {
     title: '',
     description: '',
     projectId: '',
+    categoryId: '',
     assignee: '',
     status: 'Todo',
     priority: 'Medium',
     dueDate: '',
   });
 
-  // ---- Validation Errors ----
   const [fieldErrors, setFieldErrors] = useState<{
     title?: string;
     projectId?: string;
@@ -96,9 +95,6 @@ export const NewTaskLayout: React.FC = () => {
     }, []);
   }, [form.projectId, projects, users]);
 
-
-
-  // ---- Handlers ----
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -109,21 +105,12 @@ export const NewTaskLayout: React.FC = () => {
     }
   };
 
-  // const handleSelectChange = (e: SelectChangeEvent<string>) => {
-  //   const { name, value } = e.target;
-  //   console.log('Selected:', name, value);
-  //   setForm((prev) => ({ ...prev, [name as string]: value }));
-  //   if (name === 'projectId') {
-  //     setFieldErrors((prev) => ({ ...prev, projectId: undefined }));
-  //   }
-  // };
-
-   const handleSelectChange = (e: SelectChangeEvent<string>) => {
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name as string]: value,
-      ...(name === 'projectId' && { assignee: '' }), // project ပြောင်းရင် assignee ကိုရှင်း
+      ...(name === 'projectId' && { assignee: '' }),
     }));
     if (name === 'projectId') {
       setFieldErrors((prev) => ({ ...prev, projectId: undefined }));
@@ -144,45 +131,43 @@ export const NewTaskLayout: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  //  Submit 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     try {
+      console.log('🚀 Submitting task with categoryId:', form.categoryId); // Debug log
+
       await createTask({
         title: form.title.trim(),
         description: form.description.trim(),
         projectId: form.projectId,
+        categoryId: form.categoryId || undefined, 
         assignee: form.assignee || undefined,
         status: form.status,
         priority: form.priority,
         dueDate: form.dueDate || undefined,
       }).unwrap();
+
       navigate('/my-tasks');
     } catch (err) {
-      // Error handled by createError
       console.error('Task creation failed', err);
     }
   };
 
-  // ---- Helper: Extract error message from RTK Query error ----
   const getErrorMessage = (): string => {
     if (!createError) return '';
-    // FetchBaseQueryError
     if ('data' in createError && createError.data) {
       const data = createError.data as Record<string, any>;
       return data?.error || data?.message || 'Something went wrong';
     }
-    // SerializedError
     if ('message' in createError && createError.message) {
       return createError.message;
     }
     return 'Something went wrong. Please try again.';
   };
 
-  // ---- Loading ----
-  if (projectsLoading) {
+  if (projectsLoading || categoriesLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
         <CircularProgress />
@@ -190,7 +175,6 @@ export const NewTaskLayout: React.FC = () => {
     );
   }
 
-  //  Error 
   if (projectsError) {
     return (
       <Alert severity="error" sx={{ mt: 5 }}>
@@ -220,67 +204,72 @@ export const NewTaskLayout: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={2.5}>
-          {/* Project Selection */}
-          <FormControl
-            fullWidth
-            required
-            error={!!fieldErrors.projectId}
-          >
-            <InputLabel id="project-select-label">Project</InputLabel>
-            <Select
-              labelId="project-select-label"
-              name="projectId"
-              value={form.projectId}
-              label="Project"
-              onChange={handleSelectChange}
-            >
-              {projects?.map((project) => (
-                <MenuItem key={project._id} value={project._id}>
-                  {project.name}
-                </MenuItem>
-              ))}
-            </Select>
-            {fieldErrors.projectId && (
-              <FormHelperText>{fieldErrors.projectId}</FormHelperText>
-            )}
-          </FormControl>
+            {/* Project Selection */}
+            <FormControl fullWidth required error={!!fieldErrors.projectId}>
+              <InputLabel id="project-select-label">Project</InputLabel>
+              <Select
+                labelId="project-select-label"
+                name="projectId"
+                value={form.projectId}
+                label="Project"
+                onChange={handleSelectChange}
+              >
+                {projects?.map((project) => (
+                  <MenuItem key={project._id} value={project._id}>
+                    {project.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {fieldErrors.projectId && (
+                <FormHelperText>{fieldErrors.projectId}</FormHelperText>
+              )}
+            </FormControl>
 
-          {/* Task Title */}
-          <TextField
-            required
-            label="Task title"
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            error={!!fieldErrors.title}
-            helperText={
-              fieldErrors.title || 'A short, descriptive title for the task.'
-            }
-            placeholder="Design landing page"
-          />
+            {/* Category Selection (NEW) */}
+            <FormControl fullWidth>
+              <InputLabel id="category-select-label">Category (Optional)</InputLabel>
+              <Select
+                labelId="category-select-label"
+                name="categoryId"
+                value={form.categoryId}
+                label="Category (Optional)"
+                onChange={handleSelectChange}
+              >
+                <MenuItem value="">None</MenuItem>
+                {categories?.map((cat) => (
+                  <MenuItem key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>Assign a category to this task (optional)</FormHelperText>
+            </FormControl>
 
-          {/* Description */}
-          <TextField
-            label="Description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            multiline
-            rows={3}
-            placeholder="Provide more details about this task..."
-          />
+            {/* Task Title */}
+            <TextField
+              required
+              label="Task title"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              error={!!fieldErrors.title}
+              helperText={fieldErrors.title || 'A short, descriptive title for the task.'}
+              placeholder="Design landing page"
+            />
 
-          {/* Assignee */}
-          {/* <TextField
-            label="Assignee"
-            name="assignee"
-            value={form.assignee}
-            onChange={handleChange}
-            placeholder="Username or email"
-            helperText="Who is responsible for this task?"
-          /> */}
+            {/* Description */}
+            <TextField
+              label="Description"
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              multiline
+              rows={3}
+              placeholder="Provide more details about this task..."
+            />
 
-           <FormControl
+            {/* Assignee */}
+            <FormControl
               fullWidth
               disabled={!form.projectId || usersLoading || assigneeOptions.length === 0}
             >
@@ -308,86 +297,75 @@ export const NewTaskLayout: React.FC = () => {
               </FormHelperText>
             </FormControl>
 
+            {/* Status & Priority */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <FormControl fullWidth>
+                <InputLabel id="status-label">Status</InputLabel>
+                <Select
+                  labelId="status-label"
+                  name="status"
+                  value={form.status}
+                  label="Status"
+                  onChange={handleSelectChange}
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {s}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          {/* Status & Priority */}
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <FormControl fullWidth>
-              <InputLabel id="status-label">Status</InputLabel>
-              <Select
-                labelId="status-label"
-                name="status"
-                value={form.status}
-                label="Status"
-                onChange={handleSelectChange}
+              <FormControl fullWidth>
+                <InputLabel id="priority-label">Priority</InputLabel>
+                <Select
+                  labelId="priority-label"
+                  name="priority"
+                  value={form.priority}
+                  label="Priority"
+                  onChange={handleSelectChange}
+                >
+                  {PRIORITY_OPTIONS.map((p) => (
+                    <MenuItem key={p} value={p}>
+                      {p}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+
+            {/* Due Date */}
+            <TextField
+              label="Due date"
+              type="date"
+              name="dueDate"
+              value={form.dueDate}
+              onChange={handleChange}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
+            />
+
+            {createError && <Alert severity="error">{getErrorMessage()}</Alert>}
+
+            <Divider />
+
+            <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
+              <Button color="inherit" onClick={() => navigate('/my-tasks')} disabled={isCreating}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isCreating || !form.title.trim() || !form.projectId}
+                startIcon={isCreating ? <CircularProgress size={18} color="inherit" /> : null}
+                sx={{ px: 3 }}
               >
-                {STATUS_OPTIONS.map((s) => (
-                  <MenuItem key={s} value={s}>
-                    {s}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="priority-label">Priority</InputLabel>
-              <Select
-                labelId="priority-label"
-                name="priority"
-                value={form.priority}
-                label="Priority"
-                onChange={handleSelectChange}
-              >
-                {PRIORITY_OPTIONS.map((p) => (
-                  <MenuItem key={p} value={p}>
-                    {p}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
-
-          {/* Due Date */}
-          <TextField
-            label="Due date"
-            type="date"
-            name="dueDate"
-            value={form.dueDate}
-            onChange={handleChange}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-
-          {/* Server Error */}
-          {createError && (
-            <Alert severity="error">
-              {getErrorMessage()}
-            </Alert>
-          )}
-
-          <Divider />
-
-          {/* Buttons */}
-          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
-            <Button
-              color="inherit"
-              onClick={() => navigate('/my-tasks')}
-              disabled={isCreating}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isCreating || !form.title.trim() || !form.projectId}
-              startIcon={isCreating ? <CircularProgress size={18} color="inherit" /> : null}
-              sx={{ px: 3 }}
-            >
-              {isCreating ? 'Creating...' : 'Create task'}
-            </Button>
-          </Box>
+                {isCreating ? 'Creating...' : 'Create task'}
+              </Button>
+            </Box>
           </Stack>
         </form>
       </Paper>

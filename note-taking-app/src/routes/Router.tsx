@@ -173,8 +173,7 @@ import { Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import { HomePage } from '../pages/HomePage';
 import { LoginForm } from '../auth/LoginForm';
 import { SignUpForm } from '../auth/SignUpForm';
-import { CategoriesPage } from '../components/tag_categories/CategoriesPage';
-// import { CreateNotePage } from '../pages/CreateNotePage';
+// import { CategoriesPage } from '../components/tag_categories/CategoriesPage';
 import { MainLayout } from '../components/layout/MainLayout';
 import { ProfilePage } from '../pages/ProfilePage';
 import { NoteFrom } from '../pages/NoteFrom';
@@ -197,6 +196,8 @@ import { NewNotePage } from '../pages/NewNotesPage';
 import { ProjectDetailPage } from '../pages/ProjectDetailPage';
 import { NewTaskDateLayout } from '../components/taskcreated/NewTaskDateLayout';
 import { EditMyTaskNote } from '../pages/EditMyTaskNote';
+import { PageCategory } from '../pages/PageCategory';
+
 
 const AuthenticatedRoutes = () => {
     const isAuthenticated = localStorage.getItem('token');
@@ -215,7 +216,9 @@ export const Router = () => {
             <Route element={<AuthenticatedRoutes/>}>
                 <Route path='/' element={<HomePage/>}/>
                 <Route path='/dashboard' element={<MainLayout><DashBoardPage/></MainLayout>}/>
-                <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
+                {/* <Route path='/category' element={<MainLayout><CategoriesPage/></MainLayout>}/>
+                 */}
+                <Route path='/category-page' element={<MainLayout><PageCategory/></MainLayout>}/>
                 <Route path='/board' element={<MainLayout><NoteStatusPage/></MainLayout>}/>
                 <Route path='/profile' element={<MainLayout><ProfilePage/></MainLayout>}/>
                 <Route path='/profile/edit-profile' element={<MainLayout><UpdateProfilePage/></MainLayout>}/>

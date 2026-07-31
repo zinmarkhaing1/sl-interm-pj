@@ -21,10 +21,10 @@ import { ArrowBack, Save } from '@mui/icons-material';
 import { useCreateTaskMutation } from '../../services/taskApi';
 import { useGetProjectsQuery } from '../../services/projectApi';
 import { useGetUsersQuery } from '../../services/authApi';
+import { useGetCategoriesQuery } from '../../services/categoryApi';
 import type { SelectChangeEvent } from '@mui/material';
 import type { Task } from '../../types/Project';
 
-// Status color helper
 const statusColors: Record<string, 'default' | 'warning' | 'info' | 'success' | 'error'> = {
   Todo: 'default',
   'In Progress': 'warning',
@@ -36,19 +36,18 @@ export const NewTaskDateLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Calendar ကနေ လာတဲ့ Due Date
   const prefillDueDate = location.state?.prefillDueDate || '';
 
-  // API Hooks
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
   const [createTask, { isLoading: isCreating, isError: createError }] = useCreateTaskMutation();
 
-  // Form State
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     projectId: '',
+    categoryId: '',
     assignee: '',
     dueDate: prefillDueDate,
     status: 'Todo',
@@ -58,63 +57,35 @@ export const NewTaskDateLayout = () => {
   const [errors, setErrors] = useState<{ title?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // 📌 ၁။ ရွေးထားတဲ့ Project ကို ရှာပါ
   const selectedProject = useMemo(() => {
     return projects.find((p: any) => p._id === formData.projectId);
   }, [projects, formData.projectId]);
 
-
-
-const memberOptions: string[] = useMemo(() => {
-  if (!selectedProject || !selectedProject.members || !users.length) return [];
-
-  console.log('Selected Project Members:', selectedProject.members); // Debug
-  console.log('All Users:', users); // Debug
-
-  return selectedProject.members
-    .map((member: any) => {
-      // member က _id (string) ဖြစ်နိုင်တယ်၊ email (string) လည်းဖြစ်နိုင်တယ်
-      if (typeof member === 'string') {
-        // ၁။ _id နဲ့ရှာ
-        let user = users.find(
-          (u) => u._id.toLowerCase() === member.toLowerCase(),
-        );
-        if (user) {
-          console.log('Found by _id:', user.username); // Debug
-          return user.username;
+  const memberOptions: string[] = useMemo(() => {
+    if (!selectedProject || !selectedProject.members || !users.length) return [];
+    return selectedProject.members
+      .map((member: any) => {
+        if (typeof member === 'string') {
+          let user = users.find((u) => u._id.toLowerCase() === member.toLowerCase());
+          if (user) return user.username;
+          user = users.find((u) => u.email.toLowerCase() === member.toLowerCase());
+          if (user) return user.username;
+          return '';
         }
-
-        // ၂။ မတွေ့ရင် email နဲ့ရှာ
-        user = users.find(
-          (u) => u.email.toLowerCase() === member.toLowerCase(),
-        );
-        if (user) {
-          console.log('Found by email:', user.username); // Debug
-          return user.username;
+        if (typeof member === 'object' && member !== null) {
+          const email = typeof member.email === 'string' ? member.email : '';
+          const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+          return user?.username || (typeof member.username === 'string' ? member.username : '');
         }
+        return null;
+      })
+      .filter(Boolean);
+  }, [selectedProject, users]);
 
-        // ၃။ မတွေ့သေးရင် member ကိုပဲ ပြန်ပေး (fallback)
-        return '';
-      }
-      
-      if (typeof member === 'object' && member !== null) {
-        const email = typeof member.email === 'string' ? member.email : '';
-        const user = users.find(
-          (u) => u.email.toLowerCase() === email.toLowerCase(),
-        );
-        return user?.username || (typeof member.username === 'string' ? member.username : '');
-      }
-      return null;
-    })
-    .filter(Boolean); // null/undefined ဖယ်ရှား
-}, [selectedProject, users]);
-
-  // 📌 ၃။ Project ပြောင်းတိုင်း Assignee ကို ရှင်းပါ
   useEffect(() => {
     setFormData((prev) => ({ ...prev, assignee: '' }));
   }, [formData.projectId]);
 
-  // 📌 ၄။ URL မှ project param ပါလာရင် auto-select
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const projectParam = params.get('project');
@@ -126,14 +97,12 @@ const memberOptions: string[] = useMemo(() => {
     }
   }, [projects, location.search]);
 
-  // 📌 ၅။ Due Date ကို Calendar ကနေ လာရင် ဖြည့်ပေးပါ
   useEffect(() => {
     if (prefillDueDate) {
       setFormData((prev) => ({ ...prev, dueDate: prefillDueDate }));
     }
   }, [prefillDueDate]);
 
-  // ---- Handlers ----
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name) {
@@ -149,7 +118,6 @@ const memberOptions: string[] = useMemo(() => {
     }
   };
 
-  // ---- Submit ----
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -169,7 +137,8 @@ const memberOptions: string[] = useMemo(() => {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         projectId: formData.projectId,
-        assignee: formData.assignee || undefined, 
+        categoryId: formData.categoryId || undefined,
+        assignee: formData.assignee || undefined,
         dueDate: formData.dueDate || undefined,
         status: formData.status as Task['status'],
         priority: formData.priority as Task['priority'],
@@ -182,8 +151,7 @@ const memberOptions: string[] = useMemo(() => {
     }
   };
 
-  // ---- Loading ----
-  if (projectsLoading || usersLoading) {
+  if (projectsLoading || usersLoading || categoriesLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
         <CircularProgress />
@@ -201,7 +169,6 @@ const memberOptions: string[] = useMemo(() => {
         minHeight: '100vh',
       }}
     >
-      {/* Header */}
       <Stack direction="row" spacing={1} sx={{ mb: 3, alignItems: 'center' }}>
         <IconButton onClick={() => navigate('/my-tasks')}>
           <ArrowBack />
@@ -222,7 +189,6 @@ const memberOptions: string[] = useMemo(() => {
         )}
       </Stack>
 
-      {/* Form */}
       <Paper
         component="form"
         onSubmit={handleSubmit}
@@ -245,7 +211,6 @@ const memberOptions: string[] = useMemo(() => {
         )}
 
         <Grid container spacing={3}>
-          {/* Task Name */}
           <Grid size={{ xs: 12 }}>
             <TextField
               required
@@ -267,7 +232,6 @@ const memberOptions: string[] = useMemo(() => {
             />
           </Grid>
 
-          {/* Description */}
           <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
@@ -309,7 +273,29 @@ const memberOptions: string[] = useMemo(() => {
             </FormControl>
           </Grid>
 
-          {/* 📌 Assignee - Dynamic dropdown from project members */}
+          {/* Category (NEW) */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="category-label">Category (Optional)</InputLabel>
+              <Select
+                labelId="category-label"
+                label="Category (Optional)"
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleSelectChange}
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value="">None</MenuItem>
+                {categories.map((cat: any) => (
+                  <MenuItem key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Assignee */}
           <Grid size={{ xs: 12, md: 6 }}>
             <FormControl
               fullWidth
@@ -416,7 +402,6 @@ const memberOptions: string[] = useMemo(() => {
           </Grid>
         </Grid>
 
-        {/* Actions */}
         <Stack
           direction="row"
           spacing={2}

@@ -518,7 +518,6 @@ export const addComment = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    // ✅ FIXED: isOwner ကို မှန်မှန်စစ်
     const noteOwnerId = note.user.toString();
     const currentUserId = userId.toString();
     const isOwner = noteOwnerId === currentUserId;
@@ -527,11 +526,10 @@ export const addComment = async (req: AuthRequest, res: Response): Promise<void>
     console.log("👤 Current User ID:", currentUserId);
     console.log("👑 Is owner:", isOwner);
 
-    // ✅ FIXED: hasPermission ကို အပြင်မှာ သတ်မှတ်
     let hasPermission = isOwner;
     console.log("🔑 Initial hasPermission (isOwner):", hasPermission);
 
-    // Owner မဟုတ်ရင် Collaborator စစ်
+   
     if (!isOwner) {
       console.log("🔍 Checking collaboration permissions...");
       
@@ -580,7 +578,7 @@ export const addComment = async (req: AuthRequest, res: Response): Promise<void>
     console.log("🔑 Final hasPermission:", hasPermission);
     console.log("================================");
 
-    // ❌ ဒီမှာ permission ကို ပြန်စစ်
+   
     if (!hasPermission) {
       res.status(403).json({ 
         message: "You don't have permission to comment on this note.",

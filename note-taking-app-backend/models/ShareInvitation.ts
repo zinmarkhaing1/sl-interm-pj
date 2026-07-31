@@ -1,6 +1,4 @@
 
-
-
 import mongoose, { Document, Types } from "mongoose";
 export interface IShareInvitation extends Document {
   invitedBy: Types.ObjectId;
@@ -8,7 +6,7 @@ export interface IShareInvitation extends Document {
   role: "editor" | "viewer" | "commenter" | "full"; 
   status: "pending" | "accepted" | "declined";
   pageUrl: string;
-  source?: "category_page" | "note_page" | "board_page" | "note_form_page" | "default";
+  source?: "category_page" |  "board_page" | "note_form_page" | "default";
   noteId?: Types.ObjectId;
   userId?: Types.ObjectId;
   pageType? : "category" | "board";
@@ -46,7 +44,7 @@ const ShareInvitationSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ["category_page", "note_page", "board_page", "note_form_page", "default"],
+      enum: ["category_page", "board_page", "note_form_page", "default"],
       default: "default",
     },
     noteId: {

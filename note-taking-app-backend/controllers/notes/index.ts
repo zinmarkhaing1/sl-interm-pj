@@ -113,7 +113,7 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
       const sharedAccess = await WorkspaceAccess.findOne({
         userId: userId,
         noteId: targetNoteId,
-        accessScope: "note",
+        accessScope: "note-form",
       }).lean();
 
       if (!sharedAccess) {
@@ -166,34 +166,35 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
     categoryInvitations.length > 0;
     console.log('Category Access:', hasCategoryAccess);
 
-    // const categoryNamesFromInvitations = categoryInvitations
-    //   .map((inv) => inv.pageName)
-    //   .filter((name): name is string => Boolean(name));
-
-    // Combine category names
-    // const allCategoryNames = [...categoryNamesFromAccess, ...categoryNamesFromInvitations];
-    // const uniqueCategoryNames = [...new Set(allCategoryNames)];
-    // console.log("📂 2. Category names:", uniqueCategoryNames);
-
-    // STEP 4: Get PageAccess for BOARD
+    
     const boardPageAccesses = await PageAccess.find({
       userId: userId,
       pageType: "board",
     }).lean();
 
-    // const boardNamesFromAccess = boardPageAccesses
-    //   .map((pa) => pa.pageName)
-    //   .filter((name): name is string => Boolean(name));
-
-    // STEP 5: Get invitations for BOARD
+    
     const boardInvitations = await ShareInvitation.find({
       userId: userId,
       pageType: "board",
       status: { $in: ["pending", "accepted"] },
     }).lean();
 
+    
+const boardNamesFromAccess = boardPageAccesses
+  .map(pa => pa.pageName)
+  .filter((name): name is string => Boolean(name));
+
+const boardNamesFromInvitations = boardInvitations
+  .map(inv => inv.pageName)
+  .filter((name): name is string => Boolean(name));
+
+const uniqueBoardNames = [...new Set([...boardNamesFromAccess, ...boardNamesFromInvitations])];
+
+
     const hasBoardAccess = boardPageAccesses.length > 0 || boardInvitations.length > 0;
-    console.log("📂 3. Board Access:", hasBoardAccess);
+    console.log("3. Board Access:", hasBoardAccess);
+
+    
 
     // const boardNamesFromInvitations = boardInvitations
     //   .map((inv) => inv.pageName)
@@ -231,7 +232,7 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
    
     const sharedAccessItems = await WorkspaceAccess.find({
       userId: userId,
-      accessScope: { $in: ["note", "note-form", "global"] },
+      accessScope: { $in: [ "note-form", "global"] },
     }).lean();
 
     const sharedNoteIds = sharedAccessItems
@@ -344,23 +345,37 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
       console.log("📤 8. Final Category Notes (with own):", finalNotes.length);
     }
 
-    if (requestedShareScope === "board") {
-      finalNotes = finalNotes.filter((note) => {
-        const hasTask = note.task && note.task.trim().length > 0;
-        // const isSharedViaBoard = note.sharedVia === "board";
-        // const isInBoard = uniqueBoardNames.some(
-        //   (name) => name.toLowerCase() === (note.category || "").toLowerCase()
-        // );
+    // if (requestedShareScope === "board") {
+    //   finalNotes = finalNotes.filter((note) => {
+    //     const hasTask = note.task && note.task.trim().length > 0;
+    //     // const isSharedViaBoard = note.sharedVia === "board";
+    //     // const isInBoard = uniqueBoardNames.some(
+    //     //   (name) => name.toLowerCase() === (note.category || "").toLowerCase()
+    //     // );
        
-        // return (isSharedViaBoard || isInBoard) || note.isOwned === true;
-        return note.isOwned === true || (hasBoardAccess && hasTask);
+    //     // return (isSharedViaBoard || isInBoard) || note.isOwned === true;
+    //     return note.isOwned === true || (hasBoardAccess && hasTask & note.board && note.board.trim().length > 0);
 
-        // if (note.isOwned) return true;
-        // if (hasBoardAccess) return true;
-        // return false;
-      });
-      console.log("📤 9. Final Board Notes (with own):", finalNotes.length);
-    }
+    //     // if (note.isOwned) return true;
+    //     // if (hasBoardAccess) return true;
+    //     // return false;
+    //   });
+    //   console.log("9. Final Board Notes (with own):", finalNotes.length);
+    // }
+
+    if (requestedShareScope === "board") {
+  finalNotes = finalNotes.filter((note) => {
+    const hasTask = note.task && note.task.trim().length > 0;
+    // Check if note's category matches any board name the user has access to
+    const belongsToBoard = note.category && uniqueBoardNames.some(
+      boardName => boardName.toLowerCase() === note.category.toLowerCase()
+    );
+    // Include owned notes OR notes that belong to an accessible board AND have a task
+    return note.isOwned === true || (hasTask && belongsToBoard);
+  });
+  console.log("📤 9. Final Board Notes (with own):", finalNotes.length);
+}
+    
 
     // If no shareScope or "all", return all notes
     if (!requestedShareScope || requestedShareScope === "all") {
@@ -378,9 +393,9 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
     });
   }
 };
-// ============================================================
+
 // 3. GET NOTE BY ID
-// ============================================================
+
 export const getNoteById = async (
   req: AuthRequest,
   res: Response,

@@ -1,5 +1,7 @@
 // import { categories } from './../../../note-taking-app-backend/data/index';
 
+import type { Category } from "./Category";
+
 
 export interface Project {
   _id: string;
@@ -22,6 +24,10 @@ export interface Task {
   title: string;
   description: string;
   project: Project | string; 
+  category:{
+    _id: string;
+    name: string;
+  } | string; 
   assignee: {
     _id: string;
     username: string;

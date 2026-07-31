@@ -9,6 +9,8 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LinkIcon from "@mui/icons-material/Link";
@@ -54,8 +56,11 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
   pageUrl,
   redirectUrl="/board", 
 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleCopyLink = async () => {
     try {
@@ -72,24 +77,54 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/share/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token || ""}`,
-        },
-        body: JSON.stringify({
-          email: inviteEmail.trim(),
+      if (!token) {
+      setError("You must be logged in to invite collaborators");
+      setLoading(false);
+      return;
+    }
+
+     let boardNameToUse = boardName;
+    if (!boardNameToUse) {
+      const url = window.location.href;
+      const match = url.match(/\/category\/([^\/?#]+)/);
+      if (match) {
+        boardNameToUse = decodeURIComponent(match[1]);
+      }
+    }
+    if (!boardNameToUse) {
+      boardNameToUse = "Todo";
+    }
+    const requestBody = {
+        email: inviteEmail.trim(),
           invitedEmail: inviteEmail.trim(),
           role: "viewer",
           pageUrl: pageUrl || window.location.href,
           pageName: boardName,
           source: "board_page",
           pageType: "board",  
-          redirectUrl: redirectUrl || pageUrl || window.location.href || "/board",        
-      
-        }),
+          redirectUrl: redirectUrl || "/board", 
+    };
+
+    console.log("📨 Sending invite request:", requestBody);
+      const response = await fetch("http://localhost:5000/api/share/invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      console.log(" Response status:", response.status);
+
+  
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      setError(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
+      setLoading(false);
+      return;
+    }
 
       if (response.ok) {
         const data = await response.json();
@@ -119,6 +154,28 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
 
   return (
     <Box>
+
+      <Snackbar
+              open={!!error}
+              autoHideDuration={5000}
+              onClose={() => setError(null)}
+              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+              <Alert severity="error" onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            </Snackbar>
+
+            <Snackbar
+                    open={!!success}
+                    autoHideDuration={3000}
+                    onClose={() => setSuccess(null)}
+                    anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                  >
+                    <Alert severity="success" onClose={() => setSuccess(null)}>
+                      {success}
+                    </Alert>
+                  </Snackbar>
       <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
         Share Status Page
       </Typography>
@@ -149,7 +206,7 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
             "&]:hover": { bgcolor: "#7b2c8a" },
           }}
         >
-          Invite
+          {loading ? "Sending..." : "Invite"}
         </Button>
       </Box>
 

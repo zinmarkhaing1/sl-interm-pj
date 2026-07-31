@@ -1,4 +1,4 @@
-import { task } from './data/index';
+
 // import express from "express";
 // import cors from "cors";
 // import mongoose from "mongoose";
@@ -69,6 +69,7 @@ import commentRoutes from './routes/comment';
 import projectRoutes from './routes/project';
 import taskRoutes from './routes/task';
 import userRoutes from './routes/user';
+import categoryRoutes from './routes/category';
 
 
 
@@ -105,6 +106,7 @@ app.use('/api/comments',commentRoutes);
 app.use('/api/projects',projectRoutes);
 app.use('/api/tasks',taskRoutes);
 app.use('/api/users',userRoutes);
+app.use("/api/categories", categoryRoutes);
 
 
 // Backward compatibility (optional)

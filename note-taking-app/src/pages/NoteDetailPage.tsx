@@ -12,7 +12,7 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import PersonIcon from "@mui/icons-material/Person";
 import ShareIcon from "@mui/icons-material/Share";
 import SendIcon from '@mui/icons-material/Send';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react"; 
 import { useDeleteNoteMutation, useGetCommentsQuery, useAddCommentMutation, useGetNoteByIdQuery } from "../services/noteApi";
 import { Popover, Menu, MenuItem, ListItemText, ListItemIcon } from "@mui/material";
 import { Check, DeleteOutlined } from '@mui/icons-material';
@@ -58,10 +58,11 @@ export const NoteDetailPage = () => {
 
   const { data: fetchedNote, isLoading, refetch: refetchNote } = useGetNoteByIdQuery(id || "", { skip: !id });
   const note = fetchedNote;
-
-  const [commentText, setCommentText] = useState("");
   const { data: commentData, refetch: refetchComments } = useGetCommentsQuery(id || "", { skip: !id });
   const [addComment] = useAddCommentMutation();
+  const [deleteNote] = useDeleteNoteMutation();
+
+  const [commentText, setCommentText] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
   const [openDeleteCommentDialog, setOpenDeleteCommentDialog] = useState(false);
@@ -76,6 +77,8 @@ export const NoteDetailPage = () => {
   const [activeCollaboratorId, setActiveCollaboratorId] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<string>("full");
 
+
+ 
   useEffect(() => {
     if (commentsEndRef.current) {
       commentsEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -103,7 +106,7 @@ export const NoteDetailPage = () => {
     }
   }, []);
 
-  // ✅ Token ကို decode လုပ်ကြည့် (useEffect ထဲမှာ)
+ 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -504,7 +507,6 @@ export const NoteDetailPage = () => {
     }
   };
 
-  const [deleteNote] = useDeleteNoteMutation();
   
   const handleDeleteClick = () => { setOpenDeleteDialog(true); };
   const handleDeleteClose = () => { setOpenDeleteDialog(false); };
@@ -521,15 +523,6 @@ export const NoteDetailPage = () => {
       console.log("Delete Failed:", err);
     }
   };
-
-  if (!note) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography color="error" variant="h6">Note Not Found!</Typography>
-      </Box>
-    );
-  }
-
   const getPriorityColor = (priority?: string) => {
     switch (priority?.toLowerCase()) {
       case "high": return "error";
@@ -542,11 +535,37 @@ export const NoteDetailPage = () => {
     if (noteId && canEditNote) navigate(`/note-form/edit/${noteId}`);
   };
 
+ 
   const comments = (commentData?.comments || []) as Comment[];
-  
-  console.log('📊 All comments:', comments);
-  console.log('📊 Comment count:', comments.length);
 
+
+  const filteredComments = useMemo(() => {
+    if (isOwner) {
+      return comments;
+    }
+    if (hasBeenShared) {
+      return comments;
+    }
+  
+    return comments.filter((comment) => {
+      const commentUserId = normalizeId(comment.userId);
+      const commentEmail = comment.userEmail?.toLowerCase() || '';
+      const currentEmail = currentUserEmail?.toLowerCase() || '';
+      return commentUserId === currentUserId || commentEmail === currentEmail;
+    });
+  }, [comments, isOwner, hasBeenShared, currentUserId, currentUserEmail]);
+
+  console.log('📊 All comments (raw):', comments);
+  console.log('📊 Filtered comments (visible):', filteredComments);
+
+
+   if (!note) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error" variant="h6">Note Not Found!</Typography>
+      </Box>
+    );
+  }
   return (
     <Box sx={{ bgcolor: "background.default", width: "100%", minHeight: "80vh", p: { xs: 2, md: 4 } }}>
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
@@ -650,23 +669,6 @@ export const NoteDetailPage = () => {
               <Typography variant="h6" sx={{ fontWeight: "600", fontSize: { xs: "16px", md: "20px" }, color: "#2F004F" }}>
                 {note.title}
               </Typography>
-              {/* <Stack direction="row" spacing={1}>
-                <Chip label={`Priority: ${note.priority || "Normal"}`} color={getPriorityColor(note.priority)} size="medium" />
-                {isOwner && (
-                  <Button
-                    startIcon={<ShareIcon />}
-                    onClick={handleShareClick}
-                    size="small"
-                    sx={{
-                      textTransform: 'none',
-                      color: '#973aa8',
-                      '&:hover': { bgcolor: 'rgba(151, 58, 168, 0.08)' }
-                    }}
-                  >
-                    Share
-                  </Button>
-                )}
-              </Stack> */}
             </Stack>
 
             {/* Content Display */}
@@ -680,7 +682,6 @@ export const NoteDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
               {note.category && <Chip label={note.category} variant="outlined" size="small" sx={{ color: "#121212" }} />}
               {note.task && <Chip label={note.task} color="secondary" size="small" />}
-              {/* ✅ FIXED: accessLabel color */}
               <Chip 
                 label={accessLabel} 
                 variant="outlined" 
@@ -714,7 +715,7 @@ export const NoteDetailPage = () => {
             {/* ============ COMMENT SECTION ============ */}
             {showCommentBox && (
               <Box sx={{ mb: 4 }}>
-                {/* Comment Header */}
+           
                 <Stack 
                   direction="row" 
                   sx={{ 
@@ -727,7 +728,7 @@ export const NoteDetailPage = () => {
                   }}
                 >
                   <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#2F004F" }}>
-                    Comments ({comments.length})
+                    Comments ({filteredComments.length})
                   </Typography>
                   <Chip 
                     label={canAddComment ? "You can comment" : "View only"} 
@@ -790,17 +791,19 @@ export const NoteDetailPage = () => {
                   </Box>
                 )}
 
-                {/* Comments List */}
-                {comments.length === 0 ? (
+                
+                {filteredComments.length === 0 ? (
                   <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#fafafa', borderRadius: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      No comments yet. {canAddComment ? "Be the first to comment!" : ""}
+                      {isOwner 
+                        ? "No comments yet." 
+                        : "No comments from you yet."}
                     </Typography>
                   </Box>
                 ) : (
                   <Stack spacing={2}>
-                    {comments.map((comment) => {
-                      // ✅ FIXED: compare as strings
+                    {filteredComments.map((comment) => {
+                     
                       const isOwnComment = comment.userId?.toString() === currentUserId?.toString() || 
                                            comment.userEmail === currentUserEmail;
                       const canDelete = isOwner || isOwnComment;

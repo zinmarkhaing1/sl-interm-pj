@@ -57,52 +57,37 @@
 //   useCreateTaskMutation,
 //   useDeleteTaskMutation,
 // } = taskApi;
-
-
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Task, TaskNote } from '../types/Project';
-// import type { Note } from '../types/Note';
 
 const BaseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api';
-console.log('projectApi base url', BaseUrl);
 
 export const taskApi = createApi({
   reducerPath: 'taskApi',
-   baseQuery: fetchBaseQuery({
-      baseUrl: BaseUrl, // http://localhost:5000/api
-      prepareHeaders: (headers) => {
-        const token = localStorage.getItem("token");
-        console.log('Token from localStorage:', token ? 'Present' : ' Missing')
-        if (token) {
-          headers.set("authorization", `Bearer ${token}`);
-          console.log('Authorization header set');
-          
-        }else {
-          console.log(' projectApi - No token found');
-        }
-        
-        // Log all headers
-        console.log(' projectApi - All Headers:', {
-          'Authorization': headers.get('authorization'),
-          'Content-Type': headers.get('content-type'),
-        });
-        
-        return headers;
-      },
-    }),
-
+  baseQuery: fetchBaseQuery({
+    baseUrl: BaseUrl,
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ['Task', 'TaskNote'],
   endpoints: (builder) => ({
-    // ===== GET ALL TASKS (with filters) =====
+    // GET tasks with populate
     getTasks: builder.query<
       Task[],
-      { projectId?: string; status?: string; assignee?: string }
+      { projectId?: string; status?: string; assignee?: string; categoryId?: string; populate?: string }
     >({
       query: (params) => {
         const search = new URLSearchParams();
         if (params?.projectId) search.set('projectId', params.projectId);
         if (params?.status) search.set('status', params.status);
         if (params?.assignee) search.set('assignee', params.assignee);
+        if (params?.categoryId) search.set('categoryId', params.categoryId);
+        search.set('populate', 'category assignee project');
         return `tasks?${search.toString()}`;
       },
       providesTags: (result) =>
@@ -111,10 +96,14 @@ export const taskApi = createApi({
           : ['Task'],
     }),
 
-    // ===== CREATE A NEW TASK =====
+    
     createTask: builder.mutation<
       Task,
-      Partial<Omit<Task, 'assignee'>> & { projectId: string; assignee?: string }
+      Partial<Omit<Task, 'assignee' | 'category'>> & { 
+        projectId: string; 
+        assignee?: string; 
+        categoryId?: string;  
+      }
     >({
       query: (body) => ({
         url: 'tasks',
@@ -123,17 +112,20 @@ export const taskApi = createApi({
       }),
       invalidatesTags: ['Task'],
     }),
-    getTask: builder.query<Task, string>({
-  query: (id) => `tasks/${id}`,
-  providesTags: (result, error, id) => [
-    { type: "Task", id },
-  ],
-}),
 
-    // ===== UPDATE A TASK =====
+    // GET single task
+    getTask: builder.query<Task, string>({
+      query: (id) => `tasks/${id}?populate=category assignee project`,
+      providesTags: (result, error, id) => [{ type: "Task", id }],
+    }),
+
+   
     updateTask: builder.mutation<
       Task,
-      { id: string; body: Partial<Task> }
+      { 
+        id: string; 
+        body: Partial<Task> & { categoryId?: string }
+      }
     >({
       query: ({ id, body }) => ({
         url: `tasks/${id}`,
@@ -143,7 +135,6 @@ export const taskApi = createApi({
       invalidatesTags: (result, error, { id }) => [{ type: 'Task', id }],
     }),
 
-    // ===== DELETE A TASK =====
     deleteTask: builder.mutation<void, string>({
       query: (id) => ({
         url: `tasks/${id}`,
@@ -152,13 +143,11 @@ export const taskApi = createApi({
       invalidatesTags: ['Task'],
     }),
 
-    // ===== GET NOTES FOR A TASK =====
     getTaskNotes: builder.query<TaskNote[], string>({
       query: (taskId) => `task-notes/task/${taskId}`,
       providesTags: (result, error, taskId) => [{ type: 'TaskNote', id: taskId }],
     }),
 
-    // ===== ADD A NOTE TO A TASK =====
     createTaskNote: builder.mutation<
       TaskNote,
       { taskId: string; content: string; createdBy: string }
@@ -171,7 +160,6 @@ export const taskApi = createApi({
       invalidatesTags: (result, error, { taskId }) => [{ type: 'TaskNote', id: taskId }],
     }),
 
-    // ===== DELETE A NOTE =====
     deleteTaskNote: builder.mutation<void, string>({
       query: (id) => ({
         url: `task-notes/${id}`,
@@ -182,7 +170,6 @@ export const taskApi = createApi({
   }),
 });
 
-// ===== EXPORT HOOKS =====
 export const {
   useGetTasksQuery,
   useCreateTaskMutation,

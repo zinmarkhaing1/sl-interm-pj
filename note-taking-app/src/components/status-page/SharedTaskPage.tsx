@@ -26,7 +26,7 @@ const getEmailFromToken = (token: string): string | null => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
-    return JSON.parse(jsonPayload).email; // သင့် Token Payload ထဲက Email Key အတိုင်း ပြင်ပေးရန်
+    return JSON.parse(jsonPayload).email; 
   } catch (e) {
     return null;
   }

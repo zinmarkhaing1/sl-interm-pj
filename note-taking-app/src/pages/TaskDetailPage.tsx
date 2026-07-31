@@ -1,4 +1,3 @@
-
 import {
   Box,
   Paper,
@@ -17,9 +16,11 @@ import {
   CalendarMonth,
   Flag,
   Folder,
+  Category as CategoryIcon,
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetTaskQuery } from "../services/taskApi";
+import { useGetCategoriesQuery } from "../services/categoryApi";
 
 const statusColor: Record<any, any> = {
   Todo: "default",
@@ -46,6 +47,17 @@ export const TaskDetailPage = () => {
     skip: !id,
   });
 
+  const { data: categories = [] } = useGetCategoriesQuery();
+
+  const getCategoryName = (category: any) => {
+    if (!category) return "None";
+    if (typeof category === "object" && "name" in category) {
+      return category.name;
+    }
+    const found = categories.find((c: any) => c._id === category);
+    return found?.name || "None";
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
@@ -66,6 +78,7 @@ export const TaskDetailPage = () => {
   const assigneeName = typeof task.assignee === "string"
     ? task.assignee
     : task.assignee?.username || "Unassigned";
+  const categoryName = getCategoryName(task.category);
 
   return (
     <Box sx={{ maxWidth: 500, mx: "auto", py: 4 }}>
@@ -79,113 +92,122 @@ export const TaskDetailPage = () => {
           boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
         }}
       >
-        {/* Header */}
-        <Typography variant="h5"  gutterBottom sx={{fontSize:'18px',fontFamily:'sans-serif',alignItems:'center',justifyContent:'center'}}>
+        <Typography variant="h5" gutterBottom sx={{ fontSize: "18px", fontFamily: "sans-serif", alignItems: "center", justifyContent: "center" }}>
           Task Details
         </Typography>
         <Divider sx={{ mb: 3 }} />
 
-        {/* Grid Layout */}
         <Grid container spacing={3}>
-          {/* Title - Full width */}
-          <Grid size={{xs:12}}>
-            <Typography variant="subtitle2" sx={{fontSize:'16px',fontFamily:'sans-serif'}}>
+          <Grid size={{ xs: 12 }}>
+            <Typography variant="subtitle2" sx={{ fontSize: "16px", fontFamily: "sans-serif" }}>
               Title
             </Typography>
-            <Typography variant="h6" sx={{fontSize:'14px',fontFamily:'sans-serif'}}>
+            <Typography variant="h6" sx={{ fontSize: "14px", fontFamily: "sans-serif" }}>
               {task.title}
             </Typography>
           </Grid>
 
-          {/* Description - Full width */}
-          <Grid  size={{xs:12}}>
-            <Typography variant="subtitle2" sx={{fontSize:'16px',fontFamily:'sans-serif'}}>
+          <Grid size={{ xs: 12 }}>
+            <Typography variant="subtitle2" sx={{ fontSize: "16px", fontFamily: "sans-serif" }}>
               Description
             </Typography>
-            <Typography sx={{fontSize:'14px',fontFamily:'sans-serif'}}>
+            <Typography sx={{ fontSize: "14px", fontFamily: "sans-serif" }}>
               {task.description || "No description"}
             </Typography>
           </Grid>
 
-          <Grid size={{xs:12}}>
+          <Grid size={{ xs: 12 }}>
             <Divider />
           </Grid>
 
-          {/* Project - Half width */}
-          <Grid size={{xs:12, sm:6}}>
-            <Stack direction="row" spacing={1}  sx={{alignItems:'center'}}>
+          {/* Project */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Folder color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{fontSize:'12px', fontFamily: 'sans-serif'}}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "12px", fontFamily: "sans-serif" }}>
                   Project
                 </Typography>
-                <Typography sx={{fontFamily: 'sans-serif'}}>
+                <Typography sx={{ fontFamily: "sans-serif" }}>
                   {project?.name || "N/A"}
                 </Typography>
               </Box>
             </Stack>
           </Grid>
 
-          {/* Assignee - Half width */}
-          <Grid  size={{xs:12,sm:6}}>
-            <Stack direction="row" spacing={1} sx={{alignItems:'center'}}>
-              <Person color="primary" fontSize="small" />
+          {/* Category (NEW) */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <CategoryIcon color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{fontSize:'12px',fontFamily: 'sans-serif'}}>
-                  Assignee
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "12px", fontFamily: "sans-serif" }}>
+                  Category
                 </Typography>
-                <Typography >
-                  {assigneeName}
+                <Typography sx={{ fontFamily: "sans-serif" }}>
+                  {categoryName}
                 </Typography>
               </Box>
             </Stack>
           </Grid>
 
-          {/* Status - Half width */}
-          <Grid size={{xs:12,sm:6}}>
-            <Stack direction="row" spacing={1}  sx={{alignItems:'center'}}>
-              <Assignment color="primary" fontSize="small" fontFamily= 'sans-serif'/>
+          {/* Assignee */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Person color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{fontFamily: 'sans-serif'}}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "12px", fontFamily: "sans-serif" }}>
+                  Assignee
+                </Typography>
+                <Typography>{assigneeName}</Typography>
+              </Box>
+            </Stack>
+          </Grid>
+
+          {/* Status */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Assignment color="primary" fontSize="small" />
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" }}>
                   Status
                 </Typography>
                 <Chip
                   label={task.status}
                   color={statusColor[task.status]}
                   size="small"
-                  sx={{ fontSize:'12px',fontFamily: 'sans-serif'}}
+                  sx={{ fontSize: "12px", fontFamily: "sans-serif" }}
                 />
               </Box>
             </Stack>
           </Grid>
 
-          {/* Priority - Half width */}
-          <Grid  size={{xs:12,sm:6}}>
-            <Stack direction="row" spacing={1} sx={{alignItems:'center'}}>
+          {/* Priority */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Flag color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary"  sx={{fontFamily: 'sans-serif'}}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" }}>
                   Priority
                 </Typography>
                 <Chip
                   label={task.priority}
                   color={priorityColor[task.priority]}
                   size="small"
-                  sx={{ fontSize:'12px', fontFamily: 'sans-serif'}}
+                  sx={{ fontSize: "12px", fontFamily: "sans-serif" }}
                 />
               </Box>
             </Stack>
           </Grid>
 
-          {/* Due Date - Full width */}
-          <Grid  size={{xs:12}}>
-            <Stack direction="row" spacing={1}  sx={{alignItems:'center'}}>
+          {/* Due Date */}
+          <Grid size={{ xs: 12 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <CalendarMonth color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{fontFamily: 'sans-serif'}}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" }}>
                   Due Date
                 </Typography>
-                <Typography sx={{fontFamily: 'sans-serif'}} >
+                <Typography sx={{ fontFamily: "sans-serif" }}>
                   {task.dueDate
                     ? new Date(task.dueDate).toLocaleDateString()
                     : "—"}
@@ -197,7 +219,6 @@ export const TaskDetailPage = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Back Button */}
         <Button
           variant="contained"
           onClick={() => navigate("/my-tasks")}
@@ -205,18 +226,21 @@ export const TaskDetailPage = () => {
         >
           Back to Tasks
         </Button>
-         <Button
+        <Button
           variant="contained"
-          onClick={() => navigate("/new-note", {
-            state: {
-              taskId: task._id,
-              taskTitle: task.title,
-              assignee: typeof task.assignee === "string"
-                ? task.assignee
-                : task.assignee?.username || "",
-            },
-          })}
-          sx={{ textTransform: "none", borderRadius: 2, alignItems:'flex-end', m:2 }}
+          onClick={() =>
+            navigate("/new-note", {
+              state: {
+                taskId: task._id,
+                taskTitle: task.title,
+                assignee:
+                  typeof task.assignee === "string"
+                    ? task.assignee
+                    : task.assignee?.username || "",
+              },
+            })
+          }
+          sx={{ textTransform: "none", borderRadius: 2, alignItems: "flex-end", m: 2 }}
         >
           New Notes
         </Button>

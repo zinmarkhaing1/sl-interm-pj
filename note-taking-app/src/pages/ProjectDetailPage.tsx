@@ -47,16 +47,15 @@ export const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // MyProjectPages မှာ သုံးထားတဲ့ hook အတိုင်း ပြန်သုံးထားပါတယ်
   const { data: projects = [], isLoading, isError } = useGetProjectsQuery();
   const [deleteProject, { isLoading: isDeleting }] = useDeleteProjectMutation();
 
-  // URL ပါ id နဲ့ ကိုက်ညီတဲ့ Project ကို ရှာပါ
+  
   const project = useMemo(() => {
     return projects.find((p: Project) => p._id === id);
   }, [projects, id]);
 
-  // Share & Delete Dialog States (MyProjectPages နဲ့ အတူတူပါ)
+  // Share & Delete Dialog States 
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
   const [projectToShare, setProjectToShare] = useState<Project | null>(null);
   const [copied, setCopied] = useState(false);
@@ -93,7 +92,7 @@ export const ProjectDetailPage = () => {
     );
   }
 
-  // ---- Delete Handlers (MyProjectPages က အတိုင်း) ----
+  
   const openDeleteDialog = () => {
     setProjectToDelete({ id: project._id, name: project.name });
   };
@@ -105,13 +104,13 @@ export const ProjectDetailPage = () => {
     try {
       await deleteProject(projectToDelete.id).unwrap();
       setProjectToDelete(null);
-      navigate('/my-project'); // Delete ပြီးရင် Main Page ကိုပြန်သွားမယ်
+      navigate('/my-project'); 
     } catch (err) {
       console.error('Failed to delete project', err);
     }
   };
 
-  // ---- Share Handlers (MyProjectPages က အတိုင်း) ----
+  
   const openShareDialog = () => {
     setCopied(false);
     setCopyError(false);

@@ -98,13 +98,13 @@ export const inviteCollaborator = async (req: Request, res: Response): Promise<v
         {
           userId: user._id,
           noteId: noteId,
-          accessScope: "note",
+          accessScope: "note-form",
         },
         {
           userId: user._id,
           noteId: noteId,
           permission: permission,
-          accessScope: "note",
+          accessScope: "note-form",
           grantedBy: userId,
         },
         { upsert: true, new: true }
@@ -253,7 +253,7 @@ export const updateCollaboratorRole = async (req: Request, res: Response): Promi
         {
           userId: invitation.userId,
           noteId: invitation.noteId,
-          accessScope:"note"
+          accessScope:"note-form"
         },
         {
           permission: permission,
@@ -384,13 +384,13 @@ export const respondToInvitation = async (req: Request, res: Response): Promise<
         {
           userId: userId,
           noteId: invitation.noteId,
-          accessScope: "note",
+          accessScope: "note-form",
         },
         {
           userId: userId,
           noteId: invitation.noteId,
           permission: permission,
-          accessScope: "note",
+          accessScope: "note-form",
           grantedBy: invitation.invitedBy,
         },
         { upsert: true, new: true }

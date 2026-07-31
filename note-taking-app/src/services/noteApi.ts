@@ -41,7 +41,7 @@ export const noteApi = createApi({
     getNotes: builder.query<Note[], { 
       status?: string; 
       assignee?: string; 
-      shareScope?: "category" | "note" | "board" | "note-form" ; 
+      shareScope?: "category" | "board" | "note-form" ; 
       noteId?: string ;
       populate?:string;
       projectId?:string;
