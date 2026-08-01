@@ -279,7 +279,7 @@ export const TasksNotes = () => {
 
   return (
     <Box>
-      <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', bgcolor: "background.default" }}>
+      <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
         {/* Header Section */}
         <Box sx={{ mb: 1 }}>
           <Typography variant="h3" sx={{ fontWeight: 500, color: 'text.primary', mb: 1, fontSize: '18px' }}>
@@ -309,8 +309,8 @@ export const TasksNotes = () => {
               }
             }}
           >
-            <Tab label="All Tasks" />
-            <Tab label="By Status" />
+            <Tab label="Create Tasks" />
+            {/* <Tab label="By Status" /> */}
           </Tabs>
 
           {/* Right side controls */}

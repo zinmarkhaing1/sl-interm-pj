@@ -3,25 +3,22 @@ import {
   Typography,
   Card,
   CardContent,
-  Fab,
   Grid,
   CircularProgress,
 } from "@mui/material";
-import { AutoStories,} from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { useGetNotesQuery } from "../../services/noteApi";
+import { AutoStories } from "@mui/icons-material";
+import { useGetTasksQuery } from "../../services/taskApi";
 import { NoteLayout } from "./NoteLayout";
 
 export const HomeNoteLayout = () => {
-  const navigate = useNavigate();
-  const { data: notes = [], isLoading } = useGetNotesQuery();
+  const { data: tasks = [], isLoading } = useGetTasksQuery({});
 
-  const totalNotes = notes.length;
-  const highPriorityCount = notes.filter(
-    (n: { priority?: string }) => n.priority === "High"
+  const totalTasks = tasks.length;
+  const highPriorityCount = tasks.filter(
+    (task: { priority?: string }) => task.priority === "High"
   ).length;
-  const todoCount = notes.filter(
-    (n: { task?: string }) => n.task === "Todo" || n.task === "In Progress"
+  const todoCount = tasks.filter(
+    (task: { status?: string }) => task.status === "Todo" || task.status === "In Progress"
   ).length;
 
   if (isLoading) {
@@ -33,7 +30,7 @@ export const HomeNoteLayout = () => {
   }
 
   const stats = [
-    { label: "Total Notes", value: totalNotes },
+    { label: "Total Tasks", value: totalTasks },
     { label: "Urgent (High)", value: highPriorityCount },
     { label: "Tasks Remaining", value: todoCount },
   ];
@@ -42,20 +39,22 @@ export const HomeNoteLayout = () => {
     <Box sx={{ width: "100%" }}>
       <Box sx={{ mb: 3 }}>
         <Typography
-          variant="h6"
+          variant="h5"
           sx={{
             color: "text.primary",
             display: "flex",
             alignItems: "center",
+            fontWeight: 700,
+            mb: 0.75,
           }}
         >
           <AutoStories
-            sx={{ fontSize: 20, mr: 1, color: "primary.main" }}
+            sx={{ fontSize: 22, mr: 1, color: "primary.main" }}
           />
           My Workspace
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Review your notes and tasks for today.
+          Review your priorities, progress, and task activity in one place.
         </Typography>
       </Box>
 
@@ -70,6 +69,7 @@ export const HomeNoteLayout = () => {
                   border: "1px solid",
                   borderColor: "divider",
                   bgcolor: "background.paper",
+                  height: "100%",
                 }}
               >
                 <CardContent>

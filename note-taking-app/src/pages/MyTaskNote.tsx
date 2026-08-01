@@ -210,7 +210,7 @@ export const MyTaskNote = () => {
   }
 
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box sx={{ width: "100%", minHeight: "100vh",  }}>
       <Box sx={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 54px' }}>
         <Typography variant="h6" sx={{ fontSize: "16px", color: 'text.primary', mb: 3 }}>
           My Tasks
@@ -297,7 +297,7 @@ export const MyTaskNote = () => {
         </Stack>
 
         {/* Table */}
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
           <Table>
             <TableHead sx={{ bgcolor: '#fafafa' }}>
               <TableRow>
@@ -308,7 +308,7 @@ export const MyTaskNote = () => {
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Priority</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Due Date</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Action</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: 120, whiteSpace: 'nowrap' }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -346,15 +346,43 @@ export const MyTaskNote = () => {
                         <Chip label={task.priority} size="small" variant={task.priority === 'High' ? 'filled' : 'outlined'} color={task.priority === 'High' ? 'error' : 'default'} />
                       </TableCell>
                       <TableCell>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}</TableCell>
-                      <TableCell onClick={(event) => event.stopPropagation()}>
-                        <Stack direction="row" spacing={0.5}>
-                          <IconButton size="small" aria-label={`Edit ${task.title}`} onClick={() => navigate(`/my-tasks/edit/${task._id}`)} disabled={isDeleting}>
+                      <TableCell
+                        onClick={(event) => event.stopPropagation()}
+                        sx={{
+                          width: 120,
+                          whiteSpace: 'nowrap',
+                          position: { xs: 'relative', md: 'sticky' },
+                          right: 0,
+                          bgcolor: 'background.paper',
+                          borderLeft: '1px solid',
+                          borderColor: 'divider',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center' }}>
+                          <IconButton
+                            size="small"
+                            aria-label={`Edit ${task.title}`}
+                            onClick={() => navigate(`/my-tasks/edit/${task._id}`)}
+                            disabled={isDeleting}
+                            sx={{
+                              bgcolor: 'secondary.main',
+                              color: 'primary.main',
+                              '&:hover': { bgcolor: 'secondary.dark' },
+                            }}
+                          >
                             <EditOutlined fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" color="error" aria-label={`Delete ${task.title}`} onClick={() => handleDelete(task)} disabled={isDeleting}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            aria-label={`Delete ${task.title}`}
+                            onClick={() => handleDelete(task)}
+                            disabled={isDeleting}
+                            sx={{ bgcolor: 'rgba(211, 47, 47, 0.08)' }}
+                          >
                             <DeleteOutlined fontSize="small" />
                           </IconButton>
-                        </Stack>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   );

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Box, Card, CardContent, Typography, Grid, CircularProgress, Button } from "@mui/material";
 import { BarChart, PieChart, LineChart } from "@mui/x-charts";
-import { useGetNotesQuery } from "../services/noteApi";
+import { useGetTasksQuery } from "../services/taskApi";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CheckCircleOutlined from "@mui/icons-material/CheckCircleOutlined";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
@@ -11,12 +11,12 @@ import { useNavigate } from "react-router-dom";
 
 export const DashBoardPage: React.FC = () => {
   const { 
-    data: notes = [], 
+    data: tasks = [], 
     isLoading, 
     isError, 
     error,
     refetch 
-  } = useGetNotesQuery();
+  } = useGetTasksQuery({});
 
    const navigate = useNavigate();
 
@@ -40,12 +40,12 @@ export const DashBoardPage: React.FC = () => {
 
   // --- STATS SUMMARY CALCULATION ---
   const stats = React.useMemo(() => {
-    const total = notes.length;
-    const completed = notes.filter((n) => n.task === "Complete").length;
-    const inProgress = notes.filter((n) => n.task === "In Progress").length;
+    const total = tasks.length;
+    const completed = tasks.filter((task) => task.status === "Complete").length;
+    const inProgress = tasks.filter((task) => task.status === "In Progress").length;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { total, completed, inProgress, completionRate };
-  }, [notes]);
+  }, [tasks]);
 
   // Status (Pie Chart)
   const statusChartData = React.useMemo(() => {
@@ -56,8 +56,8 @@ export const DashBoardPage: React.FC = () => {
       "Not Started": 0 
     };
     
-    notes.forEach((note) => {
-      const status = note.task || "Todo";
+    tasks.forEach((task) => {
+      const status = task.status || "Todo";
       if (counts[status] !== undefined) counts[status]++;
     });
 
@@ -67,19 +67,19 @@ export const DashBoardPage: React.FC = () => {
     return keys
       .map((key, index) => ({
         id: index,
-        value: notes.length > 0 ? counts[key] : 1,
-        label: `${key} (${notes.length > 0 ? counts[key] : 0})`,
+        value: tasks.length > 0 ? counts[key] : 1,
+        label: `${key} (${tasks.length > 0 ? counts[key] : 0})`,
         color: colors[index % colors.length],
       }))
-      .filter((item) => notes.length === 0 || item.value > 0);
-  }, [notes]);
+      .filter((item) => tasks.length === 0 || item.value > 0);
+  }, [tasks]);
 
   // Category (Bar Chart)
   const categoryChartData = React.useMemo(() => {
     const counts: Record<string, number> = {};
     
-    notes.forEach((note) => {
-      const cat = (note.category || "General").trim();
+    tasks.forEach((task) => {
+      const cat = (task.category && typeof task.category !== 'string' ? task.category.name : 'General').trim();
       counts[cat] = (counts[cat] || 0) + 1;
     });
 
@@ -106,14 +106,14 @@ export const DashBoardPage: React.FC = () => {
       : [{ category: "General", frequency: 0, color: "#7570b3" }];
 
     return dataset;
-  }, [notes]);
+  }, [tasks]);
 
   // Priority (Line Chart)
   const priorityChartData = React.useMemo(() => {
     const counts: Record<string, number> = { Low: 0, Medium: 0, High: 0 };
     
-    notes.forEach((note) => {
-      const priority = note.priority || "Low";
+    tasks.forEach((task) => {
+      const priority = task.priority || "Low";
       if (counts[priority] !== undefined) counts[priority]++;
     });
 
@@ -130,7 +130,7 @@ export const DashBoardPage: React.FC = () => {
         color: "#a01a58" 
       }],
     };
-  }, [notes]);
+  }, [tasks]);
 
   // --- LOADING STATE ---
   if (isLoading) {
@@ -239,7 +239,16 @@ export const DashBoardPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "background.default", minHeight: "100vh" }}>
+    <Box sx={{  minHeight: "100vh" }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: "text.primary", mb: 0.75 }}>
+          Dashboard Overview
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          A quick view of your workload, progress, and task distribution.
+        </Typography>
+      </Box>
+
       {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>

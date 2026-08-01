@@ -7,7 +7,6 @@ import {
   Typography,
   Stack,
   Chip,
-  Avatar,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
@@ -28,7 +27,12 @@ interface TaskAssigneeBoardProps {
 
 export const TaskAssigneeBoard: React.FC<TaskAssigneeBoardProps> = ({ tasks, onUpdate }) => {
   const uniqueAssignees = React.useMemo(() => {
-    const list = tasks.map((t) => t.assignee).filter(Boolean);
+    const list = tasks
+      .map((t) => {
+        if (typeof t.assignee === "string") return t.assignee;
+        return t.assignee?.username || t.assignee?.email || "";
+      })
+      .filter(Boolean) as string[];
     return Array.from(new Set(list));
   }, [tasks]);
 
@@ -46,15 +50,20 @@ export const TaskAssigneeBoard: React.FC<TaskAssigneeBoardProps> = ({ tasks, onU
     const movedTask = localTasks.find((t) => t._id === draggableId);
     if (!movedTask) return;
 
+    const getAssigneeValue = (assignee: Task['assignee']) => {
+      if (typeof assignee === "string") return assignee;
+      return assignee?.username || assignee?.email || "Unassigned";
+    };
+
     const updatedTasks = Array.from(localTasks);
-    const sourceTasks = updatedTasks.filter((t) => t.assignee === source.droppableId);
+    const sourceTasks = updatedTasks.filter((t) => getAssigneeValue(t.assignee) === source.droppableId);
     const targetTask = sourceTasks[source.index];
     const srcIdx = updatedTasks.indexOf(targetTask);
     if (srcIdx !== -1) updatedTasks.splice(srcIdx, 1);
 
     const updatedMoved = { ...targetTask, assignee: destination.droppableId };
 
-    const destTasks = updatedTasks.filter((t) => t.assignee === destination.droppableId);
+    const destTasks = updatedTasks.filter((t) => getAssigneeValue(t.assignee) === destination.droppableId);
     let destIdx = updatedTasks.length;
     if (destination.index < destTasks.length) {
       const next = destTasks[destination.index];
@@ -78,7 +87,10 @@ export const TaskAssigneeBoard: React.FC<TaskAssigneeBoardProps> = ({ tasks, onU
     <DragDropContext onDragEnd={handleDragEnd}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: `repeat(${Math.min(uniqueAssignees.length, 4)}, 1fr)` }, gap: 2, alignItems: 'start' }}>
         {uniqueAssignees.map((assignee) => {
-          const colTasks = localTasks.filter((t) => t.assignee === assignee);
+          const colTasks = localTasks.filter((t) => {
+            const value = typeof t.assignee === "string" ? t.assignee : t.assignee?.username || t.assignee?.email || "";
+            return value === assignee;
+          });
           return (
             <Box key={assignee}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, pl: 1, textTransform: 'uppercase', color: '#973aa8', display: 'flex', alignItems: 'center', gap: 0.5 }}>

@@ -36,6 +36,7 @@ interface ShareRequestBody {
   noteId?: string;
   pageType?:"category" | "board";
   pageName?:string;
+  projectId?: string;
 }
 
 const router = express.Router();
@@ -404,6 +405,9 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
 
     const shareLink = pageUrl || `${req.protocol}://${req.get("host")}/`;
     const accessScope = getAccessScope(shareLink, source);
+    const parsedShareUrl = new URL(shareLink, "http://dummy");
+    const projectIdFromUrl = parsedShareUrl.searchParams.get("project");
+    const projectId = (req.body as ShareRequestBody).projectId || projectIdFromUrl || undefined;
     console.log("Access Scope:", accessScope);
 
 
@@ -468,85 +472,27 @@ router.post("/invite", verifyToken, async (req: AuthRequest, res: Response) => {
       invitedBy: inviterId,
       invitedEmail: targetEmail,
       role,
-      status: existingUser ? "accepted" : "pending",
+      status: "pending",
       pageUrl: shareLink,
       source: invitationSource,
       noteId: pageNoteObjectId,
       userId: existingUser?._id,
       pageType: finalPageType,
       pageName: finalPageName,
+      projectId: projectId && mongoose.Types.ObjectId.isValid(projectId) ? new mongoose.Types.ObjectId(projectId) : undefined,
     });
 
     console.log(' Invitation created:', invitation._id);
 
     if (existingUser) {
-      if (accessScope === "board") {
-        await grantPageAccess({
-          userId: existingUser._id.toString(),
-          ownerId: inviterId,
-          pageType: "board",
-          pageUrl: shareLink,
-          pageName:finalPageName,
-        });
-        console.log(` PageAccess granted for board`);
-      }
-
-       if (accessScope === "category") {
-        let pageNameToUse = finalPageName;
-        if (!pageNameToUse) {
-          const match = shareLink.match(/\/category\/([^\/?#]+)/);
-          if (match) {
-            pageNameToUse = decodeURIComponent(match[1]);
-          }
-        }
-   
-
-      
-
-      if (accessScope === "category") {
-  await grantPageAccess({
-    userId: existingUser._id.toString(),
-    ownerId: inviterId,
-    pageType: "category",
-    pageUrl: shareLink,
-    pageName:finalPageName,
-  });
-  console.log(`PageAccess granted for category`);
-  }
-}
-
-      if (accessScope === "note-form"){
-        await grantWorkspaceAccess({
-        userId: existingUser._id.toString(),
-        inviterId,
-        pageNoteId: pageNoteId || null,
-        role,
-        accessScope
-      });
-      console.log(`WorkspaceAccess granted for ${accessScope}`);
-      }
-
-        if (accessScope === "global") {
-        await grantWorkspaceAccess({
-          userId: existingUser._id.toString(),
-          inviterId,
-          pageNoteId: null,
-          role,
-          accessScope: "global"
-        });
-        console.log(` WorkspaceAccess granted for global`);
-      }
-   
-      
-
-      // Create notification
+      // Do not grant access until the invite is accepted.
       await Notification.create({
         fromUser: inviterId,
         toUser: existingUser._id,
         type: "invite",
         message: `You were invited to ${accessScope} page (role: ${role}) by the user.`,
-        invitationId:invitation._id,
-        pageUrl:shareLink,
+        invitationId: invitation._id,
+        pageUrl: shareLink,
       }).catch(() => null);
     }
 
@@ -708,9 +654,10 @@ router.get("/invitations", verifyToken, async (req: AuthRequest, res: Response) 
     }
 
     const currentUser = await Auth.findById(currentUserId).select("email");
+    const normalizedEmail = currentUser?.email?.toLowerCase();
     const invitations = await ShareInvitation.find({
       $or: [
-        { invitedEmail: currentUser?.email?.toLowerCase() },
+        { invitedEmail: normalizedEmail },
         { userId: currentUserId },
       ],
       status: { $in: ["pending", "accepted"] },
@@ -1170,6 +1117,7 @@ router.put("/accept/:id", verifyToken, async (req: AuthRequest, res: Response) =
     }
 
     invitation.status = "accepted";
+    invitation.userId = userId as any;
     await invitation.save();
 
     // Grant access based on scope (already implemented)

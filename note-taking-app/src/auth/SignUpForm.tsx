@@ -116,7 +116,7 @@ export const SignUpForm = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Stack spacing={0.5} sx={{  alignItems:'center'}}>
+        <Stack spacing={0.5} sx={{ alignItems:'center' }}>
           <Box  sx={{display:"flex",flexDirection:'row'}}>
         <Box
             component="img"
@@ -230,7 +230,7 @@ export const SignUpForm = () => {
                   <CircularProgress size={18} color="inherit" />
                 ) : undefined
               }
-              sx={{ py: 1.25 }}
+              sx={{ py: 1.25, borderRadius: 2 }}
             >
               {isLoading ? "Creating account..." : "Create account"}
             </Button>

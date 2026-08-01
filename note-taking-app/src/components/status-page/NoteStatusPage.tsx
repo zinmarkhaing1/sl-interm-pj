@@ -87,6 +87,12 @@ export const NoteStatusPage: React.FC = () => {
   // ---- Detect shared view ----
   const isShared = new URLSearchParams(location.search).get('shared') === 'true';
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const projectParam = params.get("project") || "";
+    setSelectedProjectId(projectParam);
+  }, [location.search]);
+
   // ---- Fetch tasks with shareScope if shared ----
   const {
     data: fetchedTasks = [],
@@ -148,8 +154,8 @@ export const NoteStatusPage: React.FC = () => {
   // ---- Share page info ----
   const sharePageName = selectedProject?.name || "All Projects";
   const sharePageUrl = selectedProjectId
-    ? `${window.location.origin}/board?project=${encodeURIComponent(selectedProjectId)}`
-    : `${window.location.origin}/board`;
+    ? `${window.location.origin}/board?project=${encodeURIComponent(selectedProjectId)}&shared=true`
+    : `${window.location.origin}/board?shared=true`;
 
   // ---- Get assignee name ----
   const getAssigneeName = useCallback(
@@ -536,8 +542,19 @@ export const NoteStatusPage: React.FC = () => {
             label="Project"
             onChange={(e) => {
               const projectId = e.target.value;
+              const params = new URLSearchParams(location.search);
+              if (projectId) {
+                params.set("project", projectId);
+              } else {
+                params.delete("project");
+              }
+              if (isShared) {
+                params.set("shared", "true");
+              } else {
+                params.delete("shared");
+              }
               setSelectedProjectId(projectId);
-              navigate(projectId ? `/board?project=${encodeURIComponent(projectId)}` : "/board", { replace: true });
+              navigate(projectId || isShared ? `/board?${params.toString()}` : "/board", { replace: true });
             }}
           >
             <MenuItem value="">All Projects</MenuItem>

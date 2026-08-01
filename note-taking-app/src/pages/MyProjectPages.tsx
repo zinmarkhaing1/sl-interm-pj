@@ -104,13 +104,18 @@ console.log("PROJECT LOADING:", isLoading);
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" sx={{fontSize:'20px'}}>My Projects</Typography>
+    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontSize: '22px', fontWeight: 700, color: 'text.primary' }}>My Projects</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Organize workspaces, share them with your team, and jump back into active projects quickly.
+          </Typography>
+        </Box>
         <Button
           variant="contained"
           onClick={() => navigate('/my-project/new-project')}
-          sx={{ textTransform: 'none', borderRadius: 2 }}
+          sx={{ textTransform: 'none' }}
         >
           + New Project
         </Button>
@@ -121,13 +126,14 @@ console.log("PROJECT LOADING:", isLoading);
           <Grid size={{ xs: 12, md: 4 }} key={project._id}>
             <Card
               sx={{
-                borderRadius: 0.5,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                '&:hover': { boxShadow: '0 8px 24px rgba(0,0,0,0.1)' },
+                borderRadius: 3,
+                boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+                '&:hover': { boxShadow: '0 16px 35px rgba(15, 23, 42, 0.09)', transform: 'translateY(-2px)' },
                 height: '100%',
                 display: 'flex',
                 p:0.2,
                 flexDirection: 'column',
+                transition: 'all 0.2s ease-in-out',
               }}
             >
               <Box

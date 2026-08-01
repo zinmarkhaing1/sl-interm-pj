@@ -144,6 +144,9 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
       .lean();
     console.log("📚 1. Owned notes:", ownedNotes.length);
 
+    const currentUser = await Auth.findById(userId).select("email").lean();
+    const normalizedEmail = currentUser?.email?.toLowerCase();
+
     // STEP 2: Get PageAccess for CATEGORY
     const categoryPageAccesses = await PageAccess.find({
       userId: userId,
@@ -156,10 +159,12 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
 
     // STEP 3: Get invitations for CATEGORY
     const categoryInvitations = await ShareInvitation.find({
-      userId: userId,
       pageType: "category",
-      status: { $in: ["pending", "accepted"] },
-
+      status: "accepted",
+      $or: [
+        { userId: userId },
+        { invitedEmail: normalizedEmail },
+      ],
     }).lean();
 
     const hasCategoryAccess = categoryPageAccesses.length > 0  ||
@@ -174,9 +179,12 @@ export const getNotes = async (req: AuthRequest, res: Response): Promise<void> =
 
     
     const boardInvitations = await ShareInvitation.find({
-      userId: userId,
       pageType: "board",
-      status: { $in: ["pending", "accepted"] },
+      status: "accepted",
+      $or: [
+        { userId: userId },
+        { invitedEmail: normalizedEmail },
+      ],
     }).lean();
 
     

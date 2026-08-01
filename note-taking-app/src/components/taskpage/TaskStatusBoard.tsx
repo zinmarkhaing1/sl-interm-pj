@@ -109,7 +109,7 @@ export const TaskStatusBoard: React.FC<TaskStatusBoardProps> = ({ tasks, onUpdat
                                 )}
                                 <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
                                   {task.priority && <Chip label={task.priority} size="small" variant="outlined" color={task.priority === 'High' ? 'error' : 'default'} />}
-                                  {task.assignee && <Chip avatar={<Avatar sx={{ width: 16, height: 16, fontSize: 10 }}>{task.assignee[0]}</Avatar>} label={task.assignee} size="small" />}
+                                  {task.assignee && <Chip avatar={<Avatar sx={{ width: 16, height: 16, fontSize: 10 }}>{typeof task.assignee === 'string' ? task.assignee.charAt(0).toUpperCase() : task.assignee?.username?.charAt(0).toUpperCase() || '?'}</Avatar>} label={typeof task.assignee === 'string' ? task.assignee : task.assignee?.username || task.assignee?.email || 'Unassigned'} size="small" />}
                                 </Stack>
                                 {task.dueDate && (
                                   <Stack direction="row" sx={{ mt: 1, alignItems: 'center', color: 'text.secondary' }}>

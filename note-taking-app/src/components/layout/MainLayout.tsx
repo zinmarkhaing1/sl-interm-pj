@@ -32,6 +32,7 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
         display: "flex",
         minHeight: "100vh",
         bgcolor: "background.default",
+        position: "relative",
       }}
     >
       <HeaderBar onMenuClick={handleToggleMenu} />
@@ -60,7 +61,19 @@ export const MainLayout = ({ children }: MainLayoutprops) => {
           boxSizing: "border-box",
         }}
       >
-        {children}
+        <Box
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 4,
+            p: { xs: 2, sm: 3 },
+            bgcolor: "background.paper",
+            boxShadow: "0 20px 45px rgba(15, 23, 42, 0.06)",
+            minHeight: "100%",
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );

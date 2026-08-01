@@ -11,6 +11,7 @@ export interface IShareInvitation extends Document {
   userId?: Types.ObjectId;
   pageType? : "category" | "board";
   pageName? : string;
+  projectId?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -64,6 +65,11 @@ const ShareInvitationSchema = new mongoose.Schema(
   },
   pageName: {
     type: String,
+    required: false,
+  },
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Project",
     required: false,
   },
   },

@@ -95,7 +95,7 @@ export const LoginForm = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Stack  spacing={0.5} sx={{ mb: 3 ,alignItems:'center'}}>
+        <Stack spacing={0.5} sx={{ mb: 3, alignItems:'center' }}>
           <Stack  sx={{display:"flex",flexDirection:'row',mb:1}}>
           <Box
             component="img"
@@ -195,7 +195,7 @@ export const LoginForm = () => {
                   <CircularProgress size={18} color="inherit" />
                 ) : undefined
               }
-              sx={{ py: 1.25, mt: 0.5 }}
+              sx={{ py: 1.25, mt: 0.5, borderRadius: 2 }}
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>

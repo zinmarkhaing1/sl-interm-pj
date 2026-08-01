@@ -5,7 +5,8 @@
 *::after {
   box-sizing: border-box;
 }
-*{
+
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -22,16 +23,36 @@ body,
 }
 
 body {
-  background-color: #dee4ea;
+  font-family: Inter, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #f7f1fc 0%, #f4ebff 45%, #eef4ff 100%);
+  color: #212529;
 }
 
-
 html[data-theme="dark"] body {
-  background-color: #1a1520;
+  background: linear-gradient(135deg, #1a1520 0%, #221a2b 45%, #16111d 100%);
   color: #ffffff;
 }
 
 html[data-theme="light"] body {
-  background-color: #faf7fc;
+  background: linear-gradient(135deg, #f7f1fc 0%, #f4ebff 45%, #eef4ff 100%);
   color: #212529;
+}
+
+::selection {
+  background: rgba(151, 58, 168, 0.25);
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(151, 58, 168, 0.28);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }

@@ -118,7 +118,7 @@ const filteredCollaborators = allCollaborators.filter(
   }
 
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: 'background.default' }}>
+    <Box sx={{ width: "100%", minHeight: "100vh"}}>
       <Box sx={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 54px' }}>
         
         <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 4 }}>

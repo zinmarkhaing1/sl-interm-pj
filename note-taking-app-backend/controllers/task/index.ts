@@ -338,13 +338,16 @@
 
 
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import Task from '../../models/Task';
 import Project, { IProject } from '../../models/Project';
+import Auth from '../../models/Auth';
 import {
   getUserIdentifiers,
   userHasAccess,
 } from '../project';
 import PageAccess from '../../models/PageAccess';
+import ShareInvitation from '../../models/ShareInvitation';
 
 interface AuthRequest extends Request {
   user?: {
@@ -453,6 +456,8 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
     }
 
     const { projectId, status, assignee, shareScope, categoryId } = req.query;
+    const currentUser = await Auth.findById(userId).select('email').lean();
+    const normalizedEmail = currentUser?.email?.toLowerCase();
 
     const ownedProjectIds = await getAccessibleProjectIds(identifiers);
     const ownedIds = ownedProjectIds.map(id => id.toString());
@@ -462,17 +467,55 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
       pageType: 'board',
     }).lean();
 
-    const boardNames = pageAccesses
-      .map(pa => pa.pageName)
-      .filter((name): name is string => Boolean(name));
+    const acceptedBoardInvitations = await ShareInvitation.find({
+      pageType: 'board',
+      status: 'accepted',
+      $or: [
+        { userId: userId },
+        { invitedEmail: normalizedEmail },
+      ],
+    }).select('pageName projectId').lean();
+
+    const boardNames = [
+      ...pageAccesses.map(pa => pa.pageName).filter((name): name is string => Boolean(name)),
+      ...acceptedBoardInvitations.map(inv => inv.pageName).filter((name): name is string => Boolean(name)),
+    ];
 
     let sharedProjectIds: string[] = [];
+    const invitationProjectIds = acceptedBoardInvitations.flatMap((inv) => {
+      const id = typeof inv.projectId === 'string' ? inv.projectId : inv.projectId?.toString();
+      if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return [];
+      }
+      return [id];
+    });
+
+    if (invitationProjectIds.length > 0) {
+      const matchingProjects = await Project.find({
+        _id: { $in: invitationProjectIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      }).select('_id').lean();
+      sharedProjectIds = matchingProjects.map((project) => project._id.toString());
+    }
+
     if (boardNames.length > 0) {
-      const regexPatterns = boardNames.map(name => new RegExp(`^${name}$`, 'i'));
+      const regexPatterns = [...new Set(boardNames)].map(name => new RegExp(`^${name}$`, 'i'));
       const sharedProjects = await Project.find({
         name: { $in: regexPatterns },
       }).select('_id').lean();
-      sharedProjectIds = sharedProjects.map(p => p._id.toString());
+      sharedProjectIds = [...new Set([...sharedProjectIds, ...sharedProjects.map((project) => project._id.toString())])];
+    }
+
+    if (shareScope === 'board' && sharedProjectIds.length === 0) {
+      const ownerIds = [...new Set(pageAccesses
+        .map((access) => access.ownerId?.toString())
+        .filter((id): id is string => Boolean(id)))];
+
+      if (ownerIds.length > 0) {
+        const ownerProjects = await Project.find({
+          $or: ownerIds.map((ownerId) => ({ owners: { $in: [ownerId.toLowerCase()] } })),
+        }).select('_id').lean();
+        sharedProjectIds = ownerProjects.map((project) => project._id.toString());
+      }
     }
 
     const allAccessibleIds = [...new Set([...ownedIds, ...sharedProjectIds])];

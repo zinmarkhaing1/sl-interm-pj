@@ -91,15 +91,20 @@ export const ShareStatusPage: React.FC<ShareStatusPageProps> = ({
         boardNameToUse = decodeURIComponent(match[1]);
       }
     }
-    if (!boardNameToUse) {
-      boardNameToUse = "Todo";
+    if (boardNameToUse === "All Projects") {
+      boardNameToUse = "";
     }
+    const resolvedPageUrl = pageUrl || window.location.href;
+    const parsedUrl = new URL(resolvedPageUrl, window.location.origin);
+    const projectId = parsedUrl.searchParams.get("project") || undefined;
+
     const requestBody = {
         email: inviteEmail.trim(),
           invitedEmail: inviteEmail.trim(),
           role: "viewer",
-          pageUrl: pageUrl || window.location.href,
-          pageName: boardName,
+          pageUrl: resolvedPageUrl,
+          pageName: boardNameToUse,
+          projectId,
           source: "board_page",
           pageType: "board",  
           redirectUrl: redirectUrl || "/board", 

@@ -148,9 +148,9 @@ export const EditNotePage: React.FC = () => {
           bgcolor: "background.paper",
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
+        <Stack direction="row" spacing={1.5} sx={{ mb: 1 ,alignItems:'center'}}>
           <EditNoteIcon color="primary" />
-          <Typography variant="h5" fontWeight={700}>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
             Edit note
           </Typography>
         </Stack>

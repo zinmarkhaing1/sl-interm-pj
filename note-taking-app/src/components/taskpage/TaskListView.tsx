@@ -76,8 +76,8 @@ export const TaskListView: React.FC<TaskListViewProps> = ({ tasks }) => {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      avatar={<Avatar sx={{ width: 20, height: 20, fontSize: 10 }}>{task.assignee?.[0] || '?'}</Avatar>}
-                      label={task.assignee || 'Unassigned'}
+                      avatar={<Avatar sx={{ width: 20, height: 20, fontSize: 10 }}>{typeof task.assignee === 'string' ? task.assignee.charAt(0).toUpperCase() : task.assignee?.username?.charAt(0).toUpperCase() || '?'}</Avatar>}
+                      label={typeof task.assignee === 'string' ? task.assignee : task.assignee?.username || task.assignee?.email || 'Unassigned'}
                       size="small"
                     />
                   </TableCell>

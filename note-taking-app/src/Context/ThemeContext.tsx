@@ -145,11 +145,7 @@ import type { RootState } from '../redux/store/index';
 
 
 export function ReduxThemeProvider({ children }: { children: ReactNode }) {
-
-
- 
   const darkMode = useSelector((state: RootState) => state.theme.darkMode);
-  const dispatch = useDispatch();
 
    
 useEffect(() => {

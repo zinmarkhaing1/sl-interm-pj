@@ -14,11 +14,10 @@ import {
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import PushPinIcon from "@mui/icons-material/PushPin";
-import LabelIcon from "@mui/icons-material/Label";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useNavigate } from "react-router-dom";
-import { useGetNotesQuery } from "../../services/noteApi";
-import type { Note } from "../../types/Note";
+import { useGetTasksQuery } from "../../services/taskApi";
+import type { Task } from "../../types/Project";
 import {
   DragDropContext,
   Droppable,
@@ -27,59 +26,56 @@ import {
 import type { DropResult } from "@hello-pangea/dnd";
 export const NoteLayout = () => {
   const navigate = useNavigate();
-  const { data: notes = [], isLoading } = useGetNotesQuery();
+  const { data: tasks = [], isLoading } = useGetTasksQuery({});
 
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedTask, setSelectedTask] = useState("All");
 
-  // Categories
-  const categoriesList = [
+  // Task filters
+  const taskOptions = [
     "All",
-    "Family & Friends",
-    "Fitness & Health",
-    "Study",
-    "My Note",
-    "Company Note",
+    "Todo",
+    "In Progress",
+    "Complete",
+    "Not Started",
   ];
 
-  // Compute filtered notes based on search and category
-  const filteredNotes = useMemo(() => {
-    if (!Array.isArray(notes)) return [];
+  // Compute filtered notes based on search and task
+  const filteredTasks = useMemo(() => {
+    if (!Array.isArray(tasks)) return [];
 
-    return notes.filter((note: Note) => {
-      // Category filter
-      if (selectedCategory !== "All" && note.category !== selectedCategory) {
+    return tasks.filter((task: Task) => {
+      const taskValue = task.status || "Todo";
+      if (selectedTask !== "All" && taskValue !== selectedTask) {
         return false;
       }
-      // Search filter (on title, description, content)
       if (searchText) {
         const lower = searchText.toLowerCase();
         const match =
-          note.title?.toLowerCase().includes(lower) ||
-          note.description?.toLowerCase().includes(lower) ||
-          note.content?.toLowerCase().includes(lower);
+          task.title?.toLowerCase().includes(lower) ||
+          task.description?.toLowerCase().includes(lower);
         if (!match) return false;
       }
       return true;
     });
-  }, [notes, searchText, selectedCategory]);
+  }, [tasks, searchText, selectedTask]);
 
   // State for the ordered list (drag‑and‑drop order)
-  const [orderedNotes, setOrderedNotes] = useState<Note[]>([]);
+  const [orderedTasks, setOrderedTasks] = useState<Task[]>([]);
 
-  // Sync orderedNotes whenever filteredNotes changes (reset order)
+  // Sync orderedTasks whenever filteredTasks changes (reset order)
   useEffect(() => {
-    setOrderedNotes(filteredNotes);
-  }, [filteredNotes]);
+    setOrderedTasks(filteredTasks);
+  }, [filteredTasks]);
 
   // Drag‑and‑drop handler
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    const items = Array.from(orderedNotes);
+    const items = Array.from(orderedTasks);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-    setOrderedNotes(items);
+    setOrderedTasks(items);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -148,7 +144,7 @@ export const NoteLayout = () => {
             />
           )}
 
-          {/* Category chips */}
+          {/* Task chips */}
           <Box
             sx={{
               display: "flex",
@@ -159,23 +155,23 @@ export const NoteLayout = () => {
               "&::-webkit-scrollbar": { height: "4px" },
             }}
           >
-            {categoriesList.map((cat) => (
+            {taskOptions.map((task) => (
               <Chip
-                key={cat}
-                label={cat}
+                key={task}
+                label={task}
                 clickable
-                color={selectedCategory === cat ? "primary" : "default"}
-                variant={selectedCategory === cat ? "filled" : "outlined"}
-                onClick={() => setSelectedCategory(cat)}
+                color={selectedTask === task ? "primary" : "default"}
+                variant={selectedTask === task ? "filled" : "outlined"}
+                onClick={() => setSelectedTask(task)}
                 sx={{
                   fontWeight: 500,
                   bgcolor:
-                    selectedCategory === cat ? "primary.main" : "background.paper",
-                  color: selectedCategory === cat ? "primary.contrastText" : "text.primary",
+                    selectedTask === task ? "primary.main" : "background.paper",
+                  color: selectedTask === task ? "primary.contrastText" : "text.primary",
                   borderColor: "divider",
                   "&:hover": {
                     bgcolor:
-                      selectedCategory === cat ? "primary.dark" : "secondary.main",
+                      selectedTask === task ? "primary.dark" : "secondary.main",
                     boxShadow: "none",
                   },
                 }}
@@ -185,25 +181,27 @@ export const NoteLayout = () => {
         </Stack>
 
         {/* Notes header */}
-        <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <PushPinIcon sx={{ color: "#7f8c8d", fontSize: 18 }} />
-          <Typography variant="h6" sx={{ color: "text.primary" }}>
-            {selectedCategory === "All" ? "Recent Notes" : `${selectedCategory} Notes`} (
-            {orderedNotes.length})
+        <Box sx={{ mb: 2.5, display: "flex", alignItems: "center", gap: 1 }}>
+          <PushPinIcon sx={{ color: "primary.main", fontSize: 18 }} />
+          <Typography variant="h6" sx={{ color: "text.primary", fontWeight: 700 }}>
+            {selectedTask === "All" ? "Recent Tasks" : `${selectedTask} Tasks`} (
+            {orderedTasks.length})
           </Typography>
         </Box>
 
-        {orderedNotes.length === 0 ? (
+        {orderedTasks.length === 0 ? (
           <Paper
             sx={{
               p: 5,
               textAlign: "center",
-              bgcolor: "rgba(255,255,255,0.6)",
+              bgcolor: "background.paper",
               borderRadius: 3,
+              border: "1px dashed",
+              borderColor: "divider",
             }}
           >
-            <Typography color="textSecondary">
-              No notes available. Create a new note to get started!
+            <Typography color="text.secondary">
+              No tasks available right now. Create a new task to get started.
             </Typography>
           </Paper>
         ) : (
@@ -216,10 +214,10 @@ export const NoteLayout = () => {
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
-                  {orderedNotes.map((note: any, index: number) => (
+                  {orderedTasks.map((task: Task, index: number) => (
                     <Draggable
-                      key={note._id || `note-${index}`}
-                      draggableId={note._id || `note-${index}`}
+                      key={task._id || `task-${index}`}
+                      draggableId={task._id || `task-${index}`}
                       index={index}
                     >
                       {(provided, snapshot) => (
@@ -244,7 +242,7 @@ export const NoteLayout = () => {
                               flexDirection: "column",
                               justifyContent: "space-between",
                               position: "relative",
-                              borderLeft: `6px solid ${getPriorityColor(note.priority)}`,
+                              borderLeft: `6px solid ${getPriorityColor(task.priority)}`,
                               transition: "0.3s",
                               cursor: "pointer",
                               "&:hover": {
@@ -271,10 +269,10 @@ export const NoteLayout = () => {
                                     lineHeight: 1.3,
                                   }}
                                 >
-                                  {note.title}
+                                  {task.title}
                                 </Typography>
                                 <Chip
-                                  label={note.task || "Todo"}
+                                  label={task.status || "Todo"}
                                   size="small"
                                   variant="outlined"
                                   sx={{
@@ -297,34 +295,40 @@ export const NoteLayout = () => {
                                   minHeight: "60px",
                                 }}
                               >
-                                {note.description || note.content}
+                                {task.description || "No description"}
                               </Typography>
 
                               <Divider sx={{ my: 1.5, opacity: 0.5 }} />
 
-                              <Stack
-                                direction="row"
-                                sx={{
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                    color:'text.secondary',
-                                  }}
-                                >
-                                  <LabelIcon
-                                    sx={{ fontSize: 16, color: 'text.secondary' }}
-                                  />
-                                  <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                                    {note.category}
+                              <Stack spacing={1}>
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                  <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
+                                    Status:
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: "text.primary" }}>
+                                    {task.status || "Todo"}
                                   </Typography>
                                 </Box>
-                                {note.startDate && (
+
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                  <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
+                                    Category:
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: "text.primary" }}>
+                                    {typeof task.category === "string" ? task.category : task.category?.name || "Uncategorized"}
+                                  </Typography>
+                                </Box>
+
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                  <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>
+                                    Assignee:
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: "text.primary" }}>
+                                    {typeof task.assignee === "string" ? task.assignee : task.assignee?.username || task.assignee?.email || "Unassigned"}
+                                  </Typography>
+                                </Box>
+
+                                {task.startDate && (
                                   <Box
                                     sx={{
                                       display: "flex",
@@ -335,7 +339,7 @@ export const NoteLayout = () => {
                                   >
                                     <AccessTimeIcon sx={{ fontSize: 14 }} />
                                     <Typography variant="caption" sx={{ fontSize: "11px" }}>
-                                      {note.startDate.split(" ")[0]}
+                                      {task.startDate.split(" ")[0]}
                                     </Typography>
                                   </Box>
                                 )}

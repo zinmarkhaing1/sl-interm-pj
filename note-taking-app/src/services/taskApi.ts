@@ -79,7 +79,7 @@ export const taskApi = createApi({
     // GET tasks with populate
     getTasks: builder.query<
       Task[],
-      { projectId?: string; status?: string; assignee?: string; categoryId?: string; populate?: string }
+      { projectId?: string; status?: string; assignee?: string; categoryId?: string; shareScope?: 'board' | 'category'; populate?: string }
     >({
       query: (params) => {
         const search = new URLSearchParams();
@@ -87,6 +87,7 @@ export const taskApi = createApi({
         if (params?.status) search.set('status', params.status);
         if (params?.assignee) search.set('assignee', params.assignee);
         if (params?.categoryId) search.set('categoryId', params.categoryId);
+        if (params?.shareScope) search.set('shareScope', params.shareScope);
         search.set('populate', 'category assignee project');
         return `tasks?${search.toString()}`;
       },

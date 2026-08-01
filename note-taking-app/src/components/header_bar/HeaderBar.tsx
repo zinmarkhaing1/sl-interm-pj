@@ -200,10 +200,6 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
     setNotificationAnchor(null);
   };
 
-  const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleShareClose = () => {
     setAnchorEl(null);
   };
@@ -322,6 +318,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
       
         refetchCollaborators();
         refetchInvitations();
+        window.dispatchEvent(new Event("storage"));
         if (data.pageUrl) {
           window.location.href = data.pageUrl;
         } else {
@@ -362,6 +359,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
         await markNotificationRead(notification._id).unwrap();
         refetchCollaborators();
         refetchInvitations();
+        window.dispatchEvent(new Event("storage"));
         alert("Invitation declined.");
       } else {
         const err = await response.json().catch(() => ({}));
