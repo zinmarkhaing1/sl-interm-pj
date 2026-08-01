@@ -179,18 +179,18 @@ console.log("PROJECT LOADING:", isLoading);
                   </IconButton>
                 </Tooltip>
               </Box>
-
+{/* 
               <CardActionArea
                 onClick={() => navigate(`/my-project/project-detail/${project._id}`)}
                 sx={{ flex: 1, alignItems: 'stretch' }}
-              >
-                <CardContent sx={{  pt: 0.5,height: '100%',display: 'flex',flexDirection: 'column',}}>
+              > */}
+                {/* <CardContent sx={{  pt: 0.5,height: '100%',display: 'flex',flexDirection: 'column',}}>
                   <Typography
                     variant="body2"
                     color="text.secondary"
                     sx={{ mb: 2, height: 35, overflow: 'hidden' }}
-                  >
-                    {project.description || 'No description'}
+                  > */}
+                    {/* {project.description || 'No description'}
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                     <People fontSize="small" color="action" />
@@ -200,27 +200,89 @@ console.log("PROJECT LOADING:", isLoading);
                      <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ display: 'block',  }}
-                  >
+                  > */}
                     {/* Owner: {project.ownerEmail || 'Unknown'} */}
-                    Owner:{project.owners?.length || 0}
+                    {/* Owner:{project.owners?.length || 0}
                   </Typography>
-                  </Stack>
+                  <Typography variant="caption" color="primary" sx={{ fontWeight: 500 }}>
+    {project.ownerEmail || 'Unknown'} {/* primary owner */}
+  {/* </Typography>  */}
+                  {/* </Stack>
                  
                   <Box sx={{ display: 'flex'}}>
                     {project.members?.slice(0, 3).map((m, i) => (
                       <Avatar key={i} sx={{ width: 24, height: 24, fontSize: 10 }}>
                         {m[0]}
                       </Avatar>
-                    ))}
-                    {(project.members?.length || 0) > 3 && (
+                    ))} */}
+                    {/* {(project.members?.length || 0) > 3 && (
                       <Avatar sx={{ width: 24, height: 24, fontSize: 10 }}>
                         +{project.members!.length - 3}
                       </Avatar>
                     )}
-                  </Box>
-                </CardContent>
-              </CardActionArea>
+                  </Box> */}
+                {/* </CardContent> */}
+              {/* </CardActionArea> */}
+
+              <CardActionArea
+  onClick={() => navigate(`/my-project/project-detail/${project._id}`)}
+  sx={{ flex: 1, alignItems: 'stretch' }}
+>
+  <CardContent sx={{ pt: 0.5, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      sx={{ mb: 2, height: 35, overflow: 'hidden' }}
+    >
+      {project.description || 'No description'}
+    </Typography>
+
+    {/* Members & Owners Info */}
+    <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 1, flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={0.5} sx={{alignItems:'center'}}>
+        <People fontSize="small" color="action" />
+        <Typography variant="caption">
+          Members: {project.members?.length || 0}
+        </Typography>
+      </Stack>
+      <Stack direction="row" spacing={0.5} sx={{alignItems:'center'}}>
+        <People fontSize="small" color="action" />
+        <Typography variant="caption" color="text.secondary">
+          Owners: {project.owners?.length || 0}
+        </Typography>
+      </Stack>
+  
+      {project.ownerEmail && (
+        <Typography variant="caption" sx={{color:'text.primary'}}>
+          Owner: {project.ownerEmail}
+        </Typography>
+      )}
+    </Stack>
+
+    {/* Member Avatars */}
+    <Box sx={{ display: 'flex', gap: 0.5 }}>
+      {project.members?.slice(0, 3).map((m, i) => {
+     
+        let initial = '?';
+        if (typeof m === 'string') {
+          initial = m[0]?.toUpperCase() || '?';
+        } else if (typeof m === 'object' && m !== null) {
+          initial = (m.username?.[0] || m.email?.[0] || m._id?.[0] || '?').toUpperCase();
+        }
+        return (
+          <Avatar key={i} sx={{ width: 24, height: 24, fontSize: 10 }}>
+            {initial}
+          </Avatar>
+        );
+      })}
+      {(project.members?.length || 0) > 3 && (
+        <Avatar sx={{ width: 24, height: 24, fontSize: 10 }}>
+          +{project.members!.length - 3}
+        </Avatar>
+      )}
+    </Box>
+  </CardContent>
+</CardActionArea>
 
               <Box sx={{ display: 'flex', gap: 0.5, px: 2, pb: 2 }}>
                 <Button

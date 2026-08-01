@@ -105,14 +105,51 @@ const enrichProject = async (
 };
 
 // ===== Create a new project =====
+// export const createProject = async (req: AuthRequest, res: Response) => {
+//   try {
+//     const userId = req.user?.id;
+//     if (!userId) {
+//       return res.status(401).json({ error: 'Unauthorized' });
+//     }
+
+//     const { name, description, isPrivate, members } = req.body;
+
+//     if (!name || name.trim().length < 3) {
+//       return res.status(400).json({
+//         error: 'Project name is required and must be at least 3 characters',
+//       });
+//     }
+
+//     // Exactly one owner: the authenticated creator (stored as user id)
+//     const ownerId = userId.toLowerCase();
+//     // const ownerId = userId;
+//     const memberList = uniqueStrings(members || []).filter((m) => m !== ownerId);
+
+//     const project = new Project({
+//       name: name.trim(),
+//       description: description?.trim() || '',
+//       isPrivate: isPrivate ?? true,
+//       members: memberList,
+//       owners: [ownerId],
+//     });
+
+//     await project.save();
+//     const identifiers = await getUserIdentifiers(req);
+//     res.status(201).json(await enrichProject(project, identifiers));
+//   } catch (error: any) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
 export const createProject = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { name, description, isPrivate, members } = req.body;
+
+    console.log('📥 Received body:', req.body);
+    console.log('📥 Members from frontend:', members);
 
     if (!name || name.trim().length < 3) {
       return res.status(400).json({
@@ -120,10 +157,11 @@ export const createProject = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Exactly one owner: the authenticated creator (stored as user id)
     const ownerId = userId.toLowerCase();
-    // const ownerId = userId;
     const memberList = uniqueStrings(members || []).filter((m) => m !== ownerId);
+
+    console.log('👤 Owner ID:', ownerId);
+    console.log('👥 Members after filtering:', memberList);
 
     const project = new Project({
       name: name.trim(),
@@ -134,9 +172,14 @@ export const createProject = async (req: AuthRequest, res: Response) => {
     });
 
     await project.save();
+    console.log(' Saved project:', project);
+
     const identifiers = await getUserIdentifiers(req);
-    res.status(201).json(await enrichProject(project, identifiers));
+    const enriched = await enrichProject(project, identifiers);
+    console.log('📤 Enriched project:', enriched);
+    res.status(201).json(enriched);
   } catch (error: any) {
+    console.error(' Create project error:', error);
     res.status(400).json({ error: error.message });
   }
 };

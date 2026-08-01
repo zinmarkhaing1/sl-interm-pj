@@ -17,6 +17,7 @@ import {
   TextField,
   Tooltip,
   Snackbar,
+  Stack,
 } from "@mui/material";
 import { Add, Edit, Delete, Category as CategoryIcon } from "@mui/icons-material";
 import {
@@ -175,7 +176,7 @@ export const PageCategory = () => {
                 p: 1,
               }}
             >
-              <CardContent sx={{ flex: 1 }}>
+              <CardContent sx={{ flex: 1 , width:'100%'}}>
                 <Box
                   sx={{
                     display: "flex",
@@ -191,7 +192,8 @@ export const PageCategory = () => {
                     </Typography>
                   </Box>
                   <Box>
-                    <Tooltip title="Edit">
+                    <Stack sx={{display:'flex',position:'relative', flexDirection:'column'}}>
+                       <Tooltip title="Edit">
                       <IconButton size="small" onClick={() => handleOpenEdit(category)} sx={{ mr: 0.5 }}>
                         <Edit fontSize="small" />
                       </IconButton>
@@ -201,6 +203,8 @@ export const PageCategory = () => {
                         <Delete fontSize="small" />
                       </IconButton>
                     </Tooltip>
+                    </Stack>
+                   
                   </Box>
                 </Box>
                 <Typography variant="caption" color="text.secondary">

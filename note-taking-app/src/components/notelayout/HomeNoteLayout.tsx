@@ -54,7 +54,7 @@ export const HomeNoteLayout = () => {
           My Workspace
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Review your priorities, progress, and task activity in one place.
+          Review your priorities and task activity in one place.
         </Typography>
       </Box>
 

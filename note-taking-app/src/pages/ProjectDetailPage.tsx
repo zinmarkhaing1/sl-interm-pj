@@ -35,10 +35,11 @@ import {
   Share,
   ContentCopy,
   Check,
-  ArrowBack,
+
   CalendarToday,
   Person,
   Email,
+  ArrowBackIosNew
 } from '@mui/icons-material';
 import { useGetProjectsQuery, useDeleteProjectMutation } from '../services/projectApi';
 import type { Project } from '../types/Project';
@@ -148,12 +149,13 @@ export const ProjectDetailPage = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Stack direction="row" spacing={1} sx={{alignItems:'center'}}>
           <IconButton onClick={() => navigate('/my-project')} sx={{ mr: 1 }}>
-            <ArrowBack />
+            <ArrowBackIosNew />
           </IconButton>
-          <Typography variant="h5" sx={{ fontSize: '20px', fontWeight: 500 }}>
+          
+        </Stack>
+        <Typography variant="h5" sx={{ fontSize: '20px', fontWeight: 600, alignItems:'center' }}>
             Project Details
           </Typography>
-        </Stack>
         <Stack direction="row" spacing={1}>
           <Button
             variant="contained"
@@ -195,8 +197,8 @@ export const ProjectDetailPage = () => {
         <CardContent sx={{ p: 0 }}>
           {/* Header: Name + Privacy Chip */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Folder color="primary" sx={{ fontSize: 32 }} />
-            <Typography variant="h4" sx={{ fontFamily: 'sans-serif', fontWeight: 600 }}>
+            <Folder color="primary" sx={{ fontSize: 18}} />
+            <Typography variant="h4" sx={{ fontFamily: 'sans-serif', fontWeight: 500, fontSize:'20px' }}>
               {project.name}
             </Typography>
             <Chip
@@ -227,9 +229,10 @@ export const ProjectDetailPage = () => {
                   Owner:
                 </Typography>
                 <Typography variant="body2">
-                  {project.owners && project.owners.length > 0
+                  {/* {project.owners && project.owners.length > 0
                     ? project.owners.join(', ')
-                    : 'Unknown'}
+                    : 'Unknown'} */}
+                    {project.ownerEmail || project.owners?.[0] || 'Unknown'}
                 </Typography>
               </Stack>
             </Grid>
@@ -296,27 +299,34 @@ export const ProjectDetailPage = () => {
               borderRadius: 0.5,
               boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
               display: 'flex',
-              flexDirection: 'column',
+              position:'relative',
+              flexDirection: 'row',
               alignItems: 'center',
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6" sx={{ mb: 1 }}>
+            <Stack sx={{ display: 'flex',
+              position:'relative',
+              flexDirection: 'column',
+              alignItems: 'center',}}>
+                <Typography variant="h6" sx={{ mb: 1 }}>
               📋 Tasks Overview
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               View all tasks associated with this project.
             </Typography>
+              </Stack>
+            
             <Button
               variant="contained"
               onClick={() => navigate(`/my-tasks?project=${project._id}`)}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
+              sx={{ textTransform: 'none', borderRadius: 2 , width:'45%'}}
             >
               View Tasks
             </Button>
           </Paper>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        {/* <Grid size={{ xs: 12, md: 6 }}>
           <Paper
             sx={{
               p: 3,
@@ -342,7 +352,7 @@ export const ProjectDetailPage = () => {
               Go to Settings
             </Button>
           </Paper>
-        </Grid>
+        </Grid> */}
       </Grid>
 
       {/* ---- Share Dialog (Exact copy from MyProjectPages) ---- */}

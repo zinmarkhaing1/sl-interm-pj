@@ -184,7 +184,7 @@ export const NewTaskDateLayout = () => {
               year: 'numeric',
             })}`}
             size="small"
-            sx={{ ml: 2, bgcolor: '#f1f1ef' }}
+            sx={{ ml: 2, bgcolor: 'background.default' }}
           />
         )}
       </Stack>

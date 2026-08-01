@@ -297,9 +297,9 @@ export const MyTaskNote = () => {
         </Stack>
 
         {/* Table */}
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+        {/* <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
           <Table>
-            <TableHead sx={{ bgcolor: '#fafafa' }}>
+            <TableHead sx={{ bgcolor: 'background.default' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Task Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
@@ -327,7 +327,7 @@ export const MyTaskNote = () => {
                       <TableCell>
                         <Typography>{task.title}</Typography>
                         {task.description && (
-                          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' , width:'100%'}}>
                             {task.description}
                           </Typography>
                         )}
@@ -390,7 +390,133 @@ export const MyTaskNote = () => {
               )}
             </TableBody>
           </Table>
-        </TableContainer>
+        </TableContainer> */}
+        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+  <Table>
+    <TableHead sx={{ bgcolor: 'background.default' }}>
+      <TableRow>
+        <TableCell sx={{ fontWeight: 600, minWidth: 280 }}>Task Name</TableCell>
+        <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
+        <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+        <TableCell sx={{ fontWeight: 600 }}>Assignee</TableCell>
+        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+        <TableCell sx={{ fontWeight: 600 }}>Priority</TableCell>
+        <TableCell sx={{ fontWeight: 600, minWidth: 130 }}>Due Date</TableCell>
+        <TableCell sx={{ fontWeight: 600, width: 120, whiteSpace: 'nowrap' }}>Action</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {filteredTasks.length === 0 ? (
+        <TableRow>
+          <TableCell colSpan={8} sx={{ textAlign: 'center', py: 5, color: 'text.secondary' }}>
+            No tasks found.
+          </TableCell>
+        </TableRow>
+      ) : (
+        filteredTasks.map((task: Task) => {
+          const project = typeof task.project === 'object' ? task.project : null;
+          const categoryName = getCategoryName(task.category);
+          return (
+            <TableRow key={task._id} hover onClick={() => navigate(`/my-tasks/task-detail/${task._id}`)}>
+              <TableCell sx={{ minWidth: 280 }}>
+                <Typography sx={{ fontWeight: 500 }}>{task.title}</Typography>
+                {task.description && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                      display: 'block',
+                      mt: 0.5,
+                      wordBreak: 'break-word',
+                      whiteSpace: 'normal',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    {task.description}
+                  </Typography>
+                )}
+              </TableCell>
+              <TableCell>
+                <Chip label={project?.name || 'N/A'} size="small" variant="outlined" />
+              </TableCell>
+              <TableCell>
+                <Chip label={categoryName} size="small" variant="outlined" />
+              </TableCell>
+              <TableCell>
+                <Chip
+                  avatar={
+                    <Avatar sx={{ width: 20, height: 20, fontSize: 10 }}>
+                      {getAssigneeInitial(task.assignee)}
+                    </Avatar>
+                  }
+                  label={getAssigneeDisplay(task.assignee)}
+                  size="small"
+                />
+              </TableCell>
+              <TableCell>
+                <Chip
+                  label={task.status}
+                  color={statusColors[task.status] || 'default'}
+                  size="small"
+                  sx={{ fontWeight: 500 }}
+                />
+              </TableCell>
+              <TableCell>
+                <Chip
+                  label={task.priority}
+                  size="small"
+                  variant={task.priority === 'High' ? 'filled' : 'outlined'}
+                  color={task.priority === 'High' ? 'error' : 'default'}
+                />
+              </TableCell>
+              <TableCell sx={{ minWidth: 130, whiteSpace: 'nowrap' }}>
+                {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}
+              </TableCell>
+              <TableCell
+                onClick={(event) => event.stopPropagation()}
+                sx={{
+                  width: 120,
+                  whiteSpace: 'nowrap',
+                  position: { xs: 'relative', md: 'sticky' },
+                  right: 0,
+                  bgcolor: 'background.paper',
+                  borderLeft: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center' }}>
+                  <IconButton
+                    size="small"
+                    aria-label={`Edit ${task.title}`}
+                    onClick={() => navigate(`/my-tasks/edit/${task._id}`)}
+                    disabled={isDeleting}
+                    sx={{
+                      bgcolor: 'secondary.main',
+                      color: 'primary.main',
+                      '&:hover': { bgcolor: 'secondary.dark' },
+                    }}
+                  >
+                    <EditOutlined fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    aria-label={`Delete ${task.title}`}
+                    onClick={() => handleDelete(task)}
+                    disabled={isDeleting}
+                    sx={{ bgcolor: 'rgba(211, 47, 47, 0.08)' }}
+                  >
+                    <DeleteOutlined fontSize="small" />
+                  </IconButton>
+                </Box>
+              </TableCell>
+            </TableRow>
+          );
+        })
+      )}
+    </TableBody>
+  </Table>
+</TableContainer>
       </Box>
     </Box>
   );

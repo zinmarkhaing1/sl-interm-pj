@@ -9,6 +9,7 @@ import {
   CircularProgress,
   Alert,
   Grid,
+  IconButton,
 } from "@mui/material";
 import {
   Assignment,
@@ -17,6 +18,8 @@ import {
   Flag,
   Folder,
   Category as CategoryIcon,
+  ArrowBackIosNew,
+  
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetTaskQuery } from "../services/taskApi";
@@ -82,6 +85,12 @@ export const TaskDetailPage = () => {
 
   return (
     <Box sx={{ maxWidth: 500, mx: "auto", py: 4 }}>
+      <Stack direction="row" spacing={1} sx={{alignItems:'flex-start'}}>
+          <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>
+            <ArrowBackIosNew />
+          </IconButton>
+          
+        </Stack>
       <Paper
         elevation={0}
         sx={{
@@ -92,10 +101,13 @@ export const TaskDetailPage = () => {
           boxShadow: "0 8px 30px rgba(0,0,0,0.04)",
         }}
       >
+        
+       
+       
         <Typography variant="h5" gutterBottom sx={{ fontSize: "18px", fontFamily: "sans-serif", alignItems: "center", justifyContent: "center" }}>
           Task Details
         </Typography>
-        <Divider sx={{ mb: 3 }} />
+        <Divider sx={{ mb: 1 }} />
 
         <Grid container spacing={3}>
           <Grid size={{ xs: 12 }}>
@@ -217,15 +229,9 @@ export const TaskDetailPage = () => {
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 2 }} />
 
-        <Button
-          variant="contained"
-          onClick={() => navigate("/my-tasks")}
-          sx={{ textTransform: "none", borderRadius: 2 }}
-        >
-          Back to Tasks
-        </Button>
+        
         <Button
           variant="contained"
           onClick={() =>
