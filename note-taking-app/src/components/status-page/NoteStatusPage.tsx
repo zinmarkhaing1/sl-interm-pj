@@ -1335,7 +1335,7 @@ export const NoteStatusPage: React.FC = () => {
           sx={{
             textTransform: "none",
             color: "text.primary",
-            fontSize: "18px",
+            fontSize: "16px",
             fontWeight: "500",
             borderRadius: 3,
             px: 1.5,

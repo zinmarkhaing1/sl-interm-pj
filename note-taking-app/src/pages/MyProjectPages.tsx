@@ -107,8 +107,8 @@ console.log("PROJECT LOADING:", isLoading);
     <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontSize: '22px', fontWeight: 700, color: 'text.primary' }}>My Projects</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="h5" sx={{ fontSize: '16px', fontWeight: 700, color: 'text.primary' }}>My Projects</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5,fontSize:'14px' }}>
             Organize workspaces, share them with your team, and jump back into active projects quickly.
           </Typography>
         </Box>
@@ -158,7 +158,7 @@ console.log("PROJECT LOADING:", isLoading);
                   }}
                 >
                   <Folder color="primary" />
-                  <Typography variant="h6" noWrap sx={{fontFamily:'sans-serif'}}>
+                  <Typography variant="h6" noWrap sx={{fontFamily:'sans-serif', fontSize:'16px'}}>
                     {project.name}
                   </Typography>
                   <Chip
@@ -166,7 +166,7 @@ console.log("PROJECT LOADING:", isLoading);
                     icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />}
                     label={project.isPrivate ? 'Private' : 'Public'}
                     variant="outlined"
-                    sx={{m:1,py:1.5}}
+                    sx={{m:1,py:1.5,fontSize:'14px'}}
                   />
                 </Box>
                 <Tooltip title="Share project">
@@ -232,7 +232,7 @@ console.log("PROJECT LOADING:", isLoading);
     <Typography
       variant="body2"
       color="text.secondary"
-      sx={{ mb: 2, height: 35, overflow: 'hidden' }}
+      sx={{ mb: 2, height: 35, overflow: 'hidden',fontSize:'14px' }}
     >
       {project.description || 'No description'}
     </Typography>
@@ -241,13 +241,13 @@ console.log("PROJECT LOADING:", isLoading);
     <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 1, flexWrap: 'wrap' }}>
       <Stack direction="row" spacing={0.5} sx={{alignItems:'center'}}>
         <People fontSize="small" color="action" />
-        <Typography variant="caption">
+        <Typography variant="caption" sx={{fontSize:'14px'}}>
           Members: {project.members?.length || 0}
         </Typography>
       </Stack>
       <Stack direction="row" spacing={0.5} sx={{alignItems:'center'}}>
         <People fontSize="small" color="action" />
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="text.secondary" sx={{fontSize:'14px'}}>
           Owners: {project.owners?.length || 0}
         </Typography>
       </Stack>

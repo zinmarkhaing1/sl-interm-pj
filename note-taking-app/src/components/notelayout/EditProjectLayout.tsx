@@ -22,6 +22,8 @@ import {
   People as PeopleIcon,
   SupervisorAccount as OwnerIcon,
   ArrowBack as ArrowBackIcon,
+  ArrowBackIosNew,
+  Folder,
 } from "@mui/icons-material";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import { useNavigate, useParams } from "react-router-dom";
@@ -187,10 +189,10 @@ export const EditProjectLayout = () => {
   return (
     <Box sx={{ maxWidth: 640, mx: "auto", width: "100%", py: 1 }}>
       <Button
-        startIcon={<ArrowBackIcon />}
+        startIcon={<ArrowBackIosNew />}
         onClick={() => navigate("/my-project")}
         sx={{
-          mb: 1.5,
+          mb: 0.5,
           textTransform: "none",
           color: "text.secondary",
           "&:hover": { bgcolor: "action.hover", color: "text.primary" },
@@ -209,19 +211,19 @@ export const EditProjectLayout = () => {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <FolderOutlinedIcon color="primary" sx={{ fontSize: 28 }} />
+          <Folder color="primary" sx={{ fontSize: '16px'}} />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
             {canEdit ? "Edit project" : "Project details"}
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 ,fontSize:'14px'}}>
           {canEdit
             ? "Update project details, visibility, and members."
             : "You can view this project, but only the owner can edit it."}
         </Typography>
 
         {!canEdit && (
-          <Alert severity="info" sx={{ mb: 2.5 }}>
+          <Alert severity="info" sx={{ mb: 2, fontSize:'14px' }}>
             Read-only access. Contact the owner to request edit permission.
           </Alert>
         )}
@@ -266,14 +268,14 @@ export const EditProjectLayout = () => {
               onChange={handleChange}
               disabled={!canEdit}
               multiline
-              rows={3}
+              rows={2}
             />
 
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 2,
+                gap: 1,
                 flexWrap: "wrap",
               }}
             >
@@ -288,7 +290,7 @@ export const EditProjectLayout = () => {
                   />
                 }
                 label={
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                  <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
                     {formData.isPrivate ? (
                       <LockIcon fontSize="small" />
                     ) : (
@@ -311,8 +313,6 @@ export const EditProjectLayout = () => {
                 size="small"
               />
             </Box>
-
-            <Divider />
 
             <Stack spacing={2}>
               <TextField
@@ -372,7 +372,7 @@ export const EditProjectLayout = () => {
                       <CircularProgress size={18} color="inherit" />
                     ) : undefined
                   }
-                  sx={{ px: 3 }}
+                  sx={{ px: 2 }}
                 >
                   {isLoading ? "Updating..." : "Save changes"}
                 </Button>

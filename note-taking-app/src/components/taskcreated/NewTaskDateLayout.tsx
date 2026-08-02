@@ -165,7 +165,6 @@ export const NewTaskDateLayout = () => {
         maxWidth: 800,
         mx: 'auto',
         p: 4,
-        bgcolor: 'background.default',
         minHeight: '100vh',
       }}
     >
@@ -173,7 +172,7 @@ export const NewTaskDateLayout = () => {
         <IconButton onClick={() => navigate('/my-tasks')}>
           <ArrowBack />
         </IconButton>
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: 20 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '18px' }}>
           Create New Task
         </Typography>
         {prefillDueDate && (
@@ -193,19 +192,19 @@ export const NewTaskDateLayout = () => {
         component="form"
         onSubmit={handleSubmit}
         sx={{
-          p: 4,
+          p: 2,
           borderRadius: 3,
           boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
           border: '1px solid #f0f0f0',
         }}
       >
         {submitError && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setSubmitError(null)}>
+          <Alert severity="error" sx={{ mb: 1}} onClose={() => setSubmitError(null)}>
             {submitError}
           </Alert>
         )}
         {createError && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ mb: 1 }}>
             Failed to create task. Please try again.
           </Alert>
         )}
@@ -240,7 +239,7 @@ export const NewTaskDateLayout = () => {
               value={formData.description}
               onChange={handleChange}
               multiline
-              rows={3}
+              rows={2}
               placeholder="Add a description (optional)..."
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -350,7 +349,7 @@ export const NewTaskDateLayout = () => {
           </Grid>
 
           {/* Status */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          {/* <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="status-label">Status</InputLabel>
               <Select
@@ -373,10 +372,10 @@ export const NewTaskDateLayout = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
+          </Grid> */}
 
           {/* Priority */}
-          <Grid size={{ xs: 12 }}>
+          {/* <Grid size={{ xs: 12 }}>
             <FormControl fullWidth variant="outlined">
               <InputLabel id="priority-label">Priority</InputLabel>
               <Select
@@ -399,7 +398,59 @@ export const NewTaskDateLayout = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
+          </Grid> */}
+
+          {/* Status - Left side */}
+<Grid size={{ xs: 12, md: 6 }}>
+  <FormControl fullWidth variant="outlined">
+    <InputLabel id="status-label">Status</InputLabel>
+    <Select
+      labelId="status-label"
+      label="Status"
+      name="status"
+      value={formData.status}
+      onChange={handleSelectChange}
+      sx={{ borderRadius: 2 }}
+    >
+      {['Todo', 'In Progress', 'Complete', 'Not Started'].map((status) => (
+        <MenuItem key={status} value={status}>
+          <Chip
+            label={status}
+            color={statusColors[status] || 'default'}
+            size="small"
+            sx={{ fontWeight: 500 }}
+          />
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+
+{/* Priority - Right side (same row) */}
+<Grid size={{ xs: 12, md: 6 }}>
+  <FormControl fullWidth variant="outlined">
+    <InputLabel id="priority-label">Priority</InputLabel>
+    <Select
+      labelId="priority-label"
+      label="Priority"
+      name="priority"
+      value={formData.priority}
+      onChange={handleSelectChange}
+      sx={{ borderRadius: 2 }}
+    >
+      {['Low', 'Medium', 'High'].map((priority) => (
+        <MenuItem key={priority} value={priority}>
+          <Chip
+            label={priority}
+            size="small"
+            variant={priority === 'High' ? 'filled' : 'outlined'}
+            color={priority === 'High' ? 'error' : 'default'}
+          />
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
         </Grid>
 
         <Stack

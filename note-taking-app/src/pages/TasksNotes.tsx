@@ -282,10 +282,10 @@ export const TasksNotes = () => {
       <Box sx={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
         {/* Header Section */}
         <Box sx={{ mb: 1 }}>
-          <Typography variant="h3" sx={{ fontWeight: 500, color: 'text.primary', mb: 1, fontSize: '18px' }}>
+          <Typography variant="h3" sx={{ fontWeight: 500, color: 'text.primary', mb: 1, fontSize: '16px' }}>
             Tasks Tracker
           </Typography>
-          <Typography variant="body1" sx={{ color: 'text.primary', fontSize: '16px' }}>
+          <Typography variant="body1" sx={{ color: 'text.primary', fontSize: '14px' }}>
             Stay organized with tasks, your way.
           </Typography>
         </Box>

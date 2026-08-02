@@ -481,7 +481,7 @@ export const CategoriesPage = () => {
             borderRadius: 3,
             px: 1.5,
             whiteSpace: "nowrap",
-            "& .MuiButton-startIcon": { color: "#973aa8" },
+            "& .MuiButton-startIcon": { color: "#973aa8",fontSize:'16px' },
           }}
         >
           Category Page

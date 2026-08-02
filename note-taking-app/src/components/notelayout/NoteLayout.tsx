@@ -183,7 +183,7 @@ export const NoteLayout = () => {
         {/* Notes header */}
         <Box sx={{ mb: 2.5, display: "flex", alignItems: "center", gap: 1 }}>
           <PushPinIcon sx={{ color: "primary.main", fontSize: 18 }} />
-          <Typography variant="h6" sx={{ color: "text.primary", fontWeight: 700 }}>
+          <Typography variant="h6" sx={{ color: "text.primary", fontWeight: 700 ,fontSize:'16px'}}>
             {selectedTask === "All" ? "Recent Tasks" : `${selectedTask} Tasks`} (
             {orderedTasks.length})
           </Typography>

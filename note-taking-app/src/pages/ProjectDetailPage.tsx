@@ -146,14 +146,14 @@ export const ProjectDetailPage = () => {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 4 }}>
       {/* ---- Top Navigation Bar (MyProjectPages Style) ---- */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Stack direction="row" spacing={1} sx={{alignItems:'center'}}>
           <IconButton onClick={() => navigate('/my-project')} sx={{ mr: 1 }}>
             <ArrowBackIosNew />
           </IconButton>
           
         </Stack>
-        <Typography variant="h5" sx={{ fontSize: '20px', fontWeight: 600, alignItems:'center' }}>
+        <Typography variant="h5" sx={{ fontSize: '16px', fontWeight: 600, alignItems:'center' }}>
             Project Details
           </Typography>
         <Stack direction="row" spacing={1}>
@@ -161,7 +161,7 @@ export const ProjectDetailPage = () => {
             variant="contained"
             startIcon={<Share />}
             onClick={openShareDialog}
-            sx={{ textTransform: 'none', borderRadius: 2 }}
+            sx={{ textTransform: 'none', borderRadius: 2 ,fontSize: '14px'}}
           >
             Share
           </Button>
@@ -169,7 +169,7 @@ export const ProjectDetailPage = () => {
             variant="outlined"
             startIcon={<Edit />}
             onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
-            sx={{ textTransform: 'none', borderRadius: 2 }}
+            sx={{ textTransform: 'none', borderRadius: 2,fontSize: '14px' }}
           >
             Edit
           </Button>
@@ -178,7 +178,7 @@ export const ProjectDetailPage = () => {
             color="error"
             startIcon={<Delete />}
             onClick={openDeleteDialog}
-            sx={{ textTransform: 'none', borderRadius: 2 }}
+            sx={{ textTransform: 'none', borderRadius: 2,fontSize: '14px' }}
           >
             Delete
           </Button>
@@ -191,13 +191,13 @@ export const ProjectDetailPage = () => {
           borderRadius: 0.5,
           boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
           p: 3,
-          mb: 4,
+          mb: 2,
         }}
       >
         <CardContent sx={{ p: 0 }}>
           {/* Header: Name + Privacy Chip */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Folder color="primary" sx={{ fontSize: 18}} />
+            <Folder color="primary" sx={{ fontSize: '16px'}} />
             <Typography variant="h4" sx={{ fontFamily: 'sans-serif', fontWeight: 500, fontSize:'20px' }}>
               {project.name}
             </Typography>
@@ -206,7 +206,7 @@ export const ProjectDetailPage = () => {
               icon={project.isPrivate ? <Lock fontSize="small" /> : <Public fontSize="small" />}
               label={project.isPrivate ? 'Private' : 'Public'}
               variant="outlined"
-              sx={{ py: 1.5, px: 0.5 }}
+              sx={{ py: 1.5, px: 0.5 ,fontSize:'14px'}}
             />
           </Box>
 
@@ -292,7 +292,7 @@ export const ProjectDetailPage = () => {
 
       {/* ---- Action Cards (Task Overview) ---- */}
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <Paper
             sx={{
               p: 3,
@@ -308,8 +308,9 @@ export const ProjectDetailPage = () => {
             <Stack sx={{ display: 'flex',
               position:'relative',
               flexDirection: 'column',
-              alignItems: 'center',}}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
+              alignItems: 'center',
+              width:'100%'}}>
+                <Typography variant="h6" sx={{ mb: 1,fontSize: '14px' }}>
               📋 Tasks Overview
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -320,40 +321,15 @@ export const ProjectDetailPage = () => {
             <Button
               variant="contained"
               onClick={() => navigate(`/my-tasks?project=${project._id}`)}
-              sx={{ textTransform: 'none', borderRadius: 2 , width:'45%'}}
+              sx={{ textTransform: 'none', borderRadius: 2 , width:'35%'}}
             >
               View Tasks
             </Button>
           </Paper>
         </Grid>
-        {/* <Grid size={{ xs: 12, md: 6 }}>
-          <Paper
-            sx={{
-              p: 3,
-              borderRadius: 0.5,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              ⚙️ Project Settings
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Manage project members, privacy, and general settings.
-            </Typography>
-            <Button
-              variant="outlined"
-              onClick={() => navigate(`/my-project/edit-project/${project._id}`)}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
-            >
-              Go to Settings
-            </Button>
-          </Paper>
-        </Grid> */}
+        
       </Grid>
+      
 
       {/* ---- Share Dialog (Exact copy from MyProjectPages) ---- */}
       <Dialog

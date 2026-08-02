@@ -137,10 +137,10 @@ export const TaskDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Folder color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "12px", fontFamily: "sans-serif" }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "16px", fontFamily: "sans-serif" }}>
                   Project
                 </Typography>
-                <Typography sx={{ fontFamily: "sans-serif" }}>
+                <Typography sx={{ fontFamily: "sans-serif" ,fontSize:'14px'}}>
                   {project?.name || "N/A"}
                 </Typography>
               </Box>
@@ -152,10 +152,10 @@ export const TaskDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <CategoryIcon color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "12px", fontFamily: "sans-serif" }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "16px", fontFamily: "sans-serif" }}>
                   Category
                 </Typography>
-                <Typography sx={{ fontFamily: "sans-serif" }}>
+                <Typography sx={{ fontFamily: "sans-serif",fontSize:'14px' }}>
                   {categoryName}
                 </Typography>
               </Box>
@@ -167,10 +167,10 @@ export const TaskDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Person color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "12px", fontFamily: "sans-serif" }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "16px", fontFamily: "sans-serif" }}>
                   Assignee
                 </Typography>
-                <Typography>{assigneeName}</Typography>
+                <Typography sx={{fontSize:'14px'}}>{assigneeName}</Typography>
               </Box>
             </Stack>
           </Grid>
@@ -180,14 +180,14 @@ export const TaskDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Assignment color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif",fontSize:'16px' }}>
                   Status
                 </Typography>
                 <Chip
                   label={task.status}
                   color={statusColor[task.status]}
                   size="small"
-                  sx={{ fontSize: "12px", fontFamily: "sans-serif" }}
+                  sx={{ fontSize: "14px", fontFamily: "sans-serif" }}
                 />
               </Box>
             </Stack>
@@ -198,14 +198,14 @@ export const TaskDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Flag color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif",fontSize:'16px' }}>
                   Priority
                 </Typography>
                 <Chip
                   label={task.priority}
                   color={priorityColor[task.priority]}
                   size="small"
-                  sx={{ fontSize: "12px", fontFamily: "sans-serif" }}
+                  sx={{ fontSize: "14px", fontFamily: "sans-serif" }}
                 />
               </Box>
             </Stack>
@@ -216,10 +216,10 @@ export const TaskDetailPage = () => {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <CalendarMonth color="primary" fontSize="small" />
               <Box>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontFamily: "sans-serif" ,fontSize:'16px'}}>
                   Due Date
                 </Typography>
-                <Typography sx={{ fontFamily: "sans-serif" }}>
+                <Typography sx={{ fontFamily: "sans-serif" ,fontSize:'14px'}}>
                   {task.dueDate
                     ? new Date(task.dueDate).toLocaleDateString()
                     : "—"}
@@ -229,7 +229,7 @@ export const TaskDetailPage = () => {
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 0.5 }} />
 
         
         <Button
@@ -246,7 +246,7 @@ export const TaskDetailPage = () => {
               },
             })
           }
-          sx={{ textTransform: "none", borderRadius: 2, alignItems: "flex-end", m: 2 }}
+          sx={{ textTransform: "none", borderRadius: 2, alignItems: "center", m: 0.5 }}
         >
           New Notes
         </Button>

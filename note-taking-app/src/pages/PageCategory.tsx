@@ -504,7 +504,7 @@ export const PageCategory = () => {
     <Box sx={{ maxWidth: 1200, mx: "auto", p: 4 }}>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-        <Typography variant="h5" sx={{ fontSize: "20px" }}>
+        <Typography variant="h5" sx={{ fontSize: "16px" }}>
           My Categories
         </Typography>
         <Button
@@ -543,7 +543,7 @@ export const PageCategory = () => {
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <CategoryIcon color="primary" />
-                    <Typography variant="h6" noWrap>
+                    <Typography variant="h6" noWrap sx={{fontSize:'16px'}}>
                       {category.name}
                     </Typography>
                   </Box>

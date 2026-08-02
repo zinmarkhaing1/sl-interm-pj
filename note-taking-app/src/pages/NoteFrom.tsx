@@ -225,50 +225,108 @@ const refreshCollaboratorsForNote = async (noteId: string) => {
 
 
  
+// const filteredNotes = useMemo<Note[]>(() => {
+//   if (!Array.isArray(notes)) return [];
+
+//   const statusKeywords = ["todo", "in progress", "complete", "not started"];
+//   const searchLower = searchText.trim().toLowerCase();
+
+ 
+//   let statusFilter: string | null = null;
+//   if (searchLower !== "") {
+//     const matchedStatus = statusKeywords.find(keyword => keyword === searchLower);
+//     if (matchedStatus) {
+//       if (matchedStatus === "todo") statusFilter = "Todo";
+//       else if (matchedStatus === "in progress") statusFilter = "In Progress";
+//       else if (matchedStatus === "complete") statusFilter = "Complete";
+//       else if (matchedStatus === "not started") statusFilter = "Not Started";
+//     }
+//   }
+
+//   return notesWithTaskTitle.filter((note: Note) => {
+
+//     if (statusFilter !== null) {
+//       const currentStatus = (note.task || note.category || "").trim().toLowerCase();
+//       return currentStatus === statusFilter.toLowerCase();
+//     }
+
+   
+//     if (searchLower !== "") {
+//       const currentAssignee = (note.assignee || "").trim().toLowerCase();
+//       const currentPriority = (note.priority || "").trim().toLowerCase();
+//       const currentCategory = (note.category || "").trim().toLowerCase();
+
+//       const matchAssignee = currentAssignee.includes(searchLower);
+//       const matchPriority = currentPriority.includes(searchLower);
+//       const matchCategory = currentCategory.includes(searchLower);
+
+      
+//       return matchAssignee || matchPriority || matchCategory;
+//     }
+
+   
+//     return true;
+//   });
+// }, [notesWithTaskTitle, searchText]);
+
+
+
 const filteredNotes = useMemo<Note[]>(() => {
   if (!Array.isArray(notes)) return [];
 
-  const statusKeywords = ["todo", "in progress", "complete", "not started"];
   const searchLower = searchText.trim().toLowerCase();
 
- 
-  let statusFilter: string | null = null;
-  if (searchLower !== "") {
-    const matchedStatus = statusKeywords.find(keyword => keyword === searchLower);
-    if (matchedStatus) {
-      if (matchedStatus === "todo") statusFilter = "Todo";
-      else if (matchedStatus === "in progress") statusFilter = "In Progress";
-      else if (matchedStatus === "complete") statusFilter = "Complete";
-      else if (matchedStatus === "not started") statusFilter = "Not Started";
-    }
+  // If search is empty, return all notes
+  if (searchLower === "") {
+    return notesWithTaskTitle;
   }
 
   return notesWithTaskTitle.filter((note: Note) => {
+    // Get all fields for searching
+    const title = (note.title || "").toLowerCase();
+    const description = (note.description || note.content || "").toLowerCase();
+    const priority = (note.priority || "").toLowerCase();
+    const assignee = (note.assignee || "").toLowerCase();
+    const category = (note.category || "").toLowerCase();
+    const task = (note.task || "").toLowerCase();
+    const taskTitle = (note.taskTitle || "").toLowerCase();
+    const taskId = (note.taskId || "").toLowerCase();
 
-    if (statusFilter !== null) {
-      const currentStatus = (note.task || note.category || "").trim().toLowerCase();
-      return currentStatus === statusFilter.toLowerCase();
+    // Status mapping for "todo", "in progress", "complete", "not started"
+    const statusMap: Record<string, string[]> = {
+      "todo": ["todo"],
+      "in progress": ["in progress"],
+      "complete": ["complete"],
+      "not started": ["not started"],
+    };
+
+    // Check if search term matches any status keyword
+    let matchesStatus = false;
+    for (const [keyword, statuses] of Object.entries(statusMap)) {
+      if (searchLower.includes(keyword)) {
+        const currentStatus = (note.task || "").toLowerCase();
+        if (statuses.some(s => currentStatus.includes(s))) {
+          matchesStatus = true;
+          break;
+        }
+      }
     }
 
-   
-    if (searchLower !== "") {
-      const currentAssignee = (note.assignee || "").trim().toLowerCase();
-      const currentPriority = (note.priority || "").trim().toLowerCase();
-      const currentCategory = (note.category || "").trim().toLowerCase();
-
-      const matchAssignee = currentAssignee.includes(searchLower);
-      const matchPriority = currentPriority.includes(searchLower);
-      const matchCategory = currentCategory.includes(searchLower);
-
-      
-      return matchAssignee || matchPriority || matchCategory;
-    }
+    // Check if search matches any field
+    const matchesField =
+      title.includes(searchLower) ||
+      description.includes(searchLower) ||
+      priority.includes(searchLower) ||
+      assignee.includes(searchLower) ||
+      category.includes(searchLower) ||
+      task.includes(searchLower) ||
+      taskTitle.includes(searchLower) ||
+      taskId.includes(searchLower);
 
    
-    return true;
+    return matchesStatus || matchesField;
   });
 }, [notesWithTaskTitle, searchText]);
-
   const handleCreate = (): void => {
     navigate("/note-form/create");
   };
@@ -573,6 +631,10 @@ const renderSharePopover = () => (
     <Paper sx={{ width: '100%', minWidth: isMobile ? 300 : 400, p: 2, bgcolor: "background.default", color: "text.primary" }}>
       {/* Header Section */}
       <Stack direction="row" spacing={2} sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+
+        <Typography variant="h6" sx={{ fontSize: "16px", color: 'text.primary', mb: 3 }}>
+                  Notes
+                </Typography>
         {/* <Button
           onClick={handleCreate}
           startIcon={<NoteAddIcon />}
@@ -591,6 +653,7 @@ const renderSharePopover = () => (
         </Button> */}
 
         <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
+
           <IconButton
             size="small"
             sx={{ color: 'text.primary', mr: searchOpen ? 1 : 0, borderRadius: '4px' }}

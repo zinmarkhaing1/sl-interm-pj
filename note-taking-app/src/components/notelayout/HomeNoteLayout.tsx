@@ -49,7 +49,7 @@ export const HomeNoteLayout = () => {
           }}
         >
           <AutoStories
-            sx={{ fontSize: 22, mr: 1, color: "primary.main" }}
+            sx={{ fontSize: '16px', mr: 1, color: "primary.main" }}
           />
           My Workspace
         </Typography>
