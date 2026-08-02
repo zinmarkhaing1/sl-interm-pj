@@ -1,339 +1,340 @@
 
 
-// import React, { useState } from 'react';
-// import {
-//   Box,
-//   Paper,
-//   Typography,
-//   TextField,
-//   Button,
-//   Switch,
-//   FormControlLabel,
-//   InputAdornment,
-//   IconButton,
-//   Chip,
-//   Divider,
-//   Alert,
-//   CircularProgress,
-//   Stack,
-//   Autocomplete,
-//   Avatar,
-// } from '@mui/material';
-// import {
-//   Lock as LockIcon,
-//   Public as PublicIcon,
-//   Clear as ClearIcon,
-//   People as PeopleIcon,
-//   SupervisorAccount as OwnerIcon,
-//   Folder as FolderIcon
-// } from '@mui/icons-material';
-// import { useNavigate } from 'react-router-dom';
-// import { useCreateProjectMutation } from '../../services/projectApi';
-// import { useGetUsersQuery } from '../../services/authApi';
+// // import React, { useState } from 'react';
+// // import {
+// //   Box,
+// //   Paper,
+// //   Typography,
+// //   TextField,
+// //   Button,
+// //   Switch,
+// //   FormControlLabel,
+// //   InputAdornment,
+// //   IconButton,
+// //   Chip,
+// //   Divider,
+// //   Alert,
+// //   CircularProgress,
+// //   Stack,
+// //   Autocomplete,
+// //   Avatar,
+// // } from '@mui/material';
+// // import {
+// //   Lock as LockIcon,
+// //   Public as PublicIcon,
+// //   Clear as ClearIcon,
+// //   People as PeopleIcon,
+// //   SupervisorAccount as OwnerIcon,
+// //   Folder as FolderIcon
+// // } from '@mui/icons-material';
+// // import { useNavigate } from 'react-router-dom';
+// // import { useCreateProjectMutation } from '../../services/projectApi';
+// // import { useGetUsersQuery } from '../../services/authApi';
 
-// export const NewProjectLayout = () => {
-//   const navigate = useNavigate();
-//   const [createProject, { isLoading, error }] = useCreateProjectMutation();
-//   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
+// // export const NewProjectLayout = () => {
+// //   const navigate = useNavigate();
+// //   const [createProject, { isLoading, error }] = useCreateProjectMutation();
+// //   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
 
-//   let currentUserEmail = 'You (signed-in account)';
-//   try {
-//     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-//     if (storedUser?.email) currentUserEmail = storedUser.email;
-//   } catch {
-//     // keep fallback label
-//   }
+// //   let currentUserEmail = 'You (signed-in account)';
+// //   try {
+// //     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+// //     if (storedUser?.email) currentUserEmail = storedUser.email;
+// //   } catch {
+// //     // keep fallback label
+// //   }
 
-//   const [formData, setFormData] = useState({
-//     name: '',
-//     description: '',
-//     isPrivate: true,
-//     members: [] as string[],
-//   });
+// //   const [formData, setFormData] = useState({
+// //     name: '',
+// //     description: '',
+// //     isPrivate: true,
+// //     members: [] as string[],
+// //   });
 
-//   const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
+// //   const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
 
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value, checked, type } = e.target;
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: type === 'checkbox' ? checked : value,
-//     }));
-//     if (name === 'name') {
-//       setFieldErrors((prev) => ({ ...prev, name: undefined }));
-//     }
-//   };
+// //   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+// //     const { name, value, checked, type } = e.target;
+// //     setFormData((prev) => ({
+// //       ...prev,
+// //       [name]: type === 'checkbox' ? checked : value,
+// //     }));
+// //     if (name === 'name') {
+// //       setFieldErrors((prev) => ({ ...prev, name: undefined }));
+// //     }
+// //   };
 
-//   const handleClearField = (field: keyof typeof formData) => {
-//     setFormData((prev) => ({ ...prev, [field]: '' }));
-//   };
+// //   const handleClearField = (field: keyof typeof formData) => {
+// //     setFormData((prev) => ({ ...prev, [field]: '' }));
+// //   };
 
-//   const handleMembersChange = (_: React.SyntheticEvent, newValue: typeof users) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       members: newValue.map((user) => user._id),
-//     }));
-//   };
+// //   const handleMembersChange = (_: React.SyntheticEvent, newValue: typeof users) => {
+// //     setFormData((prev) => ({
+// //       ...prev,
+// //       members: newValue.map((user) => user._id),
+// //     }));
+// //   };
 
-//   const validate = (): boolean => {
-//     const errors: { name?: string } = {};
-//     if (!formData.name.trim()) {
-//       errors.name = 'Project name is required';
-//     } else if (formData.name.length < 3) {
-//       errors.name = 'Project name must be at least 3 characters';
-//     } else if (formData.name.length > 100) {
-//       errors.name = 'Project name must be less than 100 characters';
-//     } else if (!/^[a-zA-Z0-9\-_.]+$/.test(formData.name)) {
-//       errors.name = 'Only letters, numbers, hyphens, underscores, and dots are allowed';
-//     }
-//     setFieldErrors(errors);
-//     return Object.keys(errors).length === 0;
-//   };
+// //   const validate = (): boolean => {
+// //     const errors: { name?: string } = {};
+// //     if (!formData.name.trim()) {
+// //       errors.name = 'Project name is required';
+// //     } else if (formData.name.length < 3) {
+// //       errors.name = 'Project name must be at least 3 characters';
+// //     } else if (formData.name.length > 100) {
+// //       errors.name = 'Project name must be less than 100 characters';
+// //     } else if (!/^[a-zA-Z0-9\-_.]+$/.test(formData.name)) {
+// //       errors.name = 'Only letters, numbers, hyphens, underscores, and dots are allowed';
+// //     }
+// //     setFieldErrors(errors);
+// //     return Object.keys(errors).length === 0;
+// //   };
 
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!validate()) return;
+// //   const handleSubmit = async (e: React.FormEvent) => {
+// //     e.preventDefault();
+// //     if (!validate()) return;
 
-//     const payload = {
-//       name: formData.name.trim(),
-//       description: formData.description.trim(),
-//       isPrivate: formData.isPrivate,
-//       members: formData.members,
-//     };
+// //     const payload = {
+// //       name: formData.name.trim(),
+// //       description: formData.description.trim(),
+// //       isPrivate: formData.isPrivate,
+// //       members: formData.members,
+// //     };
 
-//     try {
-//       await createProject(payload).unwrap();
-//       navigate('/my-project');
-//     } catch (err) {
-//       console.error('Creation failed', err);
-//     }
-//   };
+// //     try {
+// //       await createProject(payload).unwrap();
+// //       navigate('/my-project');
+// //     } catch (err) {
+// //       console.error('Creation failed', err);
+// //     }
+// //   };
 
-//   const repoUrl = `https://github.com/your-org/${formData.name || 'project-name'}`;
+// //   const repoUrl = `https://github.com/your-org/${formData.name || 'project-name'}`;
 
-//   return (
-//     <Box sx={{ maxWidth: 640, mx: 'auto', width: '100%', py: 1 }}>
-//       <Paper
-//         elevation={0}
-//         sx={{
-//           p: { xs: 2.5, sm: 4 },
-//           borderRadius: 3,
-//           border: '1px solid',
-//           borderColor: 'divider',
-//           bgcolor: 'background.paper',
-//         }}
-//       >
-//         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-//           <FolderIcon color="primary" sx={{ fontSize: 28 }} />
-//           <Typography variant="h5">Create a new project</Typography>
-//         </Box>
-//         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-//           Set up a workspace for notes, tasks, and collaborators.
-//         </Typography>
+// //   return (
+// //     <Box sx={{ maxWidth: 640, mx: 'auto', width: '100%', py: 1 }}>
+// //       <Paper
+// //         elevation={0}
+// //         sx={{
+// //           p: { xs: 2.5, sm: 4 },
+// //           borderRadius: 3,
+// //           border: '1px solid',
+// //           borderColor: 'divider',
+// //           bgcolor: 'background.paper',
+// //         }}
+// //       >
+// //         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+// //           <FolderIcon color="primary" sx={{ fontSize: 28 }} />
+// //           <Typography variant="h5">Create a new project</Typography>
+// //         </Box>
+// //         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+// //           Set up a workspace for notes, tasks, and collaborators.
+// //         </Typography>
 
-//         <form onSubmit={handleSubmit}>
-//           <Stack spacing={2.5}>
-//             {/* Project Name */}
-//             <TextField
-//               required
-//               label="Project name"
-//               name="name"
-//               value={formData.name}
-//               onChange={handleChange}
-//               error={!!fieldErrors.name}
-//               helperText={fieldErrors.name || 'A unique name for your project.'}
-//               placeholder="my-awesome-project"
-//               slotProps={{
-//                 input: {
-//                   startAdornment: (
-//                     <InputAdornment position="start">
-//                       <PeopleIcon color="action" />
-//                     </InputAdornment>
-//                   ),
-//                   endAdornment: formData.name ? (
-//                     <InputAdornment position="end">
-//                       <IconButton size="small" onClick={() => handleClearField('name')}>
-//                         <ClearIcon fontSize="small" />
-//                       </IconButton>
-//                     </InputAdornment>
-//                   ) : undefined,
-//                 },
-//               }}
-//             />
+// //         <form onSubmit={handleSubmit}>
+// //           <Stack spacing={2.5}>
+// //             {/* Project Name */}
+// //             <TextField
+// //               required
+// //               label="Project name"
+// //               name="name"
+// //               value={formData.name}
+// //               onChange={handleChange}
+// //               error={!!fieldErrors.name}
+// //               helperText={fieldErrors.name || 'A unique name for your project.'}
+// //               placeholder="my-awesome-project"
+// //               slotProps={{
+// //                 input: {
+// //                   startAdornment: (
+// //                     <InputAdornment position="start">
+// //                       <PeopleIcon color="action" />
+// //                     </InputAdornment>
+// //                   ),
+// //                   endAdornment: formData.name ? (
+// //                     <InputAdornment position="end">
+// //                       <IconButton size="small" onClick={() => handleClearField('name')}>
+// //                         <ClearIcon fontSize="small" />
+// //                       </IconButton>
+// //                     </InputAdornment>
+// //                   ) : undefined,
+// //                 },
+// //               }}
+// //             />
 
-//             {formData.name && !fieldErrors.name && (
-//               <Box
-//                 sx={{
-//                   p: 1.5,
-//                   bgcolor: 'secondary.main',
-//                   borderRadius: 2,
-//                   display: 'flex',
-//                   alignItems: 'center',
-//                   gap: 1,
-//                 }}
-//               >
-//                 <Typography variant="body2" color="primary" sx={{ wordBreak: 'break-all' }}>
-//                   {repoUrl}
-//                 </Typography>
-//               </Box>
-//             )}
+// //             {formData.name && !fieldErrors.name && (
+// //               <Box
+// //                 sx={{
+// //                   p: 1.5,
+// //                   bgcolor: 'secondary.main',
+// //                   borderRadius: 2,
+// //                   display: 'flex',
+// //                   alignItems: 'center',
+// //                   gap: 1,
+// //                 }}
+// //               >
+// //                 <Typography variant="body2" color="primary" sx={{ wordBreak: 'break-all' }}>
+// //                   {repoUrl}
+// //                 </Typography>
+// //               </Box>
+// //             )}
 
-//             {/* Description */}
-//             <TextField
-//               label="Description"
-//               name="description"
-//               value={formData.description}
-//               onChange={handleChange}
-//               multiline
-//               rows={3}
-//               placeholder="A brief description of your project..."
-//             />
+// //             {/* Description */}
+// //             <TextField
+// //               label="Description"
+// //               name="description"
+// //               value={formData.description}
+// //               onChange={handleChange}
+// //               multiline
+// //               rows={3}
+// //               placeholder="A brief description of your project..."
+// //             />
 
-//             {/* Public / Private Toggle */}
-//             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-//               <FormControlLabel
-//                 control={
-//                   <Switch
-//                     checked={formData.isPrivate}
-//                     onChange={handleChange}
-//                     name="isPrivate"
-//                     color="primary"
-//                   />
-//                 }
-//                 label={
-//                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-//                     {formData.isPrivate ? (
-//                       <>
-//                         <LockIcon fontSize="small" />
-//                         <Typography variant="body2">Private</Typography>
-//                       </>
-//                     ) : (
-//                       <>
-//                         <PublicIcon fontSize="small" />
-//                         <Typography variant="body2">Public</Typography>
-//                       </>
-//                     )}
-//                   </Box>
-//                 }
-//               />
-//               <Chip
-//                 label={formData.isPrivate ? 'Only members can see' : 'Anyone can see'}
-//                 size="small"
-//                 variant="outlined"
-//                 color={formData.isPrivate ? 'warning' : 'success'}
-//               />
-//             </Box>
+// //             {/* Public / Private Toggle */}
+// //             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+// //               <FormControlLabel
+// //                 control={
+// //                   <Switch
+// //                     checked={formData.isPrivate}
+// //                     onChange={handleChange}
+// //                     name="isPrivate"
+// //                     color="primary"
+// //                   />
+// //                 }
+// //                 label={
+// //                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+// //                     {formData.isPrivate ? (
+// //                       <>
+// //                         <LockIcon fontSize="small" />
+// //                         <Typography variant="body2">Private</Typography>
+// //                       </>
+// //                     ) : (
+// //                       <>
+// //                         <PublicIcon fontSize="small" />
+// //                         <Typography variant="body2">Public</Typography>
+// //                       </>
+// //                     )}
+// //                   </Box>
+// //                 }
+// //               />
+// //               <Chip
+// //                 label={formData.isPrivate ? 'Only members can see' : 'Anyone can see'}
+// //                 size="small"
+// //                 variant="outlined"
+// //                 color={formData.isPrivate ? 'warning' : 'success'}
+// //               />
+// //             </Box>
 
-//             <Divider />
+// //             <Divider />
 
-//             {/* Owner (read-only) */}
-//             <TextField
-//               label="Owner"
-//               value={currentUserEmail}
-//               disabled
-//               helperText="Each project has one owner — you, as the creator"
-//               slotProps={{
-//                 input: {
-//                   startAdornment: (
-//                     <InputAdornment position="start">
-//                       <OwnerIcon color="action" />
-//                     </InputAdornment>
-//                   ),
-//                 },
-//               }}
-//             />
+// //             {/* Owner (read-only) */}
+// //             <TextField
+// //               label="Owner"
+// //               value={currentUserEmail}
+// //               disabled
+// //               helperText="Each project has one owner — you, as the creator"
+// //               slotProps={{
+// //                 input: {
+// //                   startAdornment: (
+// //                     <InputAdornment position="start">
+// //                       <OwnerIcon color="action" />
+// //                     </InputAdornment>
+// //                   ),
+// //                 },
+// //               }}
+// //             />
 
-//             {/* Members - Autocomplete */}
-//             <Autocomplete
-//               multiple
-//               id="members-autocomplete"
-//               options={users}
-//               loading={usersLoading}
-//               getOptionLabel={(option) => option.username || option.email || ''}
-//               isOptionEqualToValue={(option, value) => option._id === value._id}
-//               value={users.filter((u) => formData.members.includes(u._id))}
-//               onChange={handleMembersChange}
-//     renderInput={(params) => {
+// //             {/* Members - Autocomplete */}
+// //             <Autocomplete
+// //               multiple
+// //               id="members-autocomplete"
+// //               options={users}
+// //               loading={usersLoading}
+// //               getOptionLabel={(option) => option.username || option.email || ''}
+// //               isOptionEqualToValue={(option, value) => option._id === value._id}
+// //               value={users.filter((u) => formData.members.includes(u._id))}
+// //               onChange={handleMembersChange}
+// //     renderInput={(params) => {
   
-//   const inputProps = (params as any).slotProps?.input || params.InputProps as any;
+// //   const inputProps = (params as any).slotProps?.input || params.InputProps as any;
 
-//   return (
-//     <TextField
-//       {...params}
-//       label="Members"
-//       placeholder="Select team members"
-//       helperText="Choose users who can access this project"
-//       slotProps={{
-//         input: {
-//           ...inputProps,
-//           startAdornment: (
-//             <>
-//               <InputAdornment position="start">
-//                 <PeopleIcon color="action" />
-//               </InputAdornment>
-//               {inputProps?.startAdornment}
-//             </>
-//           ),
-//         },
-//       }}
-//     />
-//   );
-// }}
+// //   return (
+// //     <TextField
+// //       {...params}
+// //       label="Members"
+// //       placeholder="Select team members"
+// //       helperText="Choose users who can access this project"
+// //       slotProps={{
+// //         input: {
+// //           ...inputProps,
+// //           startAdornment: (
+// //             <>
+// //               <InputAdornment position="start">
+// //                 <PeopleIcon color="action" />
+// //               </InputAdornment>
+// //               {inputProps?.startAdornment}
+// //             </>
+// //           ),
+// //         },
+// //       }}
+// //     />
+// //   );
+// // }}
                
-//               renderOption={(props, option) => (
-//                 <li {...props}>
-//                   <Stack direction="row" spacing={1} sx={{alignItems:'center',}}>
-//                     <Avatar sx={{ width: 24, height: 24, fontSize: 12 }}>
-//                       {option.username?.[0]?.toUpperCase() || '?'}
-//                     </Avatar>
-//                     <Typography variant="body2">{option.username}</Typography>
-//                     <Typography variant="caption" color="text.secondary">
-//                       {option.email}
-//                     </Typography>
-//                   </Stack>
-//                 </li>
-//               )}
-//               slotProps={{
-//                 chip:{
-//                    size: 'small',
-//                 }
+// //               renderOption={(props, option) => (
+// //                 <li {...props}>
+// //                   <Stack direction="row" spacing={1} sx={{alignItems:'center',}}>
+// //                     <Avatar sx={{ width: 24, height: 24, fontSize: 12 }}>
+// //                       {option.username?.[0]?.toUpperCase() || '?'}
+// //                     </Avatar>
+// //                     <Typography variant="body2">{option.username}</Typography>
+// //                     <Typography variant="caption" color="text.secondary">
+// //                       {option.email}
+// //                     </Typography>
+// //                   </Stack>
+// //                 </li>
+// //               )}
+// //               slotProps={{
+// //                 chip:{
+// //                    size: 'small',
+// //                 }
                
-//               }}
-//               sx={{ width: '100%' }}
-//             />
+// //               }}
+// //               sx={{ width: '100%' }}
+// //             />
 
-//             {/* Error Display */}
-//             {error && (
-//               <Alert severity="error">
-//                 {(error as any)?.data?.error || 'Something went wrong. Please try again.'}
-//               </Alert>
-//             )}
+// //             {/* Error Display */}
+// //             {error && (
+// //               <Alert severity="error">
+// //                 {(error as any)?.data?.error || 'Something went wrong. Please try again.'}
+// //               </Alert>
+// //             )}
 
-//             <Divider />
-//             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
-//               <Button
-//                 color="inherit"
-//                 onClick={() => navigate(-1)}
-//                 disabled={isLoading}
-//               >
-//                 Cancel
-//               </Button>
-//               <Button
-//                 type="submit"
-//                 variant="contained"
-//                 disabled={isLoading || !formData.name.trim()}
-//                 startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
-//                 sx={{ px: 3 }}
-//               >
-//                 {isLoading ? 'Creating...' : 'Create project'}
-//               </Button>
-//             </Box>
-//           </Stack>
-//         </form>
-//       </Paper>
-//     </Box>
-//   );
-// };
+// //             <Divider />
+// //             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
+// //               <Button
+// //                 color="inherit"
+// //                 onClick={() => navigate(-1)}
+// //                 disabled={isLoading}
+// //               >
+// //                 Cancel
+// //               </Button>
+// //               <Button
+// //                 type="submit"
+// //                 variant="contained"
+// //                 disabled={isLoading || !formData.name.trim()}
+// //                 startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
+// //                 sx={{ px: 3 }}
+// //               >
+// //                 {isLoading ? 'Creating...' : 'Create project'}
+// //               </Button>
+// //             </Box>
+// //           </Stack>
+// //         </form>
+// //       </Paper>
+// //     </Box>
+// //   );
+// // };
+
 
 import React, { useState } from 'react';
 import {
@@ -366,6 +367,8 @@ import { useCreateProjectMutation } from '../../services/projectApi';
 export const NewProjectLayout = () => {
   const navigate = useNavigate();
   const [createProject, { isLoading, error }] = useCreateProjectMutation();
+  const [isSendingInvites, setIsSendingInvites] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   // Owner info (logged-in user)
   let currentUserEmail = 'You (signed-in account)';
@@ -382,7 +385,7 @@ export const NewProjectLayout = () => {
     isPrivate: true,
   });
 
-  // 👇 Member တွေကို comma ခံပြီး ရိုက်ထည့်ဖို့ Text state
+  
   const [membersInput, setMembersInput] = useState('');
 
   const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
@@ -417,11 +420,48 @@ export const NewProjectLayout = () => {
     return Object.keys(errors).length === 0;
   };
 
+
+const sendMemberInvitations = async (memberIds: string[], projectName: string, projectId: string) => {
+  if (memberIds.length === 0) return;
+
+  const filteredMembers = memberIds.filter(id => id !== localStorage.getItem('userId'));
+
+  if (filteredMembers.length === 0) return;
+
+  const pageUrl = `${window.location.origin}/my-project/project-detail/${projectId}`;
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/share/multiple', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        emails: filteredMembers,
+        pageUrl,
+        message: `You have been added as a member to project "${projectName}"`,
+        source: 'project_member', 
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to send invitations');
+    }
+  } catch (err: any) {
+    console.error('Invitation error:', err);
+    setInviteError(err.message || 'Failed to send invitations to some members.');
+    throw err;
+  }
+};
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
-    // 👇 Comma ခံထားတဲ့ input ကို array အဖြစ် ပြောင်းပါ
+   
     const memberIds = membersInput
       .split(',')
       .map((id) => id.trim())
@@ -431,21 +471,33 @@ export const NewProjectLayout = () => {
       name: formData.name.trim(),
       description: formData.description.trim(),
       isPrivate: formData.isPrivate,
-      members: memberIds, // array အနေနဲ့ ပို့မယ်
+      members: memberIds, 
     };
 
     console.log('📤 Sending Create Payload:', payload);
 
     try {
+     
       const result = await createProject(payload).unwrap();
       console.log('✅ Created Project Response:', result);
+
+ 
+      if (memberIds.length > 0) {
+        setIsSendingInvites(true);
+        await sendMemberInvitations(memberIds, result.name, result._id);
+      }
+
+   
       navigate('/my-project');
     } catch (err) {
-      console.error('❌ Creation failed', err);
+      console.error('❌ Creation or Invitation failed', err);
+   
+    } finally {
+      setIsSendingInvites(false);
     }
   };
 
-  const repoUrl = `https://github.com/your-org/${formData.name || 'project-name'}`;
+  const repoUrl = `https://${formData.name || 'project-name'}`;
 
   return (
     <Box sx={{ maxWidth: 640, mx: 'auto', width: '100%', py: 1 }}>
@@ -579,7 +631,7 @@ export const NewProjectLayout = () => {
               }}
             />
 
-          
+            {/* Members Input */}
             <TextField
               label="Members (Enter IDs or emails)"
               value={membersInput}
@@ -603,24 +655,33 @@ export const NewProjectLayout = () => {
                 {(error as any)?.data?.error || 'Something went wrong. Please try again.'}
               </Alert>
             )}
+            {inviteError && (
+              <Alert severity="warning" onClose={() => setInviteError(null)}>
+                {inviteError}
+              </Alert>
+            )}
 
             <Divider />
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end' }}>
               <Button
                 color="inherit"
                 onClick={() => navigate(-1)}
-                disabled={isLoading}
+                disabled={isLoading || isSendingInvites}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isLoading || !formData.name.trim()}
-                startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
+                disabled={isLoading || isSendingInvites || !formData.name.trim()}
+                startIcon={
+                  isLoading || isSendingInvites ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : null
+                }
                 sx={{ px: 3 }}
               >
-                {isLoading ? 'Creating...' : 'Create project'}
+                {isLoading ? 'Creating...' : isSendingInvites ? 'Sending invites...' : 'Create project'}
               </Button>
             </Box>
           </Stack>

@@ -906,7 +906,7 @@ export const NoteStatusPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 👇 Date Formatter Helper (ဒီမှာ ထည့်ထားတယ်)
+  
   const formatDate = useCallback((dateString?: string): string => {
     if (!dateString) return "-";
     try {
@@ -917,7 +917,7 @@ export const NoteStatusPage: React.FC = () => {
         month: "short",
         day: "numeric",
       });
-      // ဥပမာ Output: "Aug 5, 2026"
+
     } catch {
       return "-";
     }
@@ -1660,7 +1660,7 @@ export const NoteStatusPage: React.FC = () => {
                                         )}
                                       </Stack>
 
-                                      {/* 👇👇👇 ဒီနေရာက Date ကို ပြင်ထားတယ် 👇👇👇 */}
+                                     
                                       {(task.startDate || task.dueDate) && (
                                         <Stack direction="row" sx={{ mt: 1, alignItems: "center" }}>
                                           <IconButton size="small" sx={{ p: 0, mr: 0.5 }} disabled>
@@ -1671,7 +1671,7 @@ export const NoteStatusPage: React.FC = () => {
                                           </Typography>
                                         </Stack>
                                       )}
-                                      {/* 👆👆👆 Date ပြင်ဆင်ပြီးသွားပြီ 👆👆👆 */}
+                                     
                                     </Box>
                                   </CardContent>
                                 </Card>

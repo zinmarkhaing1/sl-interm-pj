@@ -1,3 +1,150 @@
+// import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// import type { Category, CreateCategoryPayload, UpdateCategoryPayload, DeleteCategoryPayload } from "../types/Category";
+
+// const BaseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api';
+
+// export const categoryApi = createApi({
+//   reducerPath: "categoryApi",
+//   baseQuery: fetchBaseQuery({
+//     baseUrl: BaseUrl,
+//     credentials: "include",
+//     prepareHeaders: (headers) => {
+//       const token = localStorage.getItem("token");
+//       if (token) {
+//         headers.set("Authorization", `Bearer ${token}`);
+//       }
+//       return headers;
+//     },
+//   }),
+//   tagTypes: ["Category"],
+//   endpoints: (builder) => ({
+//     // GET all categories
+//     getCategories: builder.query<Category[], void>({
+//       query: () => "/categories", 
+//       providesTags: (result) =>
+//         result
+//           ? [
+//               ...result.map(({ _id }) => ({ type: "Category" as const, id: _id })),
+//               { type: "Category", id: "LIST" },
+//             ]
+//           : [{ type: "Category", id: "LIST" }],
+//     }),
+
+//     // POST create
+//     createCategory: builder.mutation<Category, CreateCategoryPayload>({
+//       query: (body) => ({
+//         url: "/categories", 
+//         method: "POST",
+//         body,
+//       }),
+//       invalidatesTags: [{ type: "Category", id: "LIST" }],
+//     }),
+
+//     // PUT update
+//     updateCategory: builder.mutation<Category, UpdateCategoryPayload>({
+//       query: ({ id, ...patch }) => ({
+//         url: `/categories/${id}`, 
+//         method: "PUT",
+//         body: patch,
+//       }),
+//       invalidatesTags: (result, error, { id }) => [{ type: "Category", id }],
+//     }),
+
+   
+//     deleteCategory: builder.mutation<{ success: boolean }, DeleteCategoryPayload>({
+//       query: (id) => ({
+//         url: `/categories/${id}`, 
+//         method: "DELETE",
+//       }),
+//       invalidatesTags: (result, error, id) => [{ type: "Category", id }],
+//     }),
+//   }),
+// });
+
+// export const {
+//   useGetCategoriesQuery,
+//   useCreateCategoryMutation,
+//   useUpdateCategoryMutation,
+//   useDeleteCategoryMutation,
+// } = categoryApi;
+
+// services/categoryApi.ts
+// services/categoryApi.ts
+// import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// import type { Category, CreateCategoryPayload, UpdateCategoryPayload, DeleteCategoryPayload } from "../types/Category";
+
+// const BaseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api';
+
+// export const categoryApi = createApi({
+//   reducerPath: "categoryApi",
+//   baseQuery: fetchBaseQuery({
+//     baseUrl: BaseUrl,
+//     credentials: "include",
+//     prepareHeaders: (headers) => {
+//       const token = localStorage.getItem("token");
+//       if (token) {
+//         headers.set("Authorization", `Bearer ${token}`);
+//       }
+//       return headers;
+//     },
+//   }),
+//   tagTypes: ["Category"],
+//   endpoints: (builder) => ({
+//     // 👇 GET all categories (with optional projectId)
+//     getCategories: builder.query<Category[], { projectId?: string }>({
+//       query: ({ projectId }) => {
+//         const params = new URLSearchParams();
+//         if (projectId) params.set('projectId', projectId);
+//         return `/categories?${params.toString()}`;
+//       },
+//       providesTags: (result) =>
+//         result
+//           ? [
+//               ...result.map(({ _id }) => ({ type: "Category" as const, id: _id })),
+//               { type: "Category", id: "LIST" },
+//             ]
+//           : [{ type: "Category", id: "LIST" }],
+//     }),
+
+//     // POST create (with optional projectId)
+//     createCategory: builder.mutation<Category, CreateCategoryPayload>({
+//       query: (body) => ({
+//         url: "/categories",
+//         method: "POST",
+//         body,
+//       }),
+//       invalidatesTags: [{ type: "Category", id: "LIST" }],
+//     }),
+
+//     // PUT update
+//     updateCategory: builder.mutation<Category, UpdateCategoryPayload>({
+//       query: ({ id, ...patch }) => ({
+//         url: `/categories/${id}`,
+//         method: "PUT",
+//         body: patch,
+//       }),
+//       invalidatesTags: (result, error, { id }) => [{ type: "Category", id }],
+//     }),
+
+//     // DELETE
+//     deleteCategory: builder.mutation<{ success: boolean }, DeleteCategoryPayload>({
+//       query: (id) => ({
+//         url: `/categories/${id}`,
+//         method: "DELETE",
+//       }),
+//       invalidatesTags: (result, error, id) => [{ type: "Category", id }],
+//     }),
+//   }),
+// });
+
+// export const {
+//   useGetCategoriesQuery,
+//   useCreateCategoryMutation,
+//   useUpdateCategoryMutation,
+//   useDeleteCategoryMutation,
+// } = categoryApi;
+
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload, DeleteCategoryPayload } from "../types/Category";
 
@@ -18,9 +165,13 @@ export const categoryApi = createApi({
   }),
   tagTypes: ["Category"],
   endpoints: (builder) => ({
-    // GET all categories
-    getCategories: builder.query<Category[], void>({
-      query: () => "/categories", 
+    // GET all categories (with optional projectId)
+    getCategories: builder.query<Category[], { projectId?: string }>({
+      query: ({ projectId }) => {
+        const params = new URLSearchParams();
+        if (projectId) params.set('projectId', projectId);
+        return `/categories?${params.toString()}`;
+      },
       providesTags: (result) =>
         result
           ? [
@@ -30,30 +181,30 @@ export const categoryApi = createApi({
           : [{ type: "Category", id: "LIST" }],
     }),
 
-    // POST create
+    // POST create (with optional projectId)
     createCategory: builder.mutation<Category, CreateCategoryPayload>({
       query: (body) => ({
-        url: "/categories", 
+        url: "/categories",
         method: "POST",
-        body,
+        body, 
       }),
       invalidatesTags: [{ type: "Category", id: "LIST" }],
     }),
 
-    // PUT update
+    // PUT update (with optional projectId)
     updateCategory: builder.mutation<Category, UpdateCategoryPayload>({
       query: ({ id, ...patch }) => ({
-        url: `/categories/${id}`, 
+        url: `/categories/${id}`,
         method: "PUT",
         body: patch,
       }),
       invalidatesTags: (result, error, { id }) => [{ type: "Category", id }],
     }),
 
-   
+    // DELETE
     deleteCategory: builder.mutation<{ success: boolean }, DeleteCategoryPayload>({
       query: (id) => ({
-        url: `/categories/${id}`, 
+        url: `/categories/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (result, error, id) => [{ type: "Category", id }],

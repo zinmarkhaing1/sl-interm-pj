@@ -54,4 +54,27 @@ router.put("/:id/read", verifyToken, async (req: AuthRequest, res: Response) => 
   }
 });
 
+
+router.delete("/:id", verifyToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const notification = await Notification.findOneAndDelete({
+      _id: req.params.id,
+      toUser: userId,
+    });
+
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+
+    res.status(200).json({ message: "Notification deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete notification" });
+  }
+});
+
 export default router;
