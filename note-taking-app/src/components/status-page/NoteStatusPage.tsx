@@ -893,9 +893,9 @@ type ColumnConfig = {
 
 const COLUMNS: ColumnConfig[] = [
   { id: "Todo", label: "Todo", color: "#a3c4f3" },
-  { id: "In Progress", label: "In Progress", color: "#ffadad" },
-  { id: "Complete", label: "Complete", color: "#a3b18a" },
-  { id: "Not Started", label: "Not Started", color: "#588157" },
+  { id: "In Progress", label: "In Progress", color: "#9a6da7" },
+  { id: "Complete", label: "Complete", color: "#588157" },
+  { id: "Not Started", label: "Not Started", color: "#ffadad" },
 ];
 
 export const NoteStatusPage: React.FC = () => {

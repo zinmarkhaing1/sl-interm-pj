@@ -497,7 +497,7 @@ const sendMemberInvitations = async (memberIds: string[], projectName: string, p
     }
   };
 
-  const repoUrl = `https://${formData.name || 'project-name'}`;
+  const repoUrl = `https://my-domain.com/project/${formData.name || 'project-name'}`;
 
   return (
     <Box sx={{ maxWidth: 640, mx: 'auto', width: '100%', py: 1 }}>
@@ -512,8 +512,8 @@ const sendMemberInvitations = async (memberIds: string[], projectName: string, p
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <FolderIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h5">Create a new project</Typography>
+          <FolderIcon color="primary" sx={{ fontSize: 25 }} />
+          <Typography variant="h5" sx={{fontSize:'18px'}}>Create a new project</Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Set up a workspace for notes, tasks, and collaborators.
@@ -636,7 +636,7 @@ const sendMemberInvitations = async (memberIds: string[], projectName: string, p
               label="Members (Enter IDs or emails)"
               value={membersInput}
               onChange={(e) => setMembersInput(e.target.value)}
-              helperText="Separate multiple members with commas. Example: user1, user2, user3"
+              helperText="Separate multiple members with commas. Example: user1@email.com, user2@email.com, user3@email.com"
               placeholder="members@gmail.com"
               slotProps={{
                 input: {

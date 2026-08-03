@@ -17,7 +17,7 @@ import {
   Grid,
   Chip,
 } from '@mui/material';
-import { ArrowBack, Save } from '@mui/icons-material';
+import { ArrowBack, ArrowBackIosNew, Save } from '@mui/icons-material';
 import { useCreateTaskMutation } from '../../services/taskApi';
 import { useGetProjectsQuery } from '../../services/projectApi';
 import { useGetUsersQuery } from '../../services/authApi';
@@ -40,7 +40,9 @@ export const NewTaskDateLayout = () => {
 
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery();
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
-  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
+  // const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
+  
+const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery({});
   const [createTask, { isLoading: isCreating, isError: createError }] = useCreateTaskMutation();
 
   const [formData, setFormData] = useState({
@@ -169,10 +171,10 @@ export const NewTaskDateLayout = () => {
       }}
     >
       <Stack direction="row" spacing={1} sx={{ mb: 3, alignItems: 'center' }}>
-        <IconButton onClick={() => navigate('/my-tasks')}>
-          <ArrowBack />
-        </IconButton>
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '18px' }}>
+        {/* <IconButton onClick={() => navigate('/my-tasks')}>
+          <ArrowBackIosNew />
+        </IconButton> */}
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '18px',alignItems:'center', mr:2 }}>
           Create New Task
         </Typography>
         {prefillDueDate && (

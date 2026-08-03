@@ -567,7 +567,7 @@ export const NoteDetailPage = () => {
     );
   }
   return (
-    <Box sx={{ bgcolor: "background.default", width: "100%", minHeight: "80vh", p: { xs: 2, md: 4 } }}>
+    <Box sx={{ width: "100%", minHeight: "80vh", p: { xs: 2, md: 4 } }}>
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
         
         {/* Share Popover */}

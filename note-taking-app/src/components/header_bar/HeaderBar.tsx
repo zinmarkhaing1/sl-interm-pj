@@ -1811,7 +1811,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                     mb: 1,
                     p: 1,
                     borderRadius: 1,
-                    bgcolor: "#fafafa",
+                    bgcolor: 'background.paper',
                   }}
                 >
                   <Typography variant="body2">
@@ -1828,7 +1828,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                   <Typography variant="caption" color="text.secondary">
                     {new Date(notif.createdAt).toLocaleString()}
                   </Typography>
-                  <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                  <Box sx={{ display: "flex", gap: 1, mt: 0.5 ,bgcolor:'background.paper'}}>
                     {isInvitation ? (
                       <>
                         <Button

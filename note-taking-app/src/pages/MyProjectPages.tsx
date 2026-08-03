@@ -107,7 +107,7 @@ console.log("PROJECT LOADING:", isLoading);
     <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontSize: '16px', fontWeight: 700, color: 'text.primary' }}>My Projects</Typography>
+          <Typography variant="h5" sx={{ fontSize: '18px', fontWeight: 700, color: 'text.primary' }}>My Projects</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5,fontSize:'14px' }}>
             Organize workspaces, share them with your team, and jump back into active projects quickly.
           </Typography>

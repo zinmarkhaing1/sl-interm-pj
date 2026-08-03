@@ -78,7 +78,6 @@ export const ProfilePage = () => {
       sx={{
         width: "100%",
         minHeight: { xs: "calc(100vh - 150px)", sm: "calc(100vh - 120px)" },
-        bgcolor: "background.default",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

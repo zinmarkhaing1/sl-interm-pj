@@ -147,12 +147,12 @@ export const UpdateProfilePage = () => {
         <Typography variant="h5" sx={{ mb: 0.5 ,fontWeight:700,alignItems:'center',justifyContent:'center',}}>
           Update profile
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           Manage how you appear across Note Book.
         </Typography>
 
         <Box component="form" onSubmit={handleSave} noValidate>
-          <Stack spacing={2.5} sx={{ mb: 2 ,alignItems:'flex-start'}}>
+          <Stack spacing={2.5} sx={{ alignItems:'flex-start'}}>
             <Box sx={{ position: "relative"}}>
               
               <Avatar
@@ -197,9 +197,9 @@ export const UpdateProfilePage = () => {
             </Box>
           </Stack>
 
-          <Divider sx={{ mb: 3 }} />
+          <Divider sx={{ mb: 2 }} />
 
-          <Stack spacing={2.5}>
+          <Stack spacing={1.5}>
             <TextField
               label="Full name"
               name="fullName"
@@ -223,7 +223,7 @@ export const UpdateProfilePage = () => {
               value={user.bio}
               onChange={handleChange}
               multiline
-              rows={3}
+              rows={2}
               placeholder="A short intro about you"
             />
 

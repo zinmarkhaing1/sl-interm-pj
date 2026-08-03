@@ -391,7 +391,7 @@ export const MyTaskNote = () => {
             </TableBody>
           </Table>
         </TableContainer> */}
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+        {/* <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
   <Table>
     <TableHead sx={{ bgcolor: 'background.default' }}>
       <TableRow>
@@ -502,6 +502,122 @@ export const MyTaskNote = () => {
                     size="small"
                     color="error"
                     aria-label={`Delete ${task.title}`}
+                    onClick={() => handleDelete(task)}
+                    disabled={isDeleting}
+                    sx={{ bgcolor: 'rgba(211, 47, 47, 0.08)' }}
+                  >
+                    <DeleteOutlined fontSize="small" />
+                  </IconButton>
+                </Box>
+              </TableCell>
+            </TableRow>
+          );
+        })
+      )}
+    </TableBody>
+  </Table>
+</TableContainer> */}
+
+
+<TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+  <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+    <TableHead sx={{ bgcolor: 'background.default' }}>
+      <TableRow>
+        <TableCell sx={{ width: '30%', fontWeight: 600 }}>Task Name</TableCell>
+        <TableCell sx={{ width: '12%', fontWeight: 600 }}>Project</TableCell>
+        <TableCell sx={{ width: '12%', fontWeight: 600 }}>Category</TableCell>
+        <TableCell sx={{ width: '12%', fontWeight: 600 }}>Assignee</TableCell>
+        <TableCell sx={{ width: '10%', fontWeight: 600 }}>Status</TableCell>
+        <TableCell sx={{ width: '8%', fontWeight: 600 }}>Priority</TableCell>
+        <TableCell sx={{ width: '10%', fontWeight: 600, whiteSpace: 'nowrap' }}>Due Date</TableCell>
+        <TableCell sx={{ width: '6%', fontWeight: 600, whiteSpace: 'nowrap' }}>Action</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {filteredTasks.length === 0 ? (
+        <TableRow>
+          <TableCell colSpan={8} sx={{ textAlign: 'center', py: 5, color: 'text.secondary' }}>
+            No tasks found.
+          </TableCell>
+        </TableRow>
+      ) : (
+        filteredTasks.map((task: Task) => {
+          const project = typeof task.project === 'object' ? task.project : null;
+          const categoryName = getCategoryName(task.category);
+          return (
+            <TableRow key={task._id} hover onClick={() => navigate(`/my-tasks/task-detail/${task._id}`)}>
+              <TableCell sx={{ width: '30%' }}>
+                <Typography sx={{ fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {task.title}
+                </Typography>
+                {task.description && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                      display: 'block',
+                      mt: 0.5,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {task.description}
+                  </Typography>
+                )}
+              </TableCell>
+              <TableCell sx={{ width: '12%' }}>
+                <Chip label={project?.name || 'N/A'} size="small" variant="outlined" />
+              </TableCell>
+              <TableCell sx={{ width: '12%' }}>
+                <Chip label={categoryName} size="small" variant="outlined" />
+              </TableCell>
+              <TableCell sx={{ width: '12%' }}>
+                <Chip
+                  avatar={<Avatar sx={{ width: 20, height: 20, fontSize: 10 }}>{getAssigneeInitial(task.assignee)}</Avatar>}
+                  label={getAssigneeDisplay(task.assignee)}
+                  size="small"
+                />
+              </TableCell>
+              <TableCell sx={{ width: '10%' }}>
+                <Chip label={task.status} color={statusColors[task.status] || 'default'} size="small" sx={{ fontWeight: 500 }} />
+              </TableCell>
+              <TableCell sx={{ width: '8%' }}>
+                <Chip
+                  label={task.priority}
+                  size="small"
+                  variant={task.priority === 'High' ? 'filled' : task.priority === 'Medium' ? 'filled':'outlined'}
+                  color={task.priority === 'High' ? 'error' : task.priority === 'Medium'? 'info' :'default'}
+                />
+              </TableCell>
+              <TableCell sx={{ width: '10%', whiteSpace: 'nowrap',ml:1 }}>
+                {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+              </TableCell>
+              <TableCell
+                sx={{
+                  width: '6%',
+                  whiteSpace: 'nowrap',
+                  position: 'sticky',
+                  right: 0,
+                  bgcolor: 'background.paper',
+                  borderLeft: '1px solid',
+                  borderColor: 'divider',
+                 
+                }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center' }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => navigate(`/my-tasks/edit/${task._id}`)}
+                    disabled={isDeleting}
+                    sx={{ bgcolor: 'secondary.main', color: 'primary.main', '&:hover': { bgcolor: 'secondary.dark' },ml:1 }}
+                  >
+                    <EditOutlined fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
                     onClick={() => handleDelete(task)}
                     disabled={isDeleting}
                     sx={{ bgcolor: 'rgba(211, 47, 47, 0.08)' }}
