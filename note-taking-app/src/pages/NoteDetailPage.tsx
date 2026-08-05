@@ -263,9 +263,10 @@ export const NoteDetailPage = () => {
 );
 
   // const canEditNote = userRole === "owner" || userRole === "editor" || userRole === "full";
-  const canEditNote = note?.accessPermission === "owner" || 
-                    note?.accessPermission === "edit" || 
-                    note?.accessPermission === "full";
+  // const canEditNote = note?.accessPermission === "owner" || 
+  //                   note?.accessPermission === "edit" || 
+  //                   note?.accessPermission === "full";
+  const canEditNote = isOwner || userRole === "full" || userRole === "editor";
 
   const showCommentBox = !hasEditCollaborator && hasCommentPermission();
   const canAddComment = hasCommentPermission();

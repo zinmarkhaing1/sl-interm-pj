@@ -1486,49 +1486,96 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   };
 
   // ---------- Accept Invitation ----------
-  const handleAcceptInvitation = async (notification: any) => {
-    const invitationId = notification.invitationId;
-    if (!invitationId) {
-      alert("Invitation ID missing");
-      return;
-    }
-    setProcessingInvite(invitationId);
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/share/accept/${invitationId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  // const handleAcceptInvitation = async (notification: any) => {
+  //   const invitationId = notification.invitationId;
+  //   if (!invitationId) {
+  //     alert("Invitation ID missing");
+  //     return;
+  //   }
+  //   setProcessingInvite(invitationId);
+  //   try {
+  //     const response = await fetch(
+  //       `http://localhost:5000/api/share/accept/${invitationId}`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-       if (response.ok) {
-        const data = await response.json();
-        await markNotificationRead(notification._id).unwrap().catch(() => null);
-        refetchCollaborators();
-        refetchInvitations();
-        refetchNotifications?.();
-        window.dispatchEvent(new Event("storage"));
-        if (data.pageUrl) {
-          window.location.href = data.pageUrl;
-        } else {
-          alert("Invitation accepted!");
-        }
-      } else {
-        const err = await response.json().catch(() => ({}));
-        alert(err.message || "Failed to accept.");
+  //      if (response.ok) {
+  //       const data = await response.json();
+  //       await markNotificationRead(notification._id).unwrap().catch(() => null);
+  //       refetchCollaborators();
+  //       refetchInvitations();
+  //       refetchNotifications?.();
+  //       window.dispatchEvent(new Event("storage"));
+  //       if (data.pageUrl) {
+  //         window.location.href = data.pageUrl;
+  //       } else {
+  //         alert("Invitation accepted!");
+  //       }
+  //     } else {
+  //       const err = await response.json().catch(() => ({}));
+  //       alert(err.message || "Failed to accept.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Accept error:", error);
+  //     alert("An error occurred.");
+  //   } finally {
+  //     setProcessingInvite(null);
+  //     setNotificationAnchor(null);
+  //   }
+  // };
+  const handleAcceptInvitation = async (notification: any) => {
+  const invitationId = notification.invitationId;
+  if (!invitationId) {
+    alert("Invitation ID missing");
+    return;
+  }
+  setProcessingInvite(invitationId);
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/share/accept/${invitationId}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
       }
-    } catch (error) {
-      console.error("Accept error:", error);
-      alert("An error occurred.");
-    } finally {
-      setProcessingInvite(null);
-      setNotificationAnchor(null);
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+
+      
+      await deleteNotification(notification._id);
+
+      refetchCollaborators();
+      refetchInvitations();
+      refetchNotifications?.();
+      window.dispatchEvent(new Event("storage"));
+
+      if (data.pageUrl) {
+        window.location.href = data.pageUrl;
+      } else {
+        alert("Invitation accepted!");
+      }
+    } else {
+      const err = await response.json().catch(() => ({}));
+      alert(err.message || "Failed to accept.");
     }
-  };
+  } catch (error) {
+    console.error("Accept error:", error);
+    alert("An error occurred.");
+  } finally {
+    setProcessingInvite(null);
+    setNotificationAnchor(null);
+  }
+};
 
   // ---------- Decline Invitation ----------
   const handleDeclineInvitation = async (notification: any) => {

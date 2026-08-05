@@ -598,6 +598,9 @@ export const getNoteById = async (
       res.status(403).json({ message: "You do not have access to this note." });
       return;
     }
+    console.log("👤 Update request user ID:", req.user?.id);
+console.log("📄 Note owner ID:", note.user?.toString());
+console.log("🔍 SharedAccess found:", sharedAccess ? `permission=${sharedAccess.permission}` : "none");
 
     const noteObject = note.toObject();
     const ownerMap = await getOwnerMap([noteObject]);
@@ -615,6 +618,67 @@ export const getNoteById = async (
   }
 };
 
+
+// export const updateNote = async (
+//   req: AuthRequest,
+//   res: Response
+// ): Promise<void> => {
+//   try {
+//     const { id } = req.params;
+
+//     if (!mongoose.Types.ObjectId.isValid(id as string)) {
+//       res.status(400).json({ message: "Invalid note id" });
+//       return;
+//     }
+
+//     const note = await Note.findById(id);
+//     if (!note) {
+//       res.status(404).json({ message: "Note not found" });
+//       return;
+//     }
+
+//     const hasOwnerAccess = note.user?.toString() === req.user?.id;
+//     const sharedAccess = await WorkspaceAccess.findOne({ userId: req.user?.id, noteId: note._id });
+    
+//     // if (!hasOwnerAccess && (!sharedAccess || sharedAccess.permission !== "edit")) {
+//     //   res.status(403).json({ message: "You do not have permission to edit this note." });
+//     //   return;
+//     // }
+//     if (!hasOwnerAccess && (!sharedAccess || !["edit", "full"].includes(sharedAccess.permission))) {
+//   res.status(403).json({ message: "You do not have permission to edit this note." });
+//   return;
+// }
+
+//     const { title, content, description, category, priority, assignee, task, startDate, endDate } = req.body;
+
+//     const updatedNote = await Note.findOneAndUpdate(
+//       { _id: id },
+//       { 
+//         title, 
+//         content: content || description, 
+//         description, 
+//         category, 
+//         priority, 
+//         assignee, 
+//         task: task && task.trim().length > 0 ? task : note.task, 
+//         startDate, 
+//         endDate 
+//       },
+//       { new: true }
+//     );
+
+//     if (!updatedNote) {
+//       res.status(404).json({ message: "Note not found" });
+//       return;
+//     }
+
+//     res.status(200).json(updatedNote);
+//   } catch (err: any) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+//delete notes
 
 export const updateNote = async (
   req: AuthRequest,
@@ -636,10 +700,21 @@ export const updateNote = async (
 
     const hasOwnerAccess = note.user?.toString() === req.user?.id;
     const sharedAccess = await WorkspaceAccess.findOne({ userId: req.user?.id, noteId: note._id });
-    
-    if (!hasOwnerAccess && (!sharedAccess || sharedAccess.permission !== "edit")) {
-      res.status(403).json({ message: "You do not have permission to edit this note." });
-      return;
+
+    // ✅ Allow both "edit" and "full" permissions
+    if (!hasOwnerAccess && (!sharedAccess || !["edit", "full"].includes(sharedAccess.permission))) {
+      // res.status(403).json({ message: "You do not have permission to edit this note." });
+      // return;
+       const validInvitation = await ShareInvitation.findOne({
+    noteId: note._id,
+    userId: req.user?.id,
+    status: "accepted",
+    role: { $in: ["full", "editor"] }
+  });
+  if (!validInvitation) {
+    res.status(403).json({ message: "You do not have permission to edit this note." });
+    return;
+  }
     }
 
     const { title, content, description, category, priority, assignee, task, startDate, endDate } = req.body;
@@ -671,7 +746,6 @@ export const updateNote = async (
   }
 };
 
-//delete notes
 export const deleteNote = async (
   req: AuthRequest,
   res: Response

@@ -1132,14 +1132,27 @@ router.put("/accept/:id", verifyToken, async (req: AuthRequest, res: Response) =
           pageName: invitation.pageName || undefined,
         });
       } else if (accessScope === "note-form") {
-        const noteId = extractNoteId(invitation.pageUrl);
-        await grantWorkspaceAccess({
-          userId,
-          inviterId: invitation.invitedBy.toString(),
-          pageNoteId: noteId,
-          role: invitation.role,
-          accessScope,
-        });
+        // const noteId = extractNoteId(invitation.pageUrl);
+        // await grantWorkspaceAccess({
+        //   userId,
+        //   inviterId: invitation.invitedBy.toString(),
+        //   pageNoteId: noteId,
+        //   role: invitation.role,
+        //   accessScope,
+        // });
+        // Use the noteId stored in the invitation
+let noteId = invitation.noteId ? invitation.noteId.toString() : null;
+if (!noteId) {
+  // Fallback: try to extract from pageUrl
+  noteId = extractNoteId(invitation.pageUrl);
+}
+await grantWorkspaceAccess({
+  userId,
+  inviterId: invitation.invitedBy.toString(),
+  pageNoteId: noteId,
+  role: invitation.role,
+  accessScope,
+});
       } else if (accessScope === "global") {
         await grantWorkspaceAccess({
           userId,
